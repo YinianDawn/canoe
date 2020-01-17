@@ -1,0 +1,32 @@
+
+Person :public {
+    name :string
+    age :int
+}
+
+Student :public ::Person {
+    school :string
+}
+
+persion1 Person{
+    name => "123"
+    age => 18
+
+    walk -> {
+        print("person:" + name + " age:" + age + " walk...\n")
+    }
+}
+
+student1 Student{
+    name => "456"
+    age => 11
+    school => "asdf"
+
+    walk -> {
+        print("student:" + name + " age:" + age + " walk...\n")
+    }
+
+    learn :public => (book :string) {
+        print("student:" + name + " age:" + age + " study " + book + "\n")
+    }
+}

@@ -1,0 +1,11 @@
+package canoe.compiler
+
+Options {
+
+}
+
+parse :(args :string[]) ::Options {
+    opts Options{} 
+    opts.parseArgs(args)
+    opts
+}

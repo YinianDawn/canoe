@@ -1,0 +1,14 @@
+package test2
+
+a :public => 1
+
+A :public {
+    a :string => "123"
+}
+
+B :public :A :{
+    b :public => 1.1
+}
+
+b => B{}
+
