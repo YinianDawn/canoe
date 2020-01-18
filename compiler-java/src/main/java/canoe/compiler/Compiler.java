@@ -2,7 +2,7 @@ package canoe.compiler;
 
 import canoe.lexis.Kind;
 import canoe.lexis.Lexer;
-import canoe.lexis.Token;
+import canoe.lexis.Tokens;
 
 import java.util.List;
 
@@ -42,14 +42,24 @@ public class Compiler {
     }
 
     private static void compile(SourceFile sourceFile, Options options) {
-        List<Token> tokens = Lexer.parseTokens(sourceFile, options);
-        tokens.forEach(t -> {
+        Tokens tokens = Lexer.parseTokens(sourceFile);
+        tokens.getTokens().forEach(t -> {
             if (t.getKind() == Kind.CR) {
-                System.err.println(t);
+                System.err.println("CR l:" + t.getLine() + " i:" + t.getIndex() + " l:" + t.getLine() + " v:\\n ");
+                sleep();
             } else {
                 System.out.println(t);
+                sleep();
             }
         });
     }
 
+
+    private static void sleep() {
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -8,19 +8,11 @@ public enum Kind {
     // ================ 关键字 ================
 
     PACKAGE("package"),
-    IMPORT("import"),
-    AS("as"),
 
     // 可见性
-    PUBLIC("public"),
-    PROTECTED("protected"),
-    // PACKAGE,
-    PRIVATE("private"),
+    OPEN("open"),
 
-    COLON_PUBLIC(":public"),
-    COLON_PROTECTED(":protected"),
-    COLON_PACKAGE(":package"),
-    COLON_PRIVATE(":private"),
+    COLON_OPEN(":open"),
 
     NATIVE("native"),
     COLON_NATIVE(":native"),
@@ -31,9 +23,9 @@ public enum Kind {
     CANOE("canoe"),
     COLON_CANOE(":canoe"),
     // TODO 多线程怎么交互
-    // TODO 枚举怎么实现
 
-    THIS("this"),
+    ENUM("enum"),
+    COLON_ENUM(":enum"),
 
     RETURN("return"),
 
@@ -69,35 +61,24 @@ public enum Kind {
     LOGICAL_OR("||"),
     LOGICAL_NOT("!"),
 
-    EQ("="),
+    EQ("=="),
     NE("!="),
     GT(">"),
     GE(">="),
     LT("<"),
     LE("<="),
 
-    // ================ 自定义 ================
+    // lambda
+    LAMBDA("->"),
 
-    /** 标识符 [A-Za-z_][A-Za-z0-9_]* */ ID(""),
+    // 赋值
+    ASSIGN("="),
+    ASSIGN_FORCE(":="),
 
-    // 数字
-    /** 十六进制数 0(x|X)[0-9a-fA-F_]* */ NUMBER_HEXADECIMAL(""),
-    /** 十进制数 [1-9][0-9_]* */ NUMBER_DECIMAL(""),
-    /** 八进制数 0[1-7][0-7_]* */ NUMBER_OCTAL(""),
-    /** 二进制数 0(b|B)[0-1_]* */ NUMBER_BINARY(""),
-
-    /** 十进制小数 [0-9_]*\.[0-9_]+((e|E)(-|\+)?[1-9][0-9]*)? */ REAL_DECIMAL(""),
-
-    /** 字符串 \"[.\n]*\" */ STRING(""),
-
-    /** 注释 // */    NOTE_LINE(""),
-    /** 注释 /* */    NOTE_RANGE(""),
-
-    // ================ 符号 ================
+    // 符号
     DOT("."),
+    DOT_DOT(".."),
     CR("\n"),
-    ASSIGN_IMMUTABLE("=>"),
-    ASSIGN_MUTABLE("->"),
 
     LB("{"),
     RB("}"),
@@ -110,23 +91,48 @@ public enum Kind {
     COMMA(","),
     SEMI(";"),
     AT("@"),
+    POUND("#"),
 
-    // ================ 运算符 ================
+    // 数学运算符
     ADD("+"),
     SUB("-"),
     MUL("*"),
     DIV("/"),
     MOD("%"),
 
-    // ================ 二进制运算符 ================
+    // 二进制运算
     BIT_AND("&"),
     BIT_OR("|"),
     BIT_XOR("^"),
     BIT_NOT("!"),
     BIT_MOVE_LEFT("<<"),
-    BIT_MOVE_RIGHT(">>");
-    // TODO 还有左移右移符号
+    BIT_MOVE_RIGHT(">>"),
 
+    ADD_ADD("++"),
+    SUB_SUB("--"),
+
+    ADD_ASSIGN("+="),
+    SUB_ASSIGN("-="),
+    MUL_ASSIGN("*="),
+    DIV_ASSIGN("/="),
+    MOD_ASSIGN("%="),
+
+    // ================ 自定义 ================
+
+    /** 标识符 [A-Za-z_][A-Za-z0-9_]* */ ID(""),
+
+    // 数字
+    /** 十六进制数 0(x|X)[0-9a-fA-F_]* */ NUMBER_HEXADECIMAL(""),
+    /** 十进制数 [1-9][0-9_]* */ NUMBER_DECIMAL(""),
+    /** 八进制数 0[1-7][0-7_]* */ NUMBER_OCTAL(""),
+    /** 二进制数 0(b|B)[0-1_]* */ NUMBER_BINARY(""),
+
+    /** 十进制小数 [0-9_]*\.[0-9_]+ */ REAL_DECIMAL(""),
+
+    /** 字符串 \"[.\n]*\" */ STRING(""),
+
+    /** 注释 // */    COMMENT_LINE(""),
+    /** 注释 /* */    COMMENT_BLOCK("");
 
     private String key;
 

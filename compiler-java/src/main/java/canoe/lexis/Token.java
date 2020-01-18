@@ -9,19 +9,16 @@ public class Token {
 
     private final String value;
 
-    private final String fileName;
-
-    private final int lineNumber;
+    private final int line;
 
     private final int index;
 
     private final int length;
 
-    Token(Kind kind, String value, String fileName, int lineNumber, int index, int length) {
+    public Token(Kind kind, String value, int line, int index, int length) {
         this.kind = kind;
         this.value = value;
-        this.fileName = fileName;
-        this.lineNumber = lineNumber;
+        this.line = line;
         this.index = index;
         this.length = length;
     }
@@ -34,21 +31,21 @@ public class Token {
         return kind;
     }
 
+    public String getValue() {
+        return value;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
     public int getIndex() {
         return index;
     }
 
-    public int getLineNumber() {
-        return lineNumber;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
     @Override
     public String toString() {
-        return String.format("%s value:%s line:%d index:%d length:%d",
-                kind.name(), (null == value ? kind.getKey() : value), lineNumber, index, length);
+        return String.format("%s l:%d i:%d l:%d v:%s ",
+                kind.name(), line, index, length, (null == value ? kind.getKey() : value));
     }
 }

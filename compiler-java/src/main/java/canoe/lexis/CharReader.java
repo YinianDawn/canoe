@@ -9,15 +9,14 @@ import static canoe.util.Util.panic;
  */
 public class CharReader {
 
-    private File file;
-    private FileReader reader;
     private static final int LENGTH = 4096;
+
+    private FileReader reader;
     private char[] chars = new char[LENGTH];
     private int index = LENGTH - 1;
     private int max = LENGTH;
 
     public CharReader(File file) {
-        this.file = file;
         try {
             this.reader = new FileReader(file);
         } catch (FileNotFoundException e) {

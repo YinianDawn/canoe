@@ -2,9 +2,15 @@ package canoe.caompiler
 
 import canoe.
 
-Compiler {
+Compiler :open {
     options :Options
     compile {
         
+    }
+}
+
+newCompiler :open :Compiler :(args :string[]) {
+    return Compiler {
+        options: 
     }
 }

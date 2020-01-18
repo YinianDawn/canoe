@@ -14,7 +14,6 @@ public class Options {
 
     private static final String MINUS = "-";
 
-    private CompilerMode mode;
     List<SourceFile> sourceFiles;
 
 
@@ -29,7 +28,6 @@ public class Options {
         List<String> fileNames = new LinkedList<>();
         for (String arg : args) {
             if ("--".equals(arg)) {
-                // "--" Stops command line processing
                 end = true;
                 continue;
             }
@@ -39,9 +37,6 @@ public class Options {
             fileNames.add(arg);
         }
 
-        if (mode == null) {
-            mode = CompilerMode.LINK;
-        }
         sourceFiles = fileNames.stream().distinct().map(SourceFile::new).collect(Collectors.toList());
 
         if (sourceFiles.isEmpty()) {
@@ -53,13 +48,7 @@ public class Options {
     private boolean parseArg(String arg) {
         if (arg.startsWith(MINUS)) {
             System.out.println("arg: " + arg);
-            if (CompilerMode.isModeOption(arg)) {
-                if (mode != null) {
-                    panic(mode.toOption() + " option and "
-                            + arg + " option is exclusive");
-                }
-                mode = CompilerMode.fromOption(arg);
-            }
+            panic("what is arg: " + arg);
             return true;
         }
         return false;
