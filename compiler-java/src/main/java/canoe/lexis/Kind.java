@@ -20,12 +20,11 @@ public enum Kind {
     GOTO("goto"),
     COLON_GOTO(":goto"),
 
-    CANOE("canoe"),
-    COLON_CANOE(":canoe"),
-    // TODO 多线程怎么交互
-
     ENUM("enum"),
     COLON_ENUM(":enum"),
+
+    CANOE("canoe"),
+    // TODO 多线程怎么交互
 
     RETURN("return"),
 

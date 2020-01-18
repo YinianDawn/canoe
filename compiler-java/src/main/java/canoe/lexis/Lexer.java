@@ -67,7 +67,6 @@ public class Lexer {
                         case OPEN: if (merge(Kind.COLON_OPEN, token, next, "")) { i++;} continue;
                         case NATIVE: if (merge(Kind.COLON_NATIVE, token, next, "")) { i++;} continue;
                         case GOTO: if (merge(Kind.COLON_GOTO, token, next, "")) { i++;} continue;
-                        case CANOE: if (merge(Kind.COLON_CANOE, token, next, "")) { i++;} continue;
                         case ENUM: if (merge(Kind.COLON_ENUM, token, next, "")) { i++;} continue;
                         case ASSIGN: if (merge(Kind.ASSIGN_FORCE, token, next, "")) { i++;} continue;
                         default:
@@ -92,12 +91,12 @@ public class Lexer {
                         if (merge(Kind.DOT_DOT, token, next, "")) { i++; }
                         continue;
                     } else if (next.getKind() == Kind.NUMBER_DECIMAL) {
-                        if (token.getLine() == next.getLine() && token.getIndex() + token.getLength() == next.getIndex()) {
+                        if (token.next(next)) {
                             Token last = null;
                             if (1 < i) {
                                 last = tokens.get(i - 1);
                             }
-                            if (null != last && last.getKind() == Kind.NUMBER_DECIMAL && last.getLine() == token.getLine() && last.getIndex() + last.getLength() == token.getIndex()) {
+                            if (null != last && last.getKind() == Kind.NUMBER_DECIMAL && last.next(token)) {
                                 this.tokens.remove(this.tokens.size() - 1);
                                 this.tokens.add(new Token(Kind.REAL_DECIMAL, last.getValue() + "." + next.getValue(), last.getLine(), last.getIndex(), last.getLength() + 1 + next.getLength()));
                             } else {
@@ -133,6 +132,9 @@ public class Lexer {
         if (thisLast != last && !(thisLast.getKind() == Kind.CR && last.getKind() == Kind.CR)) {
             this.tokens.add(tokens.get(size - 1));
         }
+        while (0 < this.tokens.size() && this.tokens.get(0).getKind() == Kind.CR) {
+            this.tokens = this.tokens.subList(1, this.tokens.size());
+        }
     }
 
     private boolean merge(Kind kind, Token t1, Token t2, String join) {
@@ -141,7 +143,7 @@ public class Lexer {
             int i2 = t2.getIndex();
             int range = i2 - i1 - t1.getLength();
             if (range == join.length()) {
-                tokens.add(new Token(kind, null, t1.getLine(), t1.getIndex(), kind.name().length()));
+                tokens.add(new Token(kind, null, t1.getLine(), t1.getIndex(), kind.getKey().length()));
                 return true;
             }
         }
@@ -156,7 +158,7 @@ public class Lexer {
             case '\n': addToken(); addToken(Kind.CR, null); newLine(); break;
 
             case ' ':
-            case '\t': int length = chars.length();addToken();index += 0 < length ? length : 1;break;
+            case '\t': addToken(); index++; break;
 
 
             case '\"': addToken(); index++;
@@ -167,13 +169,14 @@ public class Lexer {
                     chars.append(reader.nextChar());
                 }
                 addToken(Kind.STRING, chars.toString());
-                index = index + tokens.get(tokens.size() - 1).getLength() + 1;
+                index += tokens.get(tokens.size() - 1).getLength() + 1;
                 break;
 
             case '/' :
                 if (reader.hasNext()) {
                     char next = reader.nextChar(false);
                     if (next == '*') {
+                        chars.append(c);
                         chars.append(reader.nextChar());
                         int l = line;
                         int i = index;
@@ -184,12 +187,11 @@ public class Lexer {
                                 case '*':
                                     chars.append(reader.nextChar());
                                     if (reader.hasNext()) {
-                                        char n = reader.nextChar(false);
-                                        if (n == '/') {
+                                        if (reader.nextChar(false) == '/') {
                                             chars.append(reader.nextChar());
                                             addToken(Kind.COMMENT_BLOCK);
+                                            index = i + (l == line ? 5 : 2);
                                             line = l;
-                                            index = i + 3;
                                             break loop;
                                         }
                                     }
@@ -265,6 +267,7 @@ public class Lexer {
         Kind kind = KINDS.get(value);
         if (null != kind) {
             addToken(kind, value);
+            index += value.length();
             return;
         }
         if (match(value, Kind.ID, "[A-Za-z_][A-Za-z0-9_]*")) { return; }
@@ -280,7 +283,7 @@ public class Lexer {
     private boolean match(String value, Kind kind, String regex) {
         if (value.matches(regex)) {
             addToken(kind, value);
-            index = index + value.length();
+            index += value.length();
             return true;
         }
         return false;

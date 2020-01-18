@@ -1,13 +1,17 @@
+// this is comment
+/** this is another comment */
+/** this is another comment again 
 
+*/
 newCompiler :canoe.compiler.newCompiler
 
-main :() := () {
+main :{} :() := () {
     newCompiler(OS.args()).compile()
 }
 
 print :(str :string) :native
 
-testGoto :() := () {
+testGoto :{} :() := () {
     loop {
         goto goto1
     }
@@ -33,7 +37,7 @@ add :int :(:int, :int) := (x :int, y :int) {
     return x + y
 }  
 
-testIf :(:int) := (x :int) {
+testIf :{} :(:int) := (x :int) {
     if x == 5 {
         print("x == 5")
     }
@@ -59,7 +63,7 @@ testIf :(:int) := (x :int) {
     }
 }
 
-testElseIf :(:int) := (x :int) {
+testElseIf :{} :(:int) := (x :int) {
     if x == 5 {
         print("x == 5")
     } else if x > 5 {
@@ -69,7 +73,7 @@ testElseIf :(:int) := (x :int) {
     }
 }
 
-testMatch :(:int) := (x :int) {
+testMatch :{} :(:int) := (x :int) {
     match x {
         1: print("1")
         2: print("2") with
@@ -80,7 +84,7 @@ testMatch :(:int) := (x :int) {
     }
 }
 
-testLoop :() := () {
+testLoop :{} :() := () {
     i = 0
     loop {
         i = i + 1
@@ -114,17 +118,19 @@ testLoop :() := () {
     }
 }
 
-testFor :() := () {
+testFor :{} :() := () {
     list = [1, 2, 3]
     for item, i in list {
         print("item:" + item + " i:" + i)
     }
 }
 
-True := true
-False := false
+testBool :{} :() := () {
+    True := true
+    False := false
+}
 
-testLogical :() := () {
+testLogical :{} :() := () {
     x = 5
     if x > 5 && x == 5 {
         print("x > 5 and x == 5")
@@ -137,41 +143,45 @@ testLogical :() := () {
     }
 }
 
-sub :(:int, :int) := x,y -> x - y
+sub :int :(:int, :int) := x,y -> x - y
 
 A :{
-    print1 :() := () {
+    print1 :{} :() := () {
         print("print1")
     }
-    print2 :() := () {
+    print2 :{} :() := () {
         print("print2")
     }
 }
 
-a := A{}
-a.print1()
-a.print1()..print2()
+testMethod :{} :() := () {
+    a := A{}
+    a.print1()
+    a.print1()..print2()
+}
 
-sum = 1 + 2
-difference = 1 - 2
-product = 1 * 2
-quotient = 1 / 2
-remainder = 1 % 2
+testSentence :{} :() := () {
+    sum = 1 + 2
+    difference = 1 - 2
+    product = 1 * 2
+    quotient = 1 / 2
+    remainder = 1 % 2
 
-bitAnd = 1 & 0
-bitOr = 1 | 0
-bitXor = 1 ^ 0
-bitNot = !1
-bitMoveLeft = 1 << 1
-bitMoveRight = 2 >> 1
+    bitAnd = 1 & 0
+    bitOr = 1 | 0
+    bitXor = 1 ^ 0
+    bitNot = !1
+    bitMoveLeft = 1 << 1
+    bitMoveRight = 2 >> 1
 
-real1 = 1.0
-real2 =  .1
-real2 = 1__22.1
+    real1 = 1.0
+    real2 =  .1
+    real2 = 1__22.1
 
-x = 5
-x += 1
-x -= 1
-x *= 1
-x /= 1
-x %= 1
+    x = 5
+    x += 1
+    x -= 1
+    x *= 1
+    x /= 1
+    x %= 1
+}

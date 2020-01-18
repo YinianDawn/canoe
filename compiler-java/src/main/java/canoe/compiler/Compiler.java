@@ -45,7 +45,7 @@ public class Compiler {
         Tokens tokens = Lexer.parseTokens(sourceFile);
         tokens.getTokens().forEach(t -> {
             if (t.getKind() == Kind.CR) {
-                System.err.println("CR l:" + t.getLine() + " i:" + t.getIndex() + " l:" + t.getLine() + " v:\\n ");
+                System.err.println("CR l:" + t.getLine() + " i:" + t.getIndex() + " l:" + t.getLine() + " v:\\n");
                 sleep();
             } else {
                 System.out.println(t);

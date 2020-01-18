@@ -45,7 +45,12 @@ public class Token {
 
     @Override
     public String toString() {
-        return String.format("%s l:%d i:%d l:%d v:%s ",
+        return String.format("%s l:%d i:%d l:%d v:%s",
                 kind.name(), line, index, length, (null == value ? kind.getKey() : value));
     }
+
+    public boolean next(Token next) {
+        return this.line == next.line && this.index + this.length == next.index;
+    }
+
 }
