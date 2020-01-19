@@ -1,0 +1,205 @@
+
+Span ->                                         // 空间 -> 空
+Span -> SPACES                                  // 空间 -> 空格
+SpanCR -> Span
+SpanCR -> Span CR
+SpaceCR -> SPACES
+SpaceCR -> SPACES CR
+
+// 抽象语法树
+
+AST -> PackageDeclaration ImportStatements Statements      // 文件 -> 包声明 导入声明 多语句
+
+// 包声明
+PackageDeclaration ->                           // 无声明 默认空包
+Package -> package SPACES PackageName           // 包 -> package 空格 包名
+PackageName -> ID OtherPackageName SpanCR       // 包名 -> ID 其他包名 空间换行
+OtherPackageName ->                             // 其他包名 -> 空
+OtherPackageName -> .ID OtherPackageName        // 其他包名 -> .ID 其他包名
+
+// 导入语句
+ImportStatements -> ImportStatement OtherImportStatements
+
+OtherImportStatements -> 
+OtherImportStatements -> ImportStatement OtherImportStatements
+
+ImportStatement -> 
+ImportStatement -> import SPACES ImportNameAs
+ImportStatement -> import Span (SpaceCR ImportNameAs OtherImportNameAs SpanCR) Span CR
+
+OtherImportNameAs -> 
+OtherImportNameAs -> ImportNameAs OtherImportNameAs
+
+ImportNameAs -> ImportName AsImportStatement Span CR
+
+ImportName -> ID OtherImportName
+
+OtherImportName -> 
+OtherImportName -> .ID OtherImportName
+
+AsImportStatement ->
+AsImportStatement -> SPACES as SPACES SpanCR ID
+
+
+
+// 多语句
+
+Statements ->  Statement OtherStatements         // 多语句 -> 导入语句 语句 其他语句
+
+OtherStatements ->                              // 其他语句
+OtherStatements -> SpaceCR Statement OtherStatements            // 多个语句之间必须有空格或换行
+
+
+Statement ->                                    // 空语句
+
+// 返回语句
+Statement -> return ObjectOrNot Span CR           
+
+ObjectOrNot ->
+ObjectOrNot -> SPACES Object
+
+Object -> MainObject OtherObject                   
+
+OtherObject -> 
+OtherObject -> SPACES MainObject OtherObject        // 多对象组合成一个对象返回
+OtherObject -> Span , SpanCR MainObject OtherObject   // 多对象组合成一个一维数组对象返回
+
+MainObject -> Expression                            // 表达式对象 通过计算得到的 或者 常量
+MainObject -> { SpaceCR Statements }                // 通过{}组合一个新对象
+MainObject -> [ Span NumberOrNot Span] Span { SpanCR Object SpanCR }  // 可以构建多维数组
+
+NumberOrNot ->
+NumberOrNot -> number
+
+// 表达式
+Expression -> number                                // 数字常量             数字
+Expression -> string                                // 字符串常量           字符串
+Expression -> (Expression)                          // 加小括号             (
+Expression -> LeftOp Span Expression                // 单目运算符           ！
+Expression -> Expression OtherExperssion            // 双目运算符
+Expression -> ObjectExpression                      // 变量 或者 函数调用    字符串 ID
+Expression -> LambdaExpression                      // Lambda表达式         ( 或 ID
+
+LeftOp ->
+LeftOp -> !
+
+// 双目运算符 注意优先级
+OtherExperssion ->
+OtherExperssion -> Span Op SpanCR Expression OtherExperssion
+
+Op -> ==
+Op -> !=
+Op -> >
+Op -> >=
+Op -> <
+Op -> <=
+
+Op -> +
+Op -> -
+Op -> *
+Op -> /
+Op -> %
+
+Op -> &&
+Op -> ||
+
+Op -> &
+Op -> |
+Op -> ^
+Op -> <<
+Op -> >>
+
+// 变量 或者 函数调用
+ObjectExpression -> ID OtherObjectExperssion
+
+OtherObjectExperssion ->
+OtherObjectExperssion -> Span . SpanCR ID OtherObjectExperssion
+OtherObjectExperssion -> Span . SpanCR ID Span (SpanCR InputParams) OtherObjectExperssion
+
+// 输入参数
+InputParams -> InputParam OtherInputParam
+InputParam -> 
+InputParam -> MainObject
+OtherInputParam -> span, SpanCR InputParam OtherInputParam
+
+// Lambda表达式
+LambdaExpression -> LambdaParams Span -> SpanCR LambdaStatements
+
+LambdaParams -> ()
+LambdaParams -> InputParams
+LambdaParams -> (SpanCR InputParams)
+
+LambdaStatements -> Expression
+LambdaStatements -> {SpanCR Statements}
+
+
+// 自增自减语句
+
+// 运算赋值语句
+
+
+
+
+
+
+Statement -> Id Span Descs Span Assign Span Value SpaceCR       // 声明语句 约束和值 可以换行
+Statement -> ObjectExpression
+
+
+Id ->                                                           // id
+Id -> ID OtherId    
+
+OtherId ->
+OtherId -> SpanCR . SpanCR ID OtherId                                       
+
+Assign ->                                                       // 赋值符号
+Assign -> =
+Assign -> :=
+
+Descs ->  Desc OtherDescs                                       // 约束
+
+OtherDescs ->
+OtherDescs -> SpanCR Desc OtherDescs                            // 约束之间允许换行
+
+Desc ->                                                         // 单个约束
+Desc -> :open                                                   // 可见性
+Desc -> :native                                                 // 本地方法或变量
+Desc -> :goto                                                   // goto标签
+Desc -> :enum                                                   // 枚举类
+Desc -> :Id                                                     // 指定类型 
+Desc -> :{SpanCR Statements}                                    // 自定义类型  这里貌似变成超集了 
+Desc -> :(SpanCR FunctionParams)                                // 方法约束 必须指明参数类型列表
+
+FunctionParams -> FunctionParam OtherFunctionParams
+
+OtherFunctionParams ->
+OtherFunctionParams -> SpanCR , SpanCR FunctionParam               
+
+FunctionParam ->
+FunctionParam -> IDNot VariableLength Span FunctionParamDesc
+
+IDNot ->
+IDNot -> ID
+
+VariableLength -> 
+VariableLength -> ...                                           // 方法参数列表最后一个允许变长参数
+
+FunctionParamDesc ->                                     // 需要约束的时候必须写 不然用:{} 只有,不好
+FunctionParamDesc -> :{SpanCR Statements}
+FunctionParamDesc -> :Id
+FunctionParamDesc -> = SpanCR Constant
+
+Constant -> Number                                              // 方法参数列表允许默认值
+Constant -> String
+Constant -> Enum
+
+Value -> 
+Value -> (SpanCR FunctionParams) SpanCR {SpanCR Statements}
+Value -> {SpanCR Statements}                                    // 这是省略方法参数列表的()
+Value -> Expression
+Value -> Lambda
+
+
+
+
+

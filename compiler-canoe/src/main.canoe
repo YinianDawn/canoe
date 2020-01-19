@@ -1,15 +1,32 @@
 // this is comment
 /** this is another comment */
+package main
 /** this is another comment again 
 
 */
+
+import abc.canoe1 as  canoe1 
+
+import (
+    abc.abc as a  
+)
+
+// return语句
+
+return {
+
+} 
+return []{}
+return [1]{}
+return return11[1]{}
+
 newCompiler :canoe.compiler.newCompiler
 
 main :{} :() := () {
     newCompiler(OS.args()).compile()
 }
 
-print :(str :string) :native
+print :(str :string, para... :ToString) :native
 
 testGoto :{} :() := () {
     loop {
@@ -185,3 +202,19 @@ testSentence :{} :() := () {
     x /= 1
     x %= 1
 }
+
+testReturn1 :{:int, :string} :() := () {
+    return 1, "123"
+}
+
+return1, return2 := testReturn1()
+
+testReturn2 :{xxx:int, yyy:string} :() := () {
+    xxx = 1
+    yyy = "yyy"
+    return 
+}
+
+xxx, yy: yyy := testReturn2()  
+
+// 123

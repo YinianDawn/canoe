@@ -1,9 +1,12 @@
 package canoe.compiler;
 
+import canoe.ast.AST;
 import canoe.lexis.Kind;
 import canoe.lexis.Lexer;
 import canoe.lexis.Tokens;
+import canoe.parser.Parser;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -43,17 +46,31 @@ public class Compiler {
 
     private static void compile(SourceFile sourceFile, Options options) {
         Tokens tokens = Lexer.parseTokens(sourceFile);
-        tokens.getTokens().forEach(t -> {
-            if (t.getKind() == Kind.CR) {
-                System.err.println("CR l:" + t.getLine() + " i:" + t.getIndex() + " l:" + t.getLine() + " v:\\n");
-                sleep();
-            } else {
-                System.out.println(t);
-                sleep();
-            }
-        });
+//        printTokens(tokens);
+        AST ast = Parser.parseAst(tokens);
+        printAST(ast);
+
+    }
+    private static void printAST(AST ast) {
+        System.out.println("----------------------> AST: package:" + ast.getPackageName() + " file:" + ast.getFileName());
+
+        System.out.println("print other things");
     }
 
+    public static void printTokens(Tokens tokens) {
+        System.out.println("----------------------> Tokens: " + tokens.getFileName());
+        List<String> tips = new LinkedList<>();
+        tokens.getTokens().forEach(t -> {
+            if (t.getKind() == Kind.CR) {
+                tips.forEach(System.out::println);
+                tips.clear();
+                System.err.println(String.format("[%d:%d:%d] CR \\n", t.getLine(), t.getIndex(), t.getLength()));
+            } else {
+                tips.add(String.format("[%d:%d:%d] %s %s", t.getLine(), t.getIndex(), t.getLength(), t.getKind().name(), t.getValue()));
+            }
+        });
+        tips.forEach(System.out::println);
+    }
 
     private static void sleep() {
         try {

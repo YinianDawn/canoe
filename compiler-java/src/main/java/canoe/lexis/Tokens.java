@@ -19,4 +19,8 @@ public class Tokens {
     public List<Token> getTokens() {
         return tokens;
     }
+
+    public String getFileName() {
+        return fileName;
+    }
 }

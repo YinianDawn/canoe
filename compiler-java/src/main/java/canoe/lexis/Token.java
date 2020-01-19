@@ -23,7 +23,7 @@ public class Token {
         this.length = length;
     }
 
-    int getLength() {
+    public int getLength() {
         return length;
     }
 
@@ -32,7 +32,7 @@ public class Token {
     }
 
     public String getValue() {
-        return value;
+        return null == value ? kind.getKey() : value;
     }
 
     public int getLine() {
@@ -45,12 +45,21 @@ public class Token {
 
     @Override
     public String toString() {
-        return String.format("%s l:%d i:%d l:%d v:%s",
-                kind.name(), line, index, length, (null == value ? kind.getKey() : value));
+        return String.format("%s [%d:%d:%d] %s", kind.name(), line, index, length, getValue());
     }
 
     public boolean next(Token next) {
         return this.line == next.line && this.index + this.length == next.index;
     }
 
+    public boolean comment() {
+        return this.kind == Kind.COMMENT_LINE || this.kind == Kind.COMMENT_BLOCK;
+    }
+
+    public boolean isSpaces() {
+        return this.kind == Kind.SPACES;
+    }
+    public boolean isCR() {
+        return this.kind == Kind.CR;
+    }
 }

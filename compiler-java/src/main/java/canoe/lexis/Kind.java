@@ -9,6 +9,9 @@ public enum Kind {
 
     PACKAGE("package"),
 
+    IMPORT("import"),
+    AS("as"),
+
     // 可见性
     OPEN("open"),
 
@@ -58,7 +61,7 @@ public enum Kind {
     // 布尔运算
     LOGICAL_AND("&&"),
     LOGICAL_OR("||"),
-    LOGICAL_NOT("!"),
+//    LOGICAL_NOT("!"),
 
     EQ("=="),
     NE("!="),
@@ -77,6 +80,7 @@ public enum Kind {
     // 符号
     DOT("."),
     DOT_DOT(".."),
+    DOT_DOT_DOT("..."),
     CR("\n"),
 
     LB("{"),
@@ -131,7 +135,10 @@ public enum Kind {
     /** 字符串 \"[.\n]*\" */ STRING(""),
 
     /** 注释 // */    COMMENT_LINE(""),
-    /** 注释 /* */    COMMENT_BLOCK("");
+    /** 注释 /* */    COMMENT_BLOCK(""),
+
+    SPACES("<SPACES>"),
+    EOF("<EOF>");
 
     private String key;
 

@@ -14,7 +14,7 @@ import static canoe.util.Util.panic;
  */
 public class Lexer {
 
-    private static HashMap<String, Kind> KINDS;
+    public static HashMap<String, Kind> KINDS;
 
     static {
         KINDS = new HashMap<>(97);
@@ -88,7 +88,11 @@ public class Lexer {
                     break;
                 case DOT:
                     if (next.getKind() == Kind.DOT) {
-                        if (merge(Kind.DOT_DOT, token, next, "")) { i++; }
+                        Token n = i < size - 2 ? tokens.get(i + 2) : null;
+                        if (null != n && n.getKind() == Kind.DOT && token.next(next) && next.next(n)) {
+                            this.tokens.add(new Token(Kind.DOT_DOT_DOT, null, token.getLine(), token.getIndex(), 3));
+                            i++; i++;
+                        } else if (merge(Kind.DOT_DOT, token, next, "")) { i++; }
                         continue;
                     } else if (next.getKind() == Kind.NUMBER_DECIMAL) {
                         if (token.next(next)) {
@@ -115,9 +119,11 @@ public class Lexer {
                 case MUL: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.MUL_ASSIGN, token, next, "")) { i++;} continue; } break;
                 case DIV: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.DIV_ASSIGN, token, next, "")) { i++;} continue; } break;
                 case MOD: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.MOD_ASSIGN, token, next, "")) { i++;} continue; } break;
-                case CR:
-                    while (next.getKind() == Kind.CR) {
+                case SPACES:
+                    // 合并多个空格
+                    while (next.getKind() == Kind.SPACES) {
                         i++;
+                        token = new Token(token.getKind(), null, token.getLine(), token.getIndex(), token.getLength() + 1);
                         if (i == size - 1) { break; }
                         next = tokens.get(i + 1);
                     }
@@ -127,14 +133,18 @@ public class Lexer {
             this.tokens.add(token);
         }
 
-        Token thisLast = this.tokens.get(this.tokens.size() - 1);
-        Token last = tokens.get(size - 1);
-        if (thisLast != last && !(thisLast.getKind() == Kind.CR && last.getKind() == Kind.CR)) {
+        if (this.tokens.get(this.tokens.size() - 1) != tokens.get(size - 1)) {
             this.tokens.add(tokens.get(size - 1));
         }
         while (0 < this.tokens.size() && this.tokens.get(0).getKind() == Kind.CR) {
             this.tokens = this.tokens.subList(1, this.tokens.size());
         }
+        Token last = this.tokens.get(this.tokens.size() - 1);
+        if (last.getKind() != Kind.CR) {
+            last = new Token(Kind.CR, null, last.getLine(), last.getIndex() + last.getLength(), 1);
+            this.tokens.add(last);
+        }
+        this.tokens.add(new Token(Kind.EOF, null, last.getLine(), last.getIndex() + last.getLength(), 5));
     }
 
     private boolean merge(Kind kind, Token t1, Token t2, String join) {
@@ -158,14 +168,14 @@ public class Lexer {
             case '\n': addToken(); addToken(Kind.CR, null); newLine(); break;
 
             case ' ':
-            case '\t': addToken(); index++; break;
+            case '\t': addToken(); addToken(Kind.SPACES, null); index++; break;
 
 
             case '\"': addToken(); index++;
                 while (reader.hasNext()) {
                     char next = reader.nextChar(false);
                     if (next == '\"') { reader.nextChar(); break; }
-                    if (next == '\r' || next == '\n') { panic("string must on single line."); }
+                    if (next == '\r' || next == '\n') { panic("string must on single line.", sourceFile.getFileName(), new Token(Kind.STRING, null, line, index, chars.length())); }
                     chars.append(reader.nextChar());
                 }
                 addToken(Kind.STRING, chars.toString());
@@ -211,7 +221,7 @@ public class Lexer {
                             i++;
                         }
                         if (0 < chars.length()) {
-                            panic("chars can not remain: " + chars.toString());
+                            panic("chars can not remain: " + chars.toString(), sourceFile.getFileName(), tokens.get(tokens.size() - 1));
                         }
                         break;
                     } else if (next == '/') {
@@ -277,7 +287,7 @@ public class Lexer {
         if (match(value, Kind.NUMBER_BINARY, "0(b|B)[0-1_]*")) { return; }
         if (match(value, Kind.NUMBER_OCTAL, "0[1-7][0-7_]*")) { return; }
 
-        panic("can not identify word: " + value);
+        panic("can not identify word: " + value, sourceFile.getFileName(), new Token(Kind.STRING, null, line, index, value.length()));
     }
 
     private boolean match(String value, Kind kind, String regex) {
