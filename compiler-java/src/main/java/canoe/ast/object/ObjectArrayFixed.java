@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @author dawn
  */
-public class ObjectArray extends Object {
+public class ObjectArrayFixed implements Object {
 
     private Token id;
 
@@ -21,16 +21,24 @@ public class ObjectArray extends Object {
 
     private List<Object> objects;
 
+    private List<Token> commas;
+
     private Token rb;
 
 
-    public ObjectArray(Token id, Token ls, Token number, Token rs, Token lb, List<Object> objects, Token rb) {
+    public ObjectArrayFixed(Token id, Token ls, Token number, Token rs, Token lb, List<Object> objects, List<Token> commas, Token rb) {
         this.id = id;
         this.ls = ls;
         this.number = number;
         this.rs = rs;
         this.lb = lb;
         this.objects = objects;
+        this.commas = commas;
         this.rb = rb;
+    }
+
+    public ObjectArrayFixed(List<Object> objects, List<Token> commas) {
+        this.objects = objects;
+        this.commas = commas;
     }
 }

@@ -6,7 +6,7 @@ import canoe.lexis.Token;
 /**
  * @author dawn
  */
-public class StatementReturn extends Statement {
+public class StatementReturn implements Statement {
     private Token returnToken;
     private Object object;
 

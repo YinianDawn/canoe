@@ -38,6 +38,7 @@ public enum Kind {
     MATCH("match"),
     IN("in"),
     WITH("with"),
+    COLON_WITH(":with"),
     LOOP("loop"),
     BREAK("break"),
     CONTINUE("continue"),
@@ -119,6 +120,12 @@ public enum Kind {
     MUL_ASSIGN("*="),
     DIV_ASSIGN("/="),
     MOD_ASSIGN("%="),
+
+    BIT_AND_ASSIGN("&="),
+    BIT_OR_ASSIGN("|="),
+    BIT_XOR_ASSIGN("^="),
+    BIT_MOVE_LEFT_ASSIGN("<<="),
+    BIT_MOVE_RIGHT_ASSIGN(">>="),
 
     // ================ 自定义 ================
 

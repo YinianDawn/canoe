@@ -11,16 +11,112 @@ import (
     abc.abc as a  
 )
 
+// match语句
+
+match :with x {
+    1: break
+    >2: {}
+    else: x
+}
+
+x += match :with x {
+    1: break
+    >2: {}
+    else: x
+}
+
+// 判断语句
+
+x += if x > 5 {
+    x + y
+} else {
+    6
+}
+
+if x > 5 {
+    x + y
+}
+if x > 5 {
+    x + y
+} else if x > 6{
+    x
+}
+if x > 5 {
+    x + y
+} else {
+    y
+}
+if x > 5 {
+    x + y
+} else if x > 6{
+    x
+} else if x > 5 {
+    x + y
+} else {
+    y
+}
+
+// 运算赋值语句
+
+a += 1
+a -= 1
+
+
+// 自增自减语句 一定要是对有名字的变量进行自增自减
+
+a++
+a.a--
+a.a(true, 1).b++
+a.a(1).b(false, 2).c   ++         // error
+
+// 循环语句
+
+loop :loop1 {
+
+}
+
+loop {
+
+}
+
+for :loop1 item in range(3) {
+
+}
+for item,i in range(3) {
+    
+}
+
+
+
+
 // return语句
 
 return {
 
 } 
+return { return {} } { } { } 
+
 return []{}
 return [1]{}
-return return11[1]{}
+return return11[1]{{},{}}
 
-newCompiler :canoe.compiler.newCompiler
+return true
+return 1
+return "1"
+return (1 )
+return !true
+return 1 + 1
+return a++++
+return x -> x + 1
+return x,y -> {
+    return x + y
+}
+
+
+
+
+
+newCompiler,newCompiler,newCompiler,newCompiler :canoe.compiler.newCompiler
 
 main :{} :() := () {
     newCompiler(OS.args()).compile()

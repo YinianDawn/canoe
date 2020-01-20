@@ -1,4 +1,4 @@
-package canoe.ast.object;
+package canoe.ast.statement.desc;
 
 import canoe.ast.statement.Statements;
 import canoe.lexis.Token;
@@ -6,7 +6,9 @@ import canoe.lexis.Token;
 /**
  * @author dawn
  */
-public class ObjectStruct implements Object {
+public class DescStatements implements Desc {
+
+    private Token colon;
 
     private Token lb;
 
@@ -14,7 +16,8 @@ public class ObjectStruct implements Object {
 
     private Token rb;
 
-    public ObjectStruct(Token lb, Statements statements, Token rb) {
+    public DescStatements(Token colon, Token lb, Statements statements, Token rb) {
+        this.colon = colon;
         this.lb = lb;
         this.statements = statements;
         this.rb = rb;

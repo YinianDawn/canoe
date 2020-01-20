@@ -17,7 +17,7 @@ public class Util {
 
     public static void panic(String tip, String fileName, Token token) {
         show(tip, fileName, token);
-        throw new Error(tip);
+        throw new Error(tip + (null != token ? token.toString() : ""));
     }
 
     private static void show(String tip, String fileName, Token token) {
@@ -49,9 +49,10 @@ public class Util {
                             sb.append('\t' == content.charAt(i) ? '\t' : ' ');
                         }
                         int max = length;
-                        if (content.length() + 1 < index + max) {
-                            max = content.length() + 1 - index;
+                        if (content.length() + 2 < index + max) {
+                            max = content.length() + 2 - index;
                         }
+//                        if (max <= 0) { max = 1; }
                         for (int i = 0; i < max; i++) {
                             sb.append('↑');
                         }

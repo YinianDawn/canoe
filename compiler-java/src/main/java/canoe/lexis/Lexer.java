@@ -58,67 +58,95 @@ public class Lexer {
 
         int size = tokens.size();
         Token next;
+        Token t3;
         for (int i = 0; i < size - 1; i++) {
             Token token = tokens.get(i);
             next = tokens.get(i + 1);
+            t3 = i < size - 2 ? tokens.get(i + 2) : null;
             switch (token.getKind()) {
                 case COLON:
                     switch (next.getKind()) {
-                        case OPEN: if (merge(Kind.COLON_OPEN, token, next, "")) { i++;} continue;
-                        case NATIVE: if (merge(Kind.COLON_NATIVE, token, next, "")) { i++;} continue;
-                        case GOTO: if (merge(Kind.COLON_GOTO, token, next, "")) { i++;} continue;
-                        case ENUM: if (merge(Kind.COLON_ENUM, token, next, "")) { i++;} continue;
-                        case ASSIGN: if (merge(Kind.ASSIGN_FORCE, token, next, "")) { i++;} continue;
+                        case OPEN: if (merge(Kind.COLON_OPEN, token, next, t3)) { i++; continue;} break;
+                        case NATIVE: if (merge(Kind.COLON_NATIVE, token, next, t3)) { i++; continue;} break;
+                        case GOTO: if (merge(Kind.COLON_GOTO, token, next, t3)) { i++; continue;} break;
+                        case ENUM: if (merge(Kind.COLON_ENUM, token, next, t3)) { i++; continue;} break;
+                        case ASSIGN: if (merge(Kind.ASSIGN_FORCE, token, next, t3)) { i++; continue;} break;
+                        case WITH: if (merge(Kind.COLON_WITH, token, next, t3)) { i++; continue;} break;
                         default:
                     } break;
-                case ELSE: if (next.getKind() == Kind.IF) { if (merge(Kind.ELSE_IF, token, next, " ")) { i++;} continue; } break;
-                case BIT_AND: if (next.getKind() == Kind.BIT_AND) { if (merge(Kind.LOGICAL_AND, token, next, "")) { i++;} continue; } break;
-                case BIT_OR: if (next.getKind() == Kind.BIT_OR) { if (merge(Kind.LOGICAL_OR, token, next, "")) { i++;} continue; } break;
-                case BIT_NOT: if (next.getKind() == Kind.EQ) { if (merge(Kind.NE, token, next, "")) { i++;} continue; } break;
-                case ASSIGN:
-                    if (next.getKind() == Kind.ASSIGN) { if (merge(Kind.EQ, token, next, "")) { i++;} continue; }
+                case ELSE:
+                    if (next.getKind() == Kind.SPACES && next.getLength() == 1) {
+                        Token n = i < size - 2 ? tokens.get(i + 2) : null;
+                        if (null != n && n.getKind() == Kind.IF) {
+                            this.tokens.add(new Token(Kind.ELSE_IF, null, token.getLine(), token.getIndex(), 7));
+                            i++; i++; continue;
+                        }
+                    }
                     break;
+                case BIT_AND:
+                    if (next.getKind() == Kind.BIT_AND) { if (merge(Kind.LOGICAL_AND, token, next, t3)) { i++; continue;} }
+                    if (next.getKind() == Kind.ASSIGN) { if (merge(Kind.BIT_AND_ASSIGN, token, next, t3)) { i++; continue;} }
+                    break;
+                case BIT_OR:
+                    if (next.getKind() == Kind.BIT_OR) { if (merge(Kind.LOGICAL_OR, token, next, t3)) { i++; continue;} }
+                    if (next.getKind() == Kind.ASSIGN) { if (merge(Kind.BIT_OR_ASSIGN, token, next, t3)) { i++; continue;} }
+                    break;
+                case BIT_XOR: if (next.getKind() == Kind.ASSIGN) { if (merge(Kind.BIT_XOR_ASSIGN, token, next, t3)) { i++; continue;} }break;
+                case BIT_NOT: if (next.getKind() == Kind.EQ) { if (merge(Kind.NE, token, next, t3)) { i++; continue;} } break;
+                case ASSIGN: if (next.getKind() == Kind.ASSIGN) { if (merge(Kind.EQ, token, next, t3)) { i++; continue;} }break;
                 case GT:
-                    if (next.getKind() == Kind.ASSIGN) { if (merge(Kind.GE, token, next, "")) { i++;} continue; }
-                    if (next.getKind() == Kind.GT) { if (merge(Kind.BIT_MOVE_RIGHT, token, next, "")) { i++;} continue; }
+                    if (next.getKind() == Kind.ASSIGN) { if (merge(Kind.GE, token, next, t3)) { i++; continue;} }
+                    if (next.getKind() == Kind.GT) {
+                        Token n = i < size - 2 ? tokens.get(i + 2) : null;
+                        if (null != n && n.getKind() == Kind.ASSIGN && token.next(next) && next.next(n)) {
+                            this.tokens.add(new Token(Kind.BIT_MOVE_RIGHT_ASSIGN, null, token.getLine(), token.getIndex(), 3));
+                            i++; i++; continue;
+                        } else if (merge(Kind.BIT_MOVE_RIGHT, token, next, t3)) { i++; continue; }
+                    }
                     break;
                 case LT:
-                    if (next.getKind() == Kind.ASSIGN) { if (merge(Kind.LE, token, next, "")) { i++;} continue; }
-                    if (next.getKind() == Kind.LT) { if (merge(Kind.BIT_MOVE_LEFT, token, next, "")) { i++;} continue; }
+                    if (next.getKind() == Kind.ASSIGN) { if (merge(Kind.LE, token, next, t3)) { i++; continue;} }
+                    if (next.getKind() == Kind.LT) {
+                        Token n = i < size - 2 ? tokens.get(i + 2) : null;
+                        if (null != n && n.getKind() == Kind.ASSIGN && token.next(next) && next.next(n)) {
+                            this.tokens.add(new Token(Kind.BIT_MOVE_LEFT_ASSIGN, null, token.getLine(), token.getIndex(), 3));
+                            i++; i++; continue;
+                        } else if (merge(Kind.BIT_MOVE_LEFT, token, next, t3)) { i++; continue; }
+                    }
                     break;
                 case DOT:
                     if (next.getKind() == Kind.DOT) {
                         Token n = i < size - 2 ? tokens.get(i + 2) : null;
                         if (null != n && n.getKind() == Kind.DOT && token.next(next) && next.next(n)) {
                             this.tokens.add(new Token(Kind.DOT_DOT_DOT, null, token.getLine(), token.getIndex(), 3));
-                            i++; i++;
-                        } else if (merge(Kind.DOT_DOT, token, next, "")) { i++; }
-                        continue;
+                            i++; i++; continue;
+                        } else if (merge(Kind.DOT_DOT, token, next, t3)) { i++; continue; }
                     } else if (next.getKind() == Kind.NUMBER_DECIMAL) {
                         if (token.next(next)) {
                             Token last = null;
-                            if (1 < i) {
-                                last = tokens.get(i - 1);
-                            }
+                            if (1 < i) { last = tokens.get(i - 1); }
                             if (null != last && last.getKind() == Kind.NUMBER_DECIMAL && last.next(token)) {
                                 this.tokens.remove(this.tokens.size() - 1);
                                 this.tokens.add(new Token(Kind.REAL_DECIMAL, last.getValue() + "." + next.getValue(), last.getLine(), last.getIndex(), last.getLength() + 1 + next.getLength()));
                             } else {
                                 this.tokens.add(new Token(Kind.REAL_DECIMAL, "." + next.getValue(), token.getLine(), token.getIndex(), 1 + next.getLength()));
                             }
-                            i++;
-                            continue;
+                            i++; continue;
                         }
                     }
                     break;
-                case ADD: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.ADD_ASSIGN, token, next, "")) { i++;} continue; } break;
-                case SUB:
-                    if (next.getKind() == Kind.GT) {  if (merge(Kind.LAMBDA, token, next, "")) { i++;}  continue; }
-                    if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.SUB_ASSIGN, token, next, "")) { i++;}  continue; }
+                case ADD:
+                    if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.ADD_ASSIGN, token, next, t3)) { i++; continue;} }
+                    if (next.getKind() == Kind.ADD) {  if (merge(Kind.ADD_ADD, token, next, t3)) { i++; continue;} }
                     break;
-                case MUL: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.MUL_ASSIGN, token, next, "")) { i++;} continue; } break;
-                case DIV: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.DIV_ASSIGN, token, next, "")) { i++;} continue; } break;
-                case MOD: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.MOD_ASSIGN, token, next, "")) { i++;} continue; } break;
+                case SUB:
+                    if (next.getKind() == Kind.GT) {  if (merge(Kind.LAMBDA, token, next, t3)) { i++; continue;} }
+                    if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.SUB_ASSIGN, token, next, t3)) { i++; continue;} }
+                    if (next.getKind() == Kind.SUB) {  if (merge(Kind.SUB_SUB, token, next, t3)) { i++; continue;} }
+                    break;
+                case MUL: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.MUL_ASSIGN, token, next, t3)) { i++; continue;} } break;
+                case DIV: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.DIV_ASSIGN, token, next, t3)) { i++; continue;} } break;
+                case MOD: if (next.getKind() == Kind.ASSIGN) {  if (merge(Kind.MOD_ASSIGN, token, next, t3)) { i++; continue;} } break;
                 case SPACES:
                     // 合并多个空格
                     while (next.getKind() == Kind.SPACES) {
@@ -147,12 +175,13 @@ public class Lexer {
         this.tokens.add(new Token(Kind.EOF, null, last.getLine(), last.getIndex() + last.getLength(), 5));
     }
 
-    private boolean merge(Kind kind, Token t1, Token t2, String join) {
-        if (kind.getKey().equals(t1.getKind().getKey() + join + t2.getKind().getKey()) && t1.getLine() == t2.getLine()) {
+    private boolean merge(Kind kind, Token t1, Token t2, Token t3) {
+        if (kind.getKey().equals(t1.getKind().getKey() + t2.getKind().getKey())
+                && t1.getLine() == t2.getLine() && t3.getKind() != Kind.DOT) {
             int i1 = t1.getIndex();
             int i2 = t2.getIndex();
             int range = i2 - i1 - t1.getLength();
-            if (range == join.length()) {
+            if (range == 0) {
                 tokens.add(new Token(kind, null, t1.getLine(), t1.getIndex(), kind.getKey().length()));
                 return true;
             }

@@ -71,6 +71,32 @@ class TokenReader {
         }
     }
 
+    Token nextTokenSkipSpaceOrCR() {
+        int index = this.index + 1;
+        Token token = tokens.get(index);
+        while (token.isSpaces() || token.isCR()) {
+            index++;
+            if (size <= index) {
+                return null;
+            }
+            token = tokens.get(index);
+        }
+        return token;
+    }
+
+    Token nextTokenSkipSpace() {
+        int index = this.index + 1;
+        Token token = tokens.get(index);
+        while (token.isSpaces()) {
+            index++;
+            if (size <= index) {
+                return null;
+            }
+            token = tokens.get(index);
+        }
+        return token;
+    }
+
     Token thisToken() {
         if (index < 0 || size <= index) {
             return null;

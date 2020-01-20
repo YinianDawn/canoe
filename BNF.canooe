@@ -66,22 +66,28 @@ OtherObject -> Span , SpanCR MainObject OtherObject   // 多对象组合成一�
 
 MainObject -> Expression                            // 表达式对象 通过计算得到的 或者 常量
 MainObject -> { SpaceCR Statements }                // 通过{}组合一个新对象
-MainObject -> [ Span NumberOrNot Span] Span { SpanCR Object SpanCR }  // 可以构建多维数组
+MainObject -> Id Span [ SpanCR NumberOrNot SpanCR ] Span { SpanCR Object SpanCR }  // 可以构建多维数组
 
 NumberOrNot ->
 NumberOrNot -> number
 
 // 表达式
-Expression -> number                                // 数字常量             数字
-Expression -> string                                // 字符串常量           字符串
+Expression -> Bool                                  // 布尔常量             布尔值
+Expression -> Number                                // 数字常量             数字
+Expression -> String                                // 字符串常量           字符串
 Expression -> (Expression)                          // 加小括号             (
-Expression -> LeftOp Span Expression                // 单目运算符           ！
+Expression -> LeftOp Span Expression                // 左单目运算符           ！+ -
+Expression -> Expression Span RightOp               // 右单目运算符           ++ --
 Expression -> Expression OtherExperssion            // 双目运算符
 Expression -> ObjectExpression                      // 变量 或者 函数调用    字符串 ID
 Expression -> LambdaExpression                      // Lambda表达式         ( 或 ID
 
-LeftOp ->
 LeftOp -> !
+LeftOp -> +
+LeftOp -> -
+
+RightOp -> ++
+RightOp -> --
 
 // 双目运算符 注意优先级
 OtherExperssion ->
@@ -133,18 +139,73 @@ LambdaStatements -> Expression
 LambdaStatements -> {SpanCR Statements}
 
 
+// 循环语句
+Statement -> loop Span Mark SpaceCR { SpaceCR Statements SpaceCR }          
+Mark -> 
+Mark -> :ID
+
+Statement -> for Span Mark Spaces ID OtherForItem Space in Expression SpaceCR { SpaceCR Statements SpaceCR }          
+OtherForItem -> 
+OtherForItem -> , Span Id
+
 // 自增自减语句
+
+Statement -> Id Span RightOp
+
+Id -> ID OtherId
+OtherId ->
+OtherId -> . SpaceCR ID OtherId
+OtherId -> . SpaceCR (SpanCR InputParams) Span . ID OtherId
 
 // 运算赋值语句
 
+Statement -> Id Span OpAssign SpaceCR Expression
+
+OpAssign -> +=
+OpAssign -> -=
+OpAssign -> *=
+OpAssign -> /=
+OpAssign -> %=
+OpAssign -> >>=
+OpAssign -> <<=
+OpAssign -> &=
+OpAssign -> |=
+OpAssign -> ^=
 
 
 
+// 判断语句
+
+Statement -> if Space SpaceCR Expression SpaceCR { SpaceCR Statements } OtherIf
+OtherIf -> 
+OtherIf -> SpaceCR Span else if SpaceCR Expression SpaceCR { SpaceCR Statements } OtherIf
+OtherIf -> SpaceCR Span else SpaceCR { SpaceCR Statements }
+
+Statement -> match Space WithDesc SpaceCR Expression SpaceCR { SpaceCR MatchStatements }
+WithDesc ->
+WithDesc -> :with
+MatchStatements -> MatchStatement OtherMatchStatement
+
+MatchStatement -> Match Span : SpanCR { Statements } EndMath
+
+EndMath ->
+EndMath -> with
+EndMath -> break
+
+OtherMatchStatement -> 
+OtherMatchStatement -> MatchStatement OtherMatchStatement
+OtherMatchStatement -> else Span : SpanCR { Statements }
+
+Match -> MatchOp Expression
+
+MatchOp -> in
+MatchOp -> >
 
 
-Statement -> Id Span Descs Span Assign Span Value SpaceCR       // 声明语句 约束和值 可以换行
-Statement -> ObjectExpression
 
+// 声明语句 约束和值 可以换行
+
+Statement -> Id Span Descs Span Assign Span Value SpaceCR       
 
 Id ->                                                           // id
 Id -> ID OtherId    
