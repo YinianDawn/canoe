@@ -1,7 +1,7 @@
-package canoe.ast.expression;
+package canoe2.ast.expression;
 
-import canoe.ast.statement.StatementIf;
-import canoe.lexis.Kind;
+import canoe2.ast.statement.StatementIf;
+import canoe2.lexis.Kind;
 
 /**
  * @author dawn

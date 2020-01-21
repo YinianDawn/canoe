@@ -1,4 +1,4 @@
-package canoe.ast.object;
+package canoe2.ast.object;
 
 /**
  * @author dawn

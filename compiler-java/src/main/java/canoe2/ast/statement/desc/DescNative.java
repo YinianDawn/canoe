@@ -1,6 +1,6 @@
-package canoe.ast.statement.desc;
+package canoe2.ast.statement.desc;
 
-import canoe.lexis.Token;
+import canoe2.lexis.Token;
 
 /**
  * @author dawn

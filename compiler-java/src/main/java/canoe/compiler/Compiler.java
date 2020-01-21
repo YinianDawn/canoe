@@ -1,11 +1,11 @@
 package canoe.compiler;
 
+import canoe.ast.AST;
 import canoe.lexer.Lexer;
 import canoe.lexer.Tokens;
+import canoe.parser.Parser;
 
 import java.util.List;
-
-import static canoe.util.PrintUtil.print;
 
 /**
  * @author dawn
@@ -43,8 +43,8 @@ public class Compiler {
 
     private static void compile(SourceFile sourceFile) {
         Tokens tokens = Lexer.parseTokens(sourceFile);
-        print(tokens);
-//        AST ast = Parser.parseAst(tokens);
+//        print(tokens);
+        AST ast = Parser.parseAST(tokens);
 //        printAST(ast);
 
     }

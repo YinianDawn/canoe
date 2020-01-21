@@ -1,7 +1,7 @@
-package canoe.ast.statement.desc;
+package canoe2.ast.statement.desc;
 
-import canoe.ast.expression.Expression;
-import canoe.lexis.Token;
+import canoe2.ast.expression.Expression;
+import canoe2.lexis.Token;
 
 /**
  * @author dawn

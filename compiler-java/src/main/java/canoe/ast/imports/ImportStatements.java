@@ -1,4 +1,4 @@
-package canoe.ast.import_statement;
+package canoe2.ast.import_statement;
 
 import java.util.List;
 

@@ -17,14 +17,14 @@ public class Token {
 
     public final int size;
 
-    Token(Kind kind, String value, int line, int position, int size) {
+    public Token(Kind kind, String value, int line, int position, int size) {
         this.kind = kind;
         if (null == kind) {
-            panic("kind can not be null.");
+            panic("is can not be null.");
         }
         this.value = value;
         if (null == value && null == kind.getSign()) {
-            panic("both value and sign of kind are null, can not be.");
+            panic("both value and sign of is are null, can not be.");
         }
         this.line = line;
         if (line < 1) {
@@ -76,10 +76,20 @@ public class Token {
         return this.kind == Kind.CR;
     }
 
+    public boolean isSpacesOrCR() {
+        return this.kind == Kind.SPACES || this.kind == Kind.CR;
+    }
+
     public boolean isEOF() { return this.kind == Kind.EOF; }
 
-    public boolean kind(Kind kind) {
+    public boolean isDot() { return this.kind == Kind.DOT; }
+
+    public boolean is(Kind kind) {
         return this.kind == kind;
+    }
+
+    public boolean not(Kind kind) {
+        return this.kind != kind;
     }
 
 }

@@ -1,6 +1,6 @@
-package canoe.ast.object;
+package canoe2.ast.object;
 
-import canoe.ast.expression.Expression;
+import canoe2.ast.expression.Expression;
 
 /**
  * @author dawn

@@ -1,4 +1,4 @@
-package canoe.ast.object;
+package canoe2.ast.object;
 
 import java.util.List;
 

@@ -72,76 +72,76 @@ public class Lexer {
             next3 = origin.get(i + 2);
             switch (next.kind) {
                 case ELSE:
-                    if (next2.kind(Kind.SPACES) && next2.size == 1 && next3.kind(Kind.IF)) {
+                    if (next2.is(Kind.SPACES) && next2.size == 1 && next3.is(Kind.IF)) {
                         tokens.add(new Token(Kind.ELSE_IF, null, next.line, next.position, 7));
                         i++; i++; continue;
                     } break;
                 case BIT_AND:
-                    if (next2.kind(Kind.BIT_AND) && merge(Kind.LOGICAL_AND)) { i++; continue; }
-                    if (next2.kind(Kind.ASSIGN) && merge(Kind.BIT_AND_ASSIGN)) { i++; continue; }
+                    if (next2.is(Kind.BIT_AND) && merge(Kind.LOGICAL_AND)) { i++; continue; }
+                    if (next2.is(Kind.ASSIGN) && merge(Kind.BIT_AND_ASSIGN)) { i++; continue; }
                     break;
                 case BIT_OR:
-                    if (next2.kind(Kind.BIT_OR) && merge(Kind.LOGICAL_OR)) { i++; continue; }
-                    if (next2.kind(Kind.ASSIGN) && merge(Kind.BIT_OR_ASSIGN)) { i++; continue; }
+                    if (next2.is(Kind.BIT_OR) && merge(Kind.LOGICAL_OR)) { i++; continue; }
+                    if (next2.is(Kind.ASSIGN) && merge(Kind.BIT_OR_ASSIGN)) { i++; continue; }
                     break;
-                case BIT_XOR: if (next2.kind(Kind.ASSIGN) && merge(Kind.BIT_XOR_ASSIGN)) { i++; continue; } break;
-                case BIT_NOT: if (next2.kind(Kind.ASSIGN) && merge(Kind.NE)) { i++; continue; } break;
-                case ASSIGN: if (next2.kind(Kind.ASSIGN) && merge(Kind.EQ)) { i++; continue; } break;
-                case COLON: if (next2.kind(Kind.ASSIGN) && merge(Kind.ASSIGN_FORCE)) { i++; continue; } break;
+                case BIT_XOR: if (next2.is(Kind.ASSIGN) && merge(Kind.BIT_XOR_ASSIGN)) { i++; continue; } break;
+                case BIT_NOT: if (next2.is(Kind.ASSIGN) && merge(Kind.NE)) { i++; continue; } break;
+                case ASSIGN: if (next2.is(Kind.ASSIGN) && merge(Kind.EQ)) { i++; continue; } break;
+                case COLON: if (next2.is(Kind.ASSIGN) && merge(Kind.ASSIGN_FORCE)) { i++; continue; } break;
                 case GT:
-                    if (next2.kind(Kind.ASSIGN) && merge(Kind.GE)) { i++; continue; }
-                    if (next2.kind(Kind.GT)) {
-                        if (next3.kind(Kind.ASSIGN) && next.next(next2) && next2.next(next3)) {
+                    if (next2.is(Kind.ASSIGN) && merge(Kind.GE)) { i++; continue; }
+                    if (next2.is(Kind.GT)) {
+                        if (next3.is(Kind.ASSIGN) && next.next(next2) && next2.next(next3)) {
                             this.tokens.add(new Token(Kind.BIT_RIGHT_ASSIGN, null, next.line, next.position, 3));
                             i++; i++; continue;
                         } else if (merge(Kind.BIT_RIGHT)) { i++; continue; }
                     } break;
                 case LT:
-                    if (next2.kind(Kind.ASSIGN) && merge(Kind.LE)) { i++; continue; }
-                    if (next2.kind(Kind.LT)) {
-                        if (next3.kind(Kind.ASSIGN) && next.next(next2) && next2.next(next3)) {
+                    if (next2.is(Kind.ASSIGN) && merge(Kind.LE)) { i++; continue; }
+                    if (next2.is(Kind.LT)) {
+                        if (next3.is(Kind.ASSIGN) && next.next(next2) && next2.next(next3)) {
                             this.tokens.add(new Token(Kind.BIT_LEFT_ASSIGN, null, next.line, next.position, 3));
                             i++; i++; continue;
                         } else if (merge(Kind.BIT_LEFT)) { i++; continue; }
                     } break;
                 case DOT:
-                    if (next2.kind(Kind.DOT)) {
-                        if (next3.kind(Kind.DOT) && next.next(next2) && next2.next(next3)) {
+                    if (next2.is(Kind.DOT)) {
+                        if (next3.is(Kind.DOT) && next.next(next2) && next2.next(next3)) {
                             this.tokens.add(new Token(Kind.DOT_DOT_DOT, null, next.line, next.position, 3));
                             i++; i++; continue;
                         } else if (merge(Kind.DOT_DOT)) { i++; continue; }
                     } else {
                         Token last = null;
                         if (1 < i) { last = origin.get(i - 1); }
-                        if (next2.kind(Kind.NUMBER_DEC) && next.next(next2)) {
-                            if (null != last && last.kind(Kind.NUMBER_DEC) && last.next(next)) {
+                        if (next2.is(Kind.NUMBER_DEC) && next.next(next2)) {
+                            if (null != last && last.is(Kind.NUMBER_DEC) && last.next(next)) {
                                 this.tokens.remove(this.tokens.size() - 1);
                                 this.tokens.add(new Token(Kind.DECIMAL, last.getValue() + "." + next2.getValue(), last.line, last.position, last.size + 1 + next2.size));
                             } else {
                                 this.tokens.add(new Token(Kind.DECIMAL, "." + next2.getValue(), next.line, next.position, 1 + next2.size));
                             }
                             i++; continue;
-                        } else if (null != last && last.kind(Kind.NUMBER_DEC) && last.next(next)) {
+                        } else if (null != last && last.is(Kind.NUMBER_DEC) && last.next(next)) {
                             this.tokens.remove(this.tokens.size() - 1);
                             this.tokens.add(new Token(Kind.DECIMAL, last.getValue() + ".", last.line, last.position, last.size + 1));
                             continue;
                         }
                     } break;
                 case ADD:
-                    if (next2.kind(Kind.ADD) && merge(Kind.ADD_ADD)) { i++; continue; }
-                    if (next2.kind(Kind.ASSIGN) && merge(Kind.ADD_ASSIGN)) { i++; continue; }
+                    if (next2.is(Kind.ADD) && merge(Kind.ADD_ADD)) { i++; continue; }
+                    if (next2.is(Kind.ASSIGN) && merge(Kind.ADD_ASSIGN)) { i++; continue; }
                     break;
                 case SUB:
-                    if (next2.kind(Kind.SUB) && merge(Kind.SUB_SUB)) { i++; continue; }
-                    if (next2.kind(Kind.ASSIGN) && merge(Kind.SUB_ASSIGN)) { i++; continue; }
-                    if (next2.kind(Kind.GT) && merge(Kind.LAMBDA)) { i++; continue; }
+                    if (next2.is(Kind.SUB) && merge(Kind.SUB_SUB)) { i++; continue; }
+                    if (next2.is(Kind.ASSIGN) && merge(Kind.SUB_ASSIGN)) { i++; continue; }
+                    if (next2.is(Kind.GT) && merge(Kind.LAMBDA)) { i++; continue; }
                     break;
-                case MUL: if (next2.kind(Kind.ASSIGN) && merge(Kind.MUL_ASSIGN)) { i++; continue; } break;
-                case DIV: if (next2.kind(Kind.ASSIGN) && merge(Kind.DIV_ASSIGN)) { i++; continue; } break;
-                case MOD: if (next2.kind(Kind.ASSIGN) && merge(Kind.MOD_ASSIGN)) { i++; continue; } break;
+                case MUL: if (next2.is(Kind.ASSIGN) && merge(Kind.MUL_ASSIGN)) { i++; continue; } break;
+                case DIV: if (next2.is(Kind.ASSIGN) && merge(Kind.DIV_ASSIGN)) { i++; continue; } break;
+                case MOD: if (next2.is(Kind.ASSIGN) && merge(Kind.MOD_ASSIGN)) { i++; continue; } break;
                 case SPACES:
                     // 合并多个空格
-                    while (next2.kind(Kind.SPACES)) {
+                    while (next2.is(Kind.SPACES)) {
                         i++;
                         next = new Token(next.kind, null, next.line, next.position, next.size + next2.size);
                         if (size <= i) { break; }

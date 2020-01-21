@@ -1,6 +1,6 @@
-package canoe2.ast;
+package canoe.ast;
 
-import canoe2.lexis.Token;
+import canoe.lexer.Token;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,16 +8,16 @@ import java.util.stream.Collectors;
 /**
  * @author dawn
  */
-public class PackageName {
+public class PackageInfo {
 
-    private final Token packageName;
+    private final Token packageToken;
 
     private final List<Token> names;
 
     private final String name;
 
-    public PackageName(Token packageName, List<Token> names) {
-        this.packageName = packageName;
+    public PackageInfo(Token packageToken, List<Token> names) {
+        this.packageToken = packageToken;
         this.names = names;
         this.name = names.stream().map(Token::getValue).collect(Collectors.joining());
     }
@@ -25,4 +25,5 @@ public class PackageName {
     public String getName() {
         return name;
     }
+
 }
