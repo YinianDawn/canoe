@@ -40,4 +40,95 @@ public class KindSet {
         COMMON_KEY_WORDS.add(Kind.FLOAT64);
     }
 
+    public static final Set<Kind> CONSTANT = new HashSet<>();
+
+    static {
+        CONSTANT.add(Kind.NUMBER_HEX);
+        CONSTANT.add(Kind.NUMBER_DEC);
+        CONSTANT.add(Kind.NUMBER_OCT);
+        CONSTANT.add(Kind.NUMBER_BIN);
+
+        CONSTANT.add(Kind.DECIMAL);
+
+        CONSTANT.add(Kind.STRING);
+    }
+
+    public static final Set<Kind> BINARY_OPERATOR = new HashSet<>();
+
+    static {
+        BINARY_OPERATOR.add(Kind.LOGICAL_AND);
+        BINARY_OPERATOR.add(Kind.LOGICAL_OR);
+
+        BINARY_OPERATOR.add(Kind.EQ);
+        BINARY_OPERATOR.add(Kind.NE);
+        BINARY_OPERATOR.add(Kind.GT);
+        BINARY_OPERATOR.add(Kind.GE);
+        BINARY_OPERATOR.add(Kind.LT);
+        BINARY_OPERATOR.add(Kind.LE);
+
+        BINARY_OPERATOR.add(Kind.LAMBDA);
+
+        BINARY_OPERATOR.add(Kind.DOT);
+        BINARY_OPERATOR.add(Kind.DOT_DOT);
+
+        BINARY_OPERATOR.add(Kind.ADD);
+        BINARY_OPERATOR.add(Kind.SUB);
+        BINARY_OPERATOR.add(Kind.MUL);
+        BINARY_OPERATOR.add(Kind.DIV);
+        BINARY_OPERATOR.add(Kind.MOD);
+
+        BINARY_OPERATOR.add(Kind.BIT_AND);
+        BINARY_OPERATOR.add(Kind.BIT_OR);
+        BINARY_OPERATOR.add(Kind.BIT_XOR);
+        BINARY_OPERATOR.add(Kind.BIT_LEFT);
+        BINARY_OPERATOR.add(Kind.BIT_RIGHT);
+
+    }
+
+    public static final Set<Kind> LEFT_OPERATOR = new HashSet<>();
+
+    static {
+        LEFT_OPERATOR.add(Kind.BIT_NOT);
+        LEFT_OPERATOR.add(Kind.ADD);
+        LEFT_OPERATOR.add(Kind.SUB);
+    }
+
+    public static final Set<Kind> RIGHT_OPERATOR = new HashSet<>();
+
+    static {
+        RIGHT_OPERATOR.add(Kind.ADD_ADD);
+        RIGHT_OPERATOR.add(Kind.SUB_SUB);
+    }
+
+    public static final Set<Kind> ASSIGN_OPERATOR = new HashSet<>();
+
+    static {
+        ASSIGN_OPERATOR.add(Kind.ASSIGN);
+        ASSIGN_OPERATOR.add(Kind.ASSIGN_FORCE);
+
+        ASSIGN_OPERATOR.add(Kind.ADD_ASSIGN);
+        ASSIGN_OPERATOR.add(Kind.SUB_ASSIGN);
+        ASSIGN_OPERATOR.add(Kind.MUL_ASSIGN);
+        ASSIGN_OPERATOR.add(Kind.DIV_ASSIGN);
+        ASSIGN_OPERATOR.add(Kind.MOD_ASSIGN);
+
+        ASSIGN_OPERATOR.add(Kind.BIT_AND_ASSIGN);
+        ASSIGN_OPERATOR.add(Kind.BIT_OR_ASSIGN);
+        ASSIGN_OPERATOR.add(Kind.BIT_XOR_ASSIGN);
+        ASSIGN_OPERATOR.add(Kind.BIT_LEFT_ASSIGN);
+        ASSIGN_OPERATOR.add(Kind.BIT_RIGHT_ASSIGN);
+    }
+
+
+    public static final Set<Kind> RELATIONAL_OPERATOR = new HashSet<>();
+
+    static {
+        RELATIONAL_OPERATOR.add(Kind.EQ);
+        RELATIONAL_OPERATOR.add(Kind.NE);
+        RELATIONAL_OPERATOR.add(Kind.GT);
+        RELATIONAL_OPERATOR.add(Kind.GE);
+        RELATIONAL_OPERATOR.add(Kind.LT);
+        RELATIONAL_OPERATOR.add(Kind.LE);
+    }
+
 }

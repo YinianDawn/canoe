@@ -15,7 +15,7 @@ import static canoe.util.PanicUtil.panic;
 /**
  * @author dawn
  */
-class TokenStream {
+public class TokenStream {
 
     private final Tokens originTokens;
     private final List<Token> tokens;
@@ -24,7 +24,7 @@ class TokenStream {
 
     private Stack<Integer> marks = new Stack<>();
 
-    TokenStream(Tokens tokens) {
+    public TokenStream(Tokens tokens) {
         this.originTokens = tokens;
 
         // 移除注释
@@ -53,33 +53,28 @@ class TokenStream {
         this.size = this.tokens.size();
     }
 
-    boolean has(int number) { return position + number < size; }
+    public boolean has(int number) { return position + number < size; }
 
-    boolean has() { return has(1); }
+    public boolean has() { return has(1); }
 
     public int getPosition() { return position; }
 
-    void move(int position) {
+    public void move(int position) {
         this.position = position;
     }
 
-    void mark() { marks.push(position); }
+    public void mark() { marks.push(position); }
 
-    void recover() { move(marks.pop()); }
+    public void recover() { move(marks.pop()); }
 
-    Token next(boolean move) {
-        if (move) {
-            position++;
-            return tokens.get(position);
-        } else {
-            return tokens.get(position + 1);
-        }
-    }
-
-    Token next() { return next(true); }
+    public void forget() { marks.pop(); }
 
 
-    Token nextSkipSpaceOrCR() {
+    public Token next() { position++; return tokens.get(position); }
+
+    public Token glance() { return tokens.get(position + 1); }
+
+    public Token glanceSkipSpaceOrCR() {
         int position = this.position + 1;
         Token token = tokens.get(position);
         while (token.isSpaces() || token.isCR()) {
@@ -92,7 +87,7 @@ class TokenStream {
         return token;
     }
 
-    Token nextSkipSpace() {
+    public Token glanceSkipSpace() {
         int position = this.position + 1;
         Token token = tokens.get(position);
         while (token.isSpaces()) {
@@ -105,21 +100,15 @@ class TokenStream {
         return token;
     }
 
-    Token current() {
+    public Token current() {
         if (position < 0 || size <= position) {
             panic("wrong position: " + position);
         }
         return tokens.get(position);
     }
 
-    void removeSpace() { while (has() && next(false).isSpaces()) { next(); } }
+    public void removeSpace() { while (has() && glance().isSpaces()) { next(); } }
 
-    void removeCR() { while (has() && next(false).isCR()) { next(); } }
-
-    void removeSpaceOrCR() { while (has() && next(false).isSpacesOrCR()) { next(); } }
-
-    String getFileName() { return originTokens.getSourceFile().getName(); }
-
-    public List<Token> getRemainTokens() { return tokens.subList(position + 1, size); }
+    public void removeSpaceOrCR() { while (has() && glance().isSpacesOrCR()) { next(); } }
 
 }

@@ -9,6 +9,8 @@ import canoe.lexer.Kind;
 import canoe.lexer.Lexer;
 import canoe.lexer.Token;
 import canoe.lexer.Tokens;
+import canoe.parser.channel.ImportChannel;
+import canoe.parser.channel.StatementsChannel;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -47,18 +49,12 @@ public class Parser {
     }
 
     private Statements parseStatements() {
-//        List<Statement> statements = new LinkedList<>();
-//
-//        Statement statement = parseStatement();
-//        while (null != statement) {
-//            statements.add(statement);
-//            statement = parseStatement();
-//        }
-//
-//        return new Statements(statements);
-        return null;
+        stream.removeSpaceOrCR();
+        StatementsChannel channel = new StatementsChannel(tokens.getSourceFile().getName(),
+                stream, -1, Kind.EOF);
+        return channel.get();
     }
-//
+
 //    private Statement parseStatement() {
 //        removeSpaceOrCR();
 //
@@ -830,7 +826,7 @@ public class Parser {
     // ============== 解析导入 ==============
 
     private ImportStatements parseImportStatements() {
-        Token importToken = stream.next(false);
+        Token importToken = stream.glance();
         if (importToken.not(Kind.IMPORT)) {
             return new ImportStatements(Collections.emptyList());
         }
@@ -842,15 +838,15 @@ public class Parser {
 
     private PackageInfo parsePackageInfo() {
         PackageInfo packageInfo;
-        if (stream.next(false).is(Kind.PACKAGE)) {
+        if (stream.glance().is(Kind.PACKAGE)) {
             // 取出packageToken
             Token packageToken = stream.next();
             stream.removeSpace();
 
             List<Token> names = new LinkedList<>();
             loop:
-            while (stream.has() && !stream.next(false).isSpaces()) {
-                Token next = stream.next(false);
+            while (stream.has() && !stream.glance().isSpaces()) {
+                Token next = stream.glance();
                 switch (next.kind) {
                     case ID: case DOT: break;
                     // 遇到换行符强制认为结束包声明语句

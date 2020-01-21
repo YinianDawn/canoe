@@ -22,13 +22,14 @@ import abc.canoe1 as  canoe1
 // match语句
 
 match :with x {
-    1: break
+    1: with
+    1, >5: without
     >2: {}
     else: x
 }
 
 x += match :with x {
-    1: break
+    1: with
     >2: {}
     else: x
 }

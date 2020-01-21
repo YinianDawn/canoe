@@ -1,12 +1,13 @@
-package canoe2.ast.statement;
+package canoe.ast.statement.elseif;
 
-import canoe2.ast.expression.Expression;
-import canoe2.lexis.Token;
+import canoe.ast.expression.Expression;
+import canoe.ast.statement.Statements;
+import canoe.lexer.Token;
 
 /**
  * @author dawn
  */
-public class StatementElseIf implements Statement {
+public class ElseIf{
 
     private Token elseIf;
 
@@ -18,7 +19,7 @@ public class StatementElseIf implements Statement {
 
     private Token rb;
 
-    public StatementElseIf(Token elseIf, Expression expression, Token lb, Statements elseIfStatements, Token rb) {
+    public ElseIf(Token elseIf, Expression expression, Token lb, Statements elseIfStatements, Token rb) {
         this.elseIf = elseIf;
         this.expression = expression;
         this.lb = lb;

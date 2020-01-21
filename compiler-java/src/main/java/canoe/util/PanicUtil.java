@@ -20,8 +20,8 @@ public class PanicUtil {
 
     public static void panic(String panic, String name, Token token) throws PanicException {
         show(panic, name, token);
-        System.exit(0);
-//        throw new PanicException(panic + (null != token ? " token: " + token.toString() : ""));
+//        System.exit(0);
+        throw new PanicException(panic + (null != token ? " token: " + token.toString() : ""));
     }
 
     private static void show(String panic, String name, Token token) {
@@ -56,7 +56,7 @@ public class PanicUtil {
                         if (content.length() + 2 < position + max) {
                             max = content.length() + 2 - position;
                         }
-//                        if (max <= 0) { max = 1; }
+                        if (max <= 0) { max = 1; }
                         for (int i = 0; i < max; i++) {
                             sb.append('↑');
                         }

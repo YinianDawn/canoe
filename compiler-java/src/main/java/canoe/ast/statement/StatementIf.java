@@ -1,7 +1,9 @@
-package canoe2.ast.statement;
+package canoe.ast.statement;
 
-import canoe2.ast.expression.Expression;
-import canoe2.lexis.Token;
+
+import canoe.ast.expression.Expression;
+import canoe.ast.statement.elseif.ElseIf;
+import canoe.lexer.Token;
 
 import java.util.List;
 
@@ -20,17 +22,17 @@ public class StatementIf implements Statement {
 
     private Token rb;
 
-    private List<StatementElseIf> elseIfs;
+    private List<ElseIf> elseIfs;
 
     private Token elseToken;
 
-    private Token elseLb;
+    private Token elseLB;
 
     private Statements elseStatements;
 
-    private Token elseRb;
+    private Token elseRB;
 
-    public StatementIf(Token ifToken, Expression expression, Token lb, Statements thenStatements, Token rb, List<StatementElseIf> elseIfs, Token elseToken, Token elseLb, Statements elseStatements, Token elseRb) {
+    public StatementIf(Token ifToken, Expression expression, Token lb, Statements thenStatements, Token rb, List<ElseIf> elseIfs, Token elseToken, Token elseLB, Statements elseStatements, Token elseRB) {
         this.ifToken = ifToken;
         this.expression = expression;
         this.lb = lb;
@@ -38,8 +40,8 @@ public class StatementIf implements Statement {
         this.rb = rb;
         this.elseIfs = elseIfs;
         this.elseToken = elseToken;
-        this.elseLb = elseLb;
+        this.elseLB = elseLB;
         this.elseStatements = elseStatements;
-        this.elseRb = elseRb;
+        this.elseRB = elseRB;
     }
 }

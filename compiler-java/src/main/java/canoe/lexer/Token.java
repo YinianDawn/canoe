@@ -64,32 +64,18 @@ public class Token {
         return this.line == other.line;
     }
 
-    public boolean isComment() {
-        return this.kind == Kind.COMMENT_LINE || this.kind == Kind.COMMENT_BLOCK;
-    }
 
-    public boolean isSpaces() {
-        return this.kind == Kind.SPACES;
-    }
-
-    public boolean isCR() {
-        return this.kind == Kind.CR;
-    }
-
+    public boolean isComment() { return this.kind == Kind.COMMENT_LINE || this.kind == Kind.COMMENT_BLOCK; }
+    public boolean isSpaces() { return this.kind == Kind.SPACES; }
+    public boolean isCR() { return this.kind == Kind.CR; }
     public boolean isSpacesOrCR() {
         return this.kind == Kind.SPACES || this.kind == Kind.CR;
     }
-
     public boolean isEOF() { return this.kind == Kind.EOF; }
-
     public boolean isDot() { return this.kind == Kind.DOT; }
+    public boolean isColon() { return this.kind == Kind.COLON; }
 
-    public boolean is(Kind kind) {
-        return this.kind == kind;
-    }
-
-    public boolean not(Kind kind) {
-        return this.kind != kind;
-    }
+    public boolean is(Kind kind) { return this.kind == kind; }
+    public boolean not(Kind kind) { return this.kind != kind; }
 
 }
