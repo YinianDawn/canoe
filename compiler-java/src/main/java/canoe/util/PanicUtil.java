@@ -1,41 +1,45 @@
 package canoe.util;
 
-import canoe.lexis.Token;
+import canoe.lexer.Token;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import static canoe.util.PrintUtil.print;
+
 /**
  * @author dawn
  */
-public class Util {
+public class PanicUtil {
 
-    public static void panic(String tip) {
-        panic(tip, null, null);
+
+    public static void panic(String panic) throws PanicException {
+        throw new PanicException(panic);
     }
 
-    public static void panic(String tip, String fileName, Token token) {
-        show(tip, fileName, token);
-        throw new Error(tip + (null != token ? token.toString() : ""));
+    public static void panic(String panic, String name, Token token) throws PanicException {
+        show(panic, name, token);
+        System.exit(0);
+//        throw new PanicException(panic + (null != token ? " token: " + token.toString() : ""));
     }
 
-    private static void show(String tip, String fileName, Token token) {
-        if (null == fileName || null == token) { return; }
+    private static void show(String panic, String name, Token token) {
+        if (null == name || null == token) { return; }
 
         int range = 3;
-        int line = token.getLine();
-        int index = token.getIndex();
-        int length = token.getLength();
+        int line = token.line;
+        int position = token.position;
+        int size = token.size;
 
-        try (FileReader fileReader = new FileReader(fileName);
+        try (FileReader fileReader = new FileReader(name);
              BufferedReader reader = new BufferedReader(fileReader)) {
             int no = 0;
             String content;
             while (null != (content = reader.readLine())) {
                 no++;
                 if (Math.abs(line - no) < range) {
-                    System.out.println(no + " | " + content);
+                    print(no + " | " + content);
                     if (no == line) {
                         // 当前行 红色加箭头
                         StringBuilder sb = new StringBuilder();
@@ -45,24 +49,22 @@ public class Util {
                         }
                         sb.append(" | ");
 
-                        for (int i = 0; i < index - 1; i++) {
+                        for (int i = 0; i < position - 1; i++) {
                             sb.append('\t' == content.charAt(i) ? '\t' : ' ');
                         }
-                        int max = length;
-                        if (content.length() + 2 < index + max) {
-                            max = content.length() + 2 - index;
+                        int max = size;
+                        if (content.length() + 2 < position + max) {
+                            max = content.length() + 2 - position;
                         }
 //                        if (max <= 0) { max = 1; }
                         for (int i = 0; i < max; i++) {
                             sb.append('↑');
                         }
-                        sb.append(' ').append(tip);
-                        System.err.println(sb.toString());
+                        sb.append(' ').append(panic);
+                        print(sb.toString(), true);
                     }
                 }
-                if (line + range < no) {
-                    break;
-                }
+                if (line + range < no) { break; }
             }
         } catch (IOException e) {
             e.printStackTrace();

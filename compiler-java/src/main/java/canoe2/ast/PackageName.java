@@ -1,6 +1,6 @@
-package canoe.ast;
+package canoe2.ast;
 
-import canoe.lexis.Token;
+import canoe2.lexis.Token;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,15 +1,15 @@
-package canoe.parser;
+package canoe2.parser;
 
-import canoe.ast.expression.*;
-import canoe.ast.statement.Statements;
-import canoe.lexis.Kind;
-import canoe.lexis.Token;
+import canoe2.ast.expression.*;
+import canoe2.ast.statement.Statements;
+import canoe2.lexis.Kind;
+import canoe2.lexis.Token;
 
 import java.util.Stack;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Supplier;
 
-import static canoe.util.Util.panic;
+import static canoe2.util.Util.panic;
 
 /**
  * @author dawn

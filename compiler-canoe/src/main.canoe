@@ -314,3 +314,4 @@ testReturn2 :{xxx:int, yyy:string} :() := () {
 xxx, yy: yyy := testReturn2()  
 
 // 123
+    

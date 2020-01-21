@@ -1,6 +1,6 @@
-package canoe.ast.statement;
+package canoe2.ast.statement;
 
-import canoe.ast.expression.Expression;
+import canoe2.ast.expression.Expression;
 
 /**
  * @author dawn

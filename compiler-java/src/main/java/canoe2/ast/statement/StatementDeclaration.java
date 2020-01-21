@@ -1,9 +1,9 @@
-package canoe.ast.statement;
+package canoe2.ast.statement;
 
-import canoe.ast.expression.Expression;
-import canoe.ast.expression.ExpressionParams;
-import canoe.ast.statement.desc.*;
-import canoe.lexis.Token;
+import canoe2.ast.expression.Expression;
+import canoe2.ast.expression.ExpressionParams;
+import canoe2.ast.statement.desc.*;
+import canoe2.lexis.Token;
 
 import java.util.List;
 

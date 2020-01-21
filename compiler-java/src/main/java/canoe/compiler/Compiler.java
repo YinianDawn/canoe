@@ -1,33 +1,30 @@
 package canoe.compiler;
 
-import canoe.ast.AST;
-import canoe.lexis.Kind;
-import canoe.lexis.Lexer;
-import canoe.lexis.Tokens;
-import canoe.parser.Parser;
+import canoe.lexer.Lexer;
+import canoe.lexer.Tokens;
 
-import java.util.LinkedList;
 import java.util.List;
+
+import static canoe.util.PrintUtil.print;
 
 /**
  * @author dawn
  */
 public class Compiler {
 
-    private Options options;
+    private Option option;
 
     public Compiler(String[] args) {
-        options = Options.parse(args);
+        option = Option.parse(args);
     }
-
 
     public void compile() {
-        build(options.sourceFiles, options);
+        build(option.getSourceFiles());
     }
 
-    private void build(List<SourceFile> sourceFiles, Options options) {
+    private void build(List<SourceFile> sourceFiles) {
         for (SourceFile sourceFile : sourceFiles) {
-            compile(sourceFile, options);
+            compile(sourceFile);
 //            if (src.isCflatSource()) {
 //                String destPath = opts.asmFileNameOf(src);
 //                compile(src.path(), destPath, opts);
@@ -44,39 +41,14 @@ public class Compiler {
 //        link(opts);
     }
 
-    private static void compile(SourceFile sourceFile, Options options) {
+    private static void compile(SourceFile sourceFile) {
         Tokens tokens = Lexer.parseTokens(sourceFile);
-//        printTokens(tokens);
-        AST ast = Parser.parseAst(tokens);
-        printAST(ast);
+        print(tokens);
+//        AST ast = Parser.parseAst(tokens);
+//        printAST(ast);
 
     }
-    private static void printAST(AST ast) {
-        System.out.println("----------------------> AST: package:" + ast.getPackageName() + " file:" + ast.getFileName());
 
-        System.out.println("print other things");
-    }
 
-    public static void printTokens(Tokens tokens) {
-        System.out.println("----------------------> Tokens: " + tokens.getFileName());
-        List<String> tips = new LinkedList<>();
-        tokens.getTokens().forEach(t -> {
-            if (t.getKind() == Kind.CR) {
-                tips.forEach(System.out::println);
-                tips.clear();
-                System.err.println(String.format("[%d:%d:%d] CR \\n", t.getLine(), t.getIndex(), t.getLength()));
-            } else {
-                tips.add(String.format("[%d:%d:%d] %s %s", t.getLine(), t.getIndex(), t.getLength(), t.getKind().name(), t.getValue()));
-            }
-        });
-        tips.forEach(System.out::println);
-    }
 
-    private static void sleep() {
-        try {
-            Thread.sleep(1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -1,30 +1,30 @@
-package canoe.parser;
+package canoe2.parser;
 
-import canoe.ast.AST;
-import canoe.ast.PackageName;
-import canoe.ast.expression.Expression;
-import canoe.ast.expression.ExpressionComma;
-import canoe.ast.expression.ExpressionID;
-import canoe.ast.expression.ExpressionParams;
-import canoe.ast.import_statement.ImportStatement;
-import canoe.ast.import_statement.ImportStatementMany;
-import canoe.ast.import_statement.ImportStatementSingle;
-import canoe.ast.import_statement.ImportStatements;
-import canoe.ast.object.Object;
-import canoe.ast.object.*;
-import canoe.ast.statement.*;
-import canoe.ast.statement.desc.*;
-import canoe.lexis.Kind;
-import canoe.lexis.Lexer;
-import canoe.lexis.Token;
-import canoe.lexis.Tokens;
+import canoe2.ast.AST;
+import canoe2.ast.PackageName;
+import canoe2.ast.expression.Expression;
+import canoe2.ast.expression.ExpressionComma;
+import canoe2.ast.expression.ExpressionID;
+import canoe2.ast.expression.ExpressionParams;
+import canoe2.ast.import_statement.ImportStatement;
+import canoe2.ast.import_statement.ImportStatementMany;
+import canoe2.ast.import_statement.ImportStatementSingle;
+import canoe2.ast.import_statement.ImportStatements;
+import canoe2.ast.object.Object;
+import canoe2.ast.object.*;
+import canoe2.ast.statement.*;
+import canoe2.ast.statement.desc.*;
+import canoe2.lexis.Kind;
+import canoe2.lexis.Lexer;
+import canoe2.lexis.Token;
+import canoe2.lexis.Tokens;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import static canoe.util.Util.panic;
+import static canoe2.util.Util.panic;
 
 /**
  * @author dawn
@@ -164,7 +164,7 @@ public class Parser {
 
                         // 关键词开头
                         case CANOE:
-                            if (reader.nextTokenSkipSpace().getKind() != Kind.DOT) { panicToken("canoe can not be desc " + next); break; }
+                            if (reader.nextTokenSkipSpace().getKind() != Kind.DOT) { panicToken("canoe2 can not be desc " + next); break; }
 
                         case ID:
                             reader.move(index);

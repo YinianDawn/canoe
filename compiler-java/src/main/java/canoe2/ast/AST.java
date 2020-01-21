@@ -1,7 +1,7 @@
-package canoe.ast;
+package canoe2.ast;
 
-import canoe.ast.import_statement.ImportStatements;
-import canoe.ast.statement.Statements;
+import canoe2.ast.import_statement.ImportStatements;
+import canoe2.ast.statement.Statements;
 
 /**
  * @author dawn

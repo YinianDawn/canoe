@@ -1,4 +1,4 @@
-package canoe.ast.statement;
+package canoe2.ast.statement;
 
 /**
  * @author dawn

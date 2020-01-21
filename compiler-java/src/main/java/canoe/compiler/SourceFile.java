@@ -1,8 +1,6 @@
 package canoe.compiler;
 
-import java.io.File;
-
-import static canoe.util.Util.panic;
+import static canoe.util.PanicUtil.panic;
 
 /**
  * @author dawn
@@ -11,29 +9,26 @@ public class SourceFile {
 
     private final static String EXT_SOURCE = ".canoe";
 
-    private final String fileName;
+    private final String name;
 
-    SourceFile(String fileName) {
-        checkExt(fileName);
-        this.fileName = fileName;
+    SourceFile(String name) {
+        checkExt(name);
+        this.name = name;
     }
 
-    public File getFile() {
-        return new File(fileName);
+    public String getName() {
+        return name;
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    private static void checkExt(String fileName) {
-        int index = fileName.lastIndexOf(".");
+    private static void checkExt(String name) {
+        int index = name.lastIndexOf(".");
         if (-1 == index) {
-            panic("wrong source file: " + fileName);
+            panic("wrong source file: " + name);
         }
-        String ext = fileName.substring(index);
+        String ext = name.substring(index);
         if (!EXT_SOURCE.equals(ext)) {
-            panic("wrong source file: " + fileName);
+            panic("wrong source file: " + name);
         }
     }
+
 }

@@ -1,8 +1,8 @@
-package canoe.parser;
+package canoe2.parser;
 
-import canoe.lexis.Kind;
-import canoe.lexis.Token;
-import canoe.lexis.Tokens;
+import canoe2.lexis.Kind;
+import canoe2.lexis.Token;
+import canoe2.lexis.Tokens;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
