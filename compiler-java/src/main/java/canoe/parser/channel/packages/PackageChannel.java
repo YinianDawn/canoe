@@ -12,95 +12,57 @@ import java.util.List;
 
 import static canoe.lexer.Kind.*;
 import static canoe.lexer.KindSet.COMMON_KEY_WORDS;
-import static canoe.lexer.KindSet.contains;
 
 /**
  * @author dawn
  */
 public class PackageChannel extends Channel<PackageInfo> {
 
-    private PackageChannel(String name, TokenStream stream, Kind... end) {
-        super(name, stream, end);
+    private PackageChannel(String name, TokenStream stream) {
+        super(name, stream, CR);
+        removeSpaceOrCR();
+        if (glance().not(Kind.PACKAGE)) {
+            data = new PackageInfo(new Token(Kind.PACKAGE, null, 0, 0, 7), Collections.emptyList());
+        }
         init();
     }
 
     @Override
-    protected void init() {
-        removeSpaceOrCR();
-        if (glance().is(Kind.PACKAGE)) {
-            while (hunger()) { eat(); }
-        } else {
-            data = new PackageInfo(new Token(Kind.PACKAGE, null, 0, 0, 7), Collections.emptyList());
-        }
-    }
-
-    @Override
-    protected boolean hunger() {
-        return null == data || !end();
-    }
-
-    @Override
-    protected void eat() {
-        Token next = glance();
-        if (!pass(next)) {
-            // 所有都通过
-//        switch (next.kind) {
-//            default:
-//        }
-        }
-        if (over(next)) { return; }
-
-        addLast(next());
-        clear();
-
-        digest();
-    }
-
-    @Override
     protected void digest() {
-        String status = status();
-
-        Token last = getLastToken();
-        if (null != last) {
-            if (1 < channelSize() && contains(COMMON_KEY_WORDS, last)) {
-                accept(DOT).refuseAll(); return;
-            }
-            if (last.is(ID)) {
-                accept(DOT).acceptSpaces().refuseAll().over(this::full); return;
-            }
-            if (last.is(DOT)) {
-                accept(ID).acceptKeyWords().refuseAll(); return;
-            }
-            if (3 <= channelSize() && last.is(SPACES)) {
-                if (glance().isCR()) {
-                    removeLast(); refuseAll().over(this::full); return;
-                } else {
-                    panic(last);
+        int size = channelSize();
+        if (1 < size) {
+            Token last = getLastToken();
+            if (null != last) {
+                if (last.isSpaces()) {
+                    if (2 == size) { removeLast();
+                        accept(ID).acceptKeyWords().refuseAll(); return;
+                    } else {
+                        if (glance().isCR()) { removeLast();
+                            refuseAll().over(this::full); return;
+                        } else {
+                            panic(last);
+                        }
+                    }
                 }
+                if (contains(last, COMMON_KEY_WORDS)) { accept(DOT).refuseAll(); return; }
+                if (last.is(ID)) { accept(DOT).acceptSpaces().refuseAll().over(this::full); return; }
+                if (last.is(DOT)) { accept(ID).acceptKeyWords().refuseAll(); return; }
             }
+        } else {
+            acceptSpaces().refuseAll(); return;
         }
-
-        switch (status) {
-            case "PACKAGE":
-                accept(Kind.SPACES).refuseAll(); break;
-            case "PACKAGE SPACES":
-                removeLast(); accept(ID).acceptKeyWords().refuseAll(); break;
-            default: panic("wrong package statement.");
-        }
+        panic("wrong package statement.");
     }
 
-    @Override
-    protected void full() {
+    private void full() {
         Token packageToken = (Token) removeFirst();
         List<Token> names = new ArrayList<>(channelSize());
-        while (channelFull()) {
-            names.add((Token) removeFirst());
-        }
+        while (channelFull()) { names.add((Token) removeFirst()); }
         data = new PackageInfo(packageToken, names);
     }
 
-    public static PackageInfo produce(String name, TokenStream stream, Kind... end) {
-        return new PackageChannel(name, stream, end).produce();
+    public static PackageInfo produce(String name, TokenStream stream) {
+        return new PackageChannel(name, stream).produce();
     }
 
 }

@@ -25,24 +25,25 @@ public class Channel<T> {
     private String name;
     private TokenStream stream;
     private ConcurrentLinkedDeque<Object> channel = new ConcurrentLinkedDeque<>();
+    private Set<Kind> end;
+    protected T data;
+
+    private Set<Kind> ignore = new HashSet<>();
+    private HashMap<Kind, Supplier<Boolean>> match = new HashMap<>();
+    private Runnable full;
     private Set<Kind> accept = new HashSet<>();
     private Set<Kind> refuse = new HashSet<>();
     private boolean acceptAll = false;
     private boolean refuseAll = false;
-    private Set<Kind> end;
-    private HashMap<Kind, Supplier<Boolean>> match = new HashMap<>();
-    private Runnable full;
-    protected T data;
 
     public Channel(Channel channel, Kind... end) {
-        this(channel.getName(), channel.getStream(), end);
+        this(channel.name, channel.stream, end);
     }
 
     public Channel(String name, TokenStream stream, Kind... end) {
         this.name = name;
         this.stream = stream;
         this.end = new HashSet<>(Arrays.asList(end));
-        this.end.add(Kind.CR);
         this.end.add(Kind.EOF);
     }
 
@@ -50,123 +51,82 @@ public class Channel<T> {
      * 每个子类可以继承这个方法用于准备工作
      * @return
      */
-    protected void init() {
-        panic("should override this method");
-    }
+    protected void init() { while (hunger()) { eat(); } }
 
     /**
      * 判断这个通道是否结束
      * @return
      */
-    protected boolean hunger() {
-        return null == data || !end();
-    }
+    private boolean hunger() { return null == data; }
 
     /**
      * 每个子类必须继承这个方法用以移进元素
      * @return
      */
-    protected void eat() {
+    private void eat() {
         Token next = glance();
-        if (!pass(next)) {
-            if (!check(next)) {
-                return;
-            }
+
+        if (ignore.contains(next.kind)) { next(); eat(); return; }
+
+        if (match.containsKey(next.kind) && match.get(next.kind).get()) {
+            return;
+        } else if (null != full && end(next)){
+            full.run();
+            return;
         }
 
-        if (match.containsKey(next.kind)) {
-            boolean result = match.get(next.kind).get();
-            if (result) { return; }
-        } else {
-            if (null != full && end(next)) {
-                full.run();
-                return;
-            }
-        }
+        if (!pass(next) && !eat(next)) { return; }
 
         addLast(next());
+
         clear();
 
         digest();
+
+        digested();
     }
 
-    /**
-     * 如果真的遇到问题，就panic了 返回值得意思是是否继续执行 true就继续执行 false就本轮结束
-     * @param next
-     * @return
-     */
-    protected boolean check(Token next) {
-        return true;
-    }
+    // ==================== 忽略符号 ====================
 
-    /**
-     * 每个子类必须继承这个方法用以归约
-     * @return
-     */
-    protected void digest() {
-        panic("should override this method");
-    }
+    protected Channel ignore(Kind... kinds) { Collections.addAll(ignore, kinds); return this; }
 
-    /**
-     * 如果遇到结束符调用
-     * @return
-     */
-    protected void full() { }
+    protected Channel ignoreSpace() { ignore.add(Kind.SPACES); return this; }
 
-    /**
-     * 获取这个通道计算的结果
-     * @return
-     */
-    protected T produce() {
-        if (hunger()) {
-            panic("channel is hungering, can not produce.");
-        }
-        return data;
-    }
+    // ==================== 某种特殊符号需要做的操作 ====================
 
-    // ================ 一些工具方法 ================
+    public void match(Kind kind, Supplier<Boolean> end) { match.put(kind, end); }
 
-    /**
-     * 拓展终结符号
-     * @param kinds
-     * @return
-     */
-    protected Kind[] extend(Kind... kinds) {
-        return Stream.concat(end.stream(), Stream.of(kinds)).distinct().collect(Collectors.toList()).toArray(new Kind[]{});
-    }
+    // ==================== 遇到终结符做的操作 并且结束通道 ====================
 
-    /**
-     * 按照终结符号判断是否结束
-     * @param next
-     * @return
-     */
-    protected boolean end(Token next) {
-        return end.contains(next.kind);
-    }
+    public void over(Runnable full) { this.full = full; }
 
-    protected boolean end() {
-        return end(glanceSkipSpace());
-    }
+    // ==================== 接受和拒绝的符号 ====================
 
-    /**
-     * 统一判断是否拒绝或接受
-     * @param next
-     * @return
-     */
-    protected boolean pass(Token next) {
-        if (acceptAll || accept.contains(next.kind)) {
-            return true;
-        }
-        if (refuseAll || refuse.contains(next.kind)) {
-            panic(next);
-        }
+    public Channel accept(Kind... kinds) { if (!acceptAll) { Collections.addAll(accept, kinds); } return this; }
+    public Channel acceptKeyWords() { if (!acceptAll) { accept.addAll(COMMON_KEY_WORDS); } return this; }
+    public Channel acceptAll() { acceptAll = true; return this; }
+    public Channel acceptSpaces() { if (!acceptAll) { accept.add(Kind.SPACES); } return this; }
+    public Channel acceptCR() { if (!acceptAll) { accept.add(Kind.CR); } return this; }
+
+    public Channel refuse(Kind... kinds) { if (!refuseAll) { Collections.addAll(refuse, kinds); } return this; }
+    public Channel refuseAll() { refuseAll = true; return this; }
+    public Channel refuseSpaces() { if (!refuseAll) { refuse.add(Kind.SPACES); } return this; }
+    public Channel refuseCR() { if (!refuseAll) { refuse.add(Kind.CR); } return this; }
+
+    private boolean pass(Token next) {
+        if (acceptAll || accept.contains(next.kind)) { return true; }
+        if (refuseAll || refuse.contains(next.kind)) { panic(next); }
         return false;
     }
 
-    /**
-     * 清除接受或拒绝类型
-     */
+    // ==================== 每个通道可以自己决定是否接受某个字符 ====================
+
+    protected boolean eat(Token next) { return true; }
+
+    // ==================== 已经接受新的字符了，上次的状态相关信息要清除 ====================
+
     private void clear() {
+        ignore.clear();
         accept.clear();
         refuse.clear();
         acceptAll = false;
@@ -175,86 +135,45 @@ public class Channel<T> {
         full = null;
     }
 
-    public void match(Kind kind, Supplier<Boolean> end) {
-        match.put(kind, end);
-        if (!acceptAll) {
-            accept.add(kind);
+    protected void digest() { panic("should override this method"); }
+
+    protected void digested() { }
+
+    // ==================== 获取这个通道计算的结果 ====================
+
+    protected T produce() {
+        if (hunger()) {
+            panic("channel is hungering, can not produce.");
         }
+        return data;
     }
 
-    public void over(Runnable full) {
-        this.full = full;
-        if (!acceptAll) {
-            accept.addAll(end);
-        }
+    // ================ 其他方法 ================
+
+
+    // ================ 拓展终结符号 ================
+
+    protected Kind[] extend(Kind... kinds) {
+        if (0 == kinds.length) { return new ArrayList<>(end).toArray(new Kind[]{}); }
+        return Stream.concat(end.stream(), Stream.of(kinds)).distinct().collect(Collectors.toList()).toArray(new Kind[]{});
     }
 
-    /**
-     * 下个字符接受什么类型
-     * @param kinds
-     * @return
-     */
-    public Channel accept(Kind... kinds) {
-        if (acceptAll) { return this; }
-        Collections.addAll(accept, kinds);
-        return this;
+    // ================ 按照终结符号判断是否结束 ================
+
+    protected boolean end(Token next) {
+        return end.contains(next.kind);
     }
 
-    public Channel acceptKeyWords() {
-        if (acceptAll) { return this; }
-        accept.addAll(COMMON_KEY_WORDS);
-        return this;
+    protected boolean end(Kind kind) {
+        return end.contains(kind);
     }
 
-    public Channel acceptAll() {
-        acceptAll = true;
-        return this;
+    protected boolean end() {
+        return end(glanceSkipSpace());
     }
 
-    public Channel acceptSpaces() {
-        if (acceptAll) { return this; }
-        accept.add(Kind.SPACES);
-        return this;
-    }
+    // ================ 当前通道状态 ================
 
-    public Channel acceptCR() {
-        if (acceptAll) { return this; }
-        accept.add(Kind.CR);
-        return this;
-    }
-
-    /**
-     * 下个字符拒绝什么类型
-     * @param kinds
-     * @return
-     */
-    public Channel refuse(Kind... kinds) {
-        if (refuseAll) { return this; }
-        Collections.addAll(refuse, kinds);
-        return this;
-    }
-
-    public Channel refuseAll() {
-        refuseAll = true;
-        return this;
-    }
-
-    public Channel refuseSpaces() {
-        if (refuseAll) { return this; }
-        refuse.add(Kind.SPACES);
-        return this;
-    }
-
-    public Channel refuseCR() {
-        if (refuseAll) { return this; }
-        refuse.add(Kind.CR);
-        return this;
-    }
-
-    /**
-     * 当前通道状态
-     * @return
-     */
     protected String status() {
         if (channel.isEmpty()) { return ""; }
         StringBuilder sb = new StringBuilder();
@@ -269,12 +188,9 @@ public class Channel<T> {
         return sb.toString();
     }
 
-    /**
-     * 解析一个对象的识别Id
-     * @param o
-     * @return
-     */
-    protected String parseID(Object o) {
+    // ================ 解析一个对象的识别Id ================
+
+    protected String parseName(Object o) {
         if (o instanceof Expression
                 || o instanceof Statement
                 || o instanceof Merge) {
@@ -282,10 +198,9 @@ public class Channel<T> {
         } else if (o instanceof Token) {
             return ((Token) o).kind.name();
         }
-        panic("can not parse to ID: " + o);
+        panic("can not parse to a name: " + o);
         return "";
     }
-
 
     // ================ channel方法 ================
 
@@ -312,6 +227,14 @@ public class Channel<T> {
         return channel.size();
     }
 
+    protected boolean channelSize(int size) {
+        return channel.size() == size;
+    }
+
+    protected boolean channelSizeLess(int size) {
+        return channel.size() < size;
+    }
+
     protected boolean isChannelEmpty() {
         return channel.isEmpty();
     }
@@ -320,11 +243,32 @@ public class Channel<T> {
         return !channel.isEmpty();
     }
 
-    // ================ 通用 ================
+    // ================ 工具方法 ================
 
-    public String getName() { return name; }
+    protected static boolean ends(String status, String... ends) {
+        for (String end : ends) {
+            if (status.endsWith(end)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-    public TokenStream getStream() { return stream; }
+    protected static boolean contains(Token token, Set<Kind> set) {
+        return set.contains(token.kind);
+    }
+
+    protected static boolean contains(Token token, Set<Kind> set, Set<Kind> set2) {
+        return contains(token, set) || contains(token, set2);
+    }
+
+    public static boolean contains(Token token, Set<Kind> set, Set<Kind> set2, Set<Kind> set3) {
+        return contains(token, set) || contains(token, set2) || contains(token, set3);
+    }
+
+    public static boolean contains(Token token, Set<Kind> set, Set<Kind> set2, Set<Kind> set3, Set<Kind> set4) {
+        return contains(token, set) || contains(token, set2) || contains(token, set3) || contains(token, set4);
+    }
 
     protected void panic(String tip) throws PanicException {
         PanicUtil.panic(tip, name, stream.current());

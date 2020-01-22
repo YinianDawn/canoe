@@ -8,14 +8,6 @@ import java.util.Set;
  */
 public class KindSet {
 
-    public static boolean contains(Set<Kind> set, Token token) {
-        return set.contains(token.kind);
-    }
-
-    public static boolean contains(Set<Kind> set, Kind kind) {
-        return set.contains(kind);
-    }
-
     public static final Set<Kind> COMMON_KEY_WORDS = new HashSet<>();
 
     static {

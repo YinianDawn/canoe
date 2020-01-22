@@ -4,9 +4,12 @@ package canoe.parser;
 import canoe.ast.AST;
 import canoe.ast.PackageInfo;
 import canoe.ast.imports.ImportStatements;
+import canoe.ast.statement.Statements;
+import canoe.lexer.Kind;
 import canoe.lexer.Tokens;
 import canoe.parser.channel.impoerts.ImportsChannel;
 import canoe.parser.channel.packages.PackageChannel;
+import canoe.parser.channel.statement.StatementsChannel;
 
 import static canoe.util.PanicUtil.panic;
 
@@ -35,10 +38,9 @@ public class Parser {
 
         PackageInfo packageInfo = PackageChannel.produce(tokens.getSourceFile().getName(), stream);
         ImportStatements importStatements = ImportsChannel.produce(tokens.getSourceFile().getName(), stream);
-//        Statements statements = parseStatements();
+        Statements statements = StatementsChannel.produce(tokens.getSourceFile().getName(), stream, Kind.CR);
 
-//        return new AST(tokens, packageInfo, importStatements, statements);
-        return new AST(tokens, packageInfo, null, null);
+        return new AST(tokens, packageInfo, importStatements, statements);
     }
 
 //    private Statements parseStatements() {

@@ -1,4 +1,4 @@
-package canoe.parser.channel.statement;
+package canoe.parser.channel.statement.special;
 
 import canoe.ast.expression.Expression;
 import canoe.ast.statement.*;
@@ -7,9 +7,9 @@ import canoe.ast.statement.match.MatchElseClause;
 import canoe.ast.statement.match.MatchOpExpression;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
-import canoe.parser.TokenStream;
 import canoe.parser.channel.Channel;
 import canoe.parser.channel.expression.ExpressionChannel;
+import canoe.parser.channel.statement.StatementChannel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,7 +21,7 @@ import static canoe.lexer.KindSet.RELATIONAL_OPERATOR;
 /**
  * @author dawn
  */
-public class MatchChannel extends Channel {
+public class MatchChannel extends Channel<StatementMatch> {
 
     private Token matchToken;
     private Token colonToken;
@@ -32,21 +32,17 @@ public class MatchChannel extends Channel {
     private MatchElseClause elseClause;
     private Token rb;
 
-    private StatementMatch statementMatch;
 
-    public MatchChannel(String name, TokenStream stream) {
-        super(name, stream);
-        if (stream.glance().not(Kind.MATCH)) {
-            panic("must be match.", stream.glance());
+    private MatchChannel(Channel channel, Kind... end) {
+        super(channel, end);
+        if (glance().not(Kind.MATCH)) {
+            panic("must be match.", glance());
         }
-        parse();
+        init();
     }
 
-    public StatementMatch get() {
-        return statementMatch;
-    }
-
-    private void parse() {
+    @Override
+    protected void init() {
         matchToken = next();
         removeSpace();
         colonToken = glance();
@@ -54,21 +50,20 @@ public class MatchChannel extends Channel {
             colonToken = next();
             withToken = next();
             if (withToken.not(Kind.WITH) && withToken.not(Kind.WITHOUT)) {
-                panic("match desc must be with or without", withToken);
+                panic("must be with or without", withToken);
             }
             if (!colonToken.next(withToken)) {
-                panic(withToken.kind.getSign() + " must follow : , no space", withToken);
+                panic(withToken.kind.getSign() + " must follow sign : , no space", withToken);
             }
         } else {
             colonToken = null;
         }
         removeSpace();
-        ExpressionChannel channel = new ExpressionChannel(this, Kind.LB);
-        expression = channel.get();
+        expression = ExpressionChannel.produce(this, Kind.LB);
         if (null == expression) {
             panic("expression can not be null");
         }
-        removeSpaceOrCR();
+        removeSpace();
         lb = next();
         if (lb.not(Kind.LB)) {
             panic("must be { .", lb);
@@ -80,7 +75,7 @@ public class MatchChannel extends Channel {
         if (rb.not(Kind.RB)) {
             panic("must be } .", rb);
         }
-        statementMatch = new StatementMatch(matchToken, colonToken, withToken,
+        data = new StatementMatch(matchToken, colonToken, withToken,
                 expression, lb, clauses, elseClause, rb);
     }
 
@@ -88,8 +83,7 @@ public class MatchChannel extends Channel {
         Token next = glance();
         while (null != next) {
             if (next.is(Kind.ELSE)) { parseElseClause(); return; }
-            if (CONSTANT.contains(next.kind)
-                    || RELATIONAL_OPERATOR.contains(next.kind)) {
+            if (contains(next, CONSTANT, RELATIONAL_OPERATOR)) {
                 parseClause();
             } else {
                 switch (next.kind) {
@@ -105,7 +99,7 @@ public class MatchChannel extends Channel {
 
     private void parseClause() {
         Token op = parseMatchOp();
-        Expression expression = new ExpressionChannel(this, Kind.COMMA, Kind.COLON).get();
+        Expression expression = ExpressionChannel.produce(this, Kind.COMMA, Kind.COLON);
 
         List<MatchOpExpression> others = new ArrayList<>();
         removeSpace();
@@ -114,7 +108,7 @@ public class MatchChannel extends Channel {
             Token comma = next();
             removeSpaceOrCR();
             Token otherOp = parseMatchOp();
-            Expression e = new ExpressionChannel(this, Kind.COMMA, Kind.COLON).get();
+            Expression e = ExpressionChannel.produce(this, Kind.COMMA, Kind.COLON);
             others.add(new MatchOpExpression(comma, otherOp, e));
             removeSpace();
             token = glance();
@@ -124,79 +118,14 @@ public class MatchChannel extends Channel {
         if (colonToken.not(Kind.COLON)) {
             panic("must be : ", colonToken);
         }
-        parseStatements();
-        clauses.add(new MatchClause(op, expression, others, colonToken, clauseLB, clauseStatements, clauseRB));
-    }
-
-    private Token clauseLB;
-    private Statements clauseStatements;
-    private Token clauseRB;
-    private void parseStatements() {
-        clauseLB = null;
-        clauseStatements = null;
-        clauseRB = null;
-        removeSpace();
-        Token next = glance();
-        switch (next.kind) {
-            case CR:
-                clauseStatements = new Statements(Collections.emptyList());
-                removeSpaceOrCR();
-                return;
-            case WITH:
-            case WITHOUT:
-                Token withToken = next();
-                next = glanceSkipSpace();
-                if (!next.isCR()) {
-                    panic("must be CR(\\ n)", next);
-                }
-                clauseStatements = new Statements(Collections.singletonList(new StatementWith(withToken)));
-                removeSpaceOrCR();
-                return;
-            case LB:
-                // 有花括号的语句
-                clauseLB = next();
-                List<Statement> statements = new ArrayList<>();
-                // 解析多个语句
-                removeSpaceOrCR();
-                Statement statement = new StatementChannel(this, Kind.RB).get();
-                while (!(statement instanceof StatementEmpty)) {
-                    statements.add(statement);
-                    removeSpaceOrCR();
-                    statement = new StatementChannel(this, Kind.RB).get();
-                }
-                removeSpaceOrCR();
-                clauseRB = next();
-                if (clauseRB.not(Kind.RB)) {
-                    panic("must be } ", clauseRB);
-                }
-                removeSpaceOrCR();
-                next = glance();
-                switch (next.kind){
-                    case WITH:
-                    case WITHOUT:
-                        statements.add(new StatementWith(next()));
-                        break;
-                    default:
-                }
-                clauseStatements = new Statements(statements);
-                removeSpaceOrCR();
-                return;
-            case ID:
-                Expression expression = new ExpressionChannel(this, Kind.CR).get();
-                next = glanceSkipSpace();
-                if (!next.isCR() && next.not(Kind.RB)) {
-                    panic("expression clause must be end by CR(\\ n) or }.", next);
-                }
-                clauseStatements = new Statements(Collections.singletonList(new StatementExpression(expression)));
-                removeSpaceOrCR();
-                return;
-            default: panic("can not be this token.", next);
-        }
+        ClauseStatements cs = parseStatements();
+        clauses.add(new MatchClause(op, expression, others, colonToken,
+                cs.clauseLB, cs.clauseStatements, cs.clauseRB));
     }
 
     private Token parseMatchOp() {
         Token op = glance();
-        if (RELATIONAL_OPERATOR.contains(op.kind)) {
+        if (contains(op, RELATIONAL_OPERATOR)) {
             op = next();
             removeSpace();
         } else { op = null; }
@@ -210,9 +139,82 @@ public class MatchChannel extends Channel {
         if (colonToken.not(Kind.COLON)) {
             panic("must be : ", colonToken);
         }
-        parseStatements();
-        elseClause = new MatchElseClause(elseToken, colonToken, clauseLB, clauseStatements, clauseRB);
+        ClauseStatements cs = parseStatements();
+        elseClause = new MatchElseClause(elseToken, colonToken,
+                cs.clauseLB, cs.clauseStatements, cs.clauseRB);
     }
 
+    private ClauseStatements parseStatements() {
+        Token clauseLB = null;
+        Statements clauseStatements = null;
+        Token clauseRB = null;
+        removeSpace();
+        Token next = glance();
+        switch (next.kind) {
+            case CR:
+                clauseStatements = new Statements(Collections.emptyList());
+                removeSpaceOrCR(); break;
+            case WITH: case WITHOUT:
+                Token withToken = next();
+                next = glanceSkipSpace();
+                if (!next.isCR()) {
+                    panic("must be CR(\\ n)", next);
+                }
+                clauseStatements = new Statements(Collections.singletonList(new StatementWith(withToken)));
+                removeSpaceOrCR();
+                break;
+            case LB:
+                // 有花括号的语句
+                clauseLB = next();
+                List<Statement> statements = new ArrayList<>();
+                // 解析多个语句
+                removeSpaceOrCR();
+                Statement statement = StatementChannel.produce(this, Kind.RB);
+                while (!(statement instanceof StatementEmpty)) {
+                    statements.add(statement);
+                    removeSpaceOrCR();
+                    statement = StatementChannel.produce(this, Kind.RB);
+                }
+                removeSpaceOrCR();
+                clauseRB = next();
+                if (clauseRB.not(Kind.RB)) {
+                    panic("must be } ", clauseRB);
+                }
+                removeSpaceOrCR();
+                switch (glance().kind){
+                    case WITH: case WITHOUT: statements.add(new StatementWith(next())); break;
+                    default:
+                }
+                clauseStatements = new Statements(statements);
+                removeSpaceOrCR();
+                break;
+            case ID:
+                Expression expression = ExpressionChannel.produce(this, Kind.CR, Kind.RB);
+                next = glanceSkipSpace();
+                if (!next.isCR() && next.not(Kind.RB)) {
+                    panic("expression clause must be end by CR(\\ n) or }.", next);
+                }
+                clauseStatements = new Statements(Collections.singletonList(new StatementExpression(expression)));
+                removeSpaceOrCR();
+                break;
+            default: panic("can not be this token.", next);
+        }
+        return new ClauseStatements(clauseLB, clauseStatements, clauseRB);
+    }
+
+    private static class ClauseStatements {
+        private Token clauseLB;
+        private Statements clauseStatements;
+        private Token clauseRB;
+        ClauseStatements(Token clauseLB, Statements clauseStatements, Token clauseRB) {
+            this.clauseLB = clauseLB;
+            this.clauseStatements = clauseStatements;
+            this.clauseRB = clauseRB;
+        }
+    }
+
+    public static StatementMatch produce(Channel channel, Kind... end) {
+        return new MatchChannel(channel, end).produce();
+    }
 
 }

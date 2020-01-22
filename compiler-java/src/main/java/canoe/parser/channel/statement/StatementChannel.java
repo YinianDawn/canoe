@@ -11,23 +11,20 @@ import canoe.ast.statement.StatementEmpty;
 import canoe.ast.statement.StatementExpression;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
-import canoe.parser.TokenStream;
 import canoe.parser.channel.Channel;
 import canoe.parser.channel.expression.ExpressionChannel;
+import canoe.parser.channel.statement.special.IfChannel;
+import canoe.parser.channel.statement.special.MatchChannel;
 
 import static canoe.lexer.KindSet.*;
 
 /**
  * @author dawn
  */
-public class StatementChannel extends Channel {
+public class StatementChannel extends Channel<Statement> {
 
-    public StatementChannel(Channel channel, Kind... end) {
-        this(channel.getName(), channel.getStream(), end);
-    }
-
-    public StatementChannel(String name, TokenStream stream, Kind... end) {
-        super(name, stream, end);
+    private StatementChannel(Channel channel, Kind... end) {
+        super(channel, end);
         Token next = glance();
         if (ASSIGN_OPERATOR.contains(next.kind)) {
             panic("statement can not start with: " + next, next);
@@ -39,155 +36,149 @@ public class StatementChannel extends Channel {
                 panic("statement can not start with: " + next, next);
             default:
         }
-        mark();
-        while (!full()) { eat(); }
-        forget();
+        if (end(next)) {
+            data = new StatementEmpty();
+        } else {
+            mark();
+            init();
+            forget();
+        }
     }
 
-    public Statement get() {
-        if (!full()) {
-            panic("statement is not done.");
+    @Override
+    protected boolean eat(Token next) {
+        if (isChannelEmpty() && CONSTANT.contains(next.kind)) {
+            Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
+            removeSpaceOrCR();
+            data = new StatementExpression(expression);
+            return false;
         }
-        return 0 < channel.size() ? (Statement) channel.getLast() : new StatementEmpty();
-    }
-
-    private boolean full() {
-        if (1 <= channel.size()) {
-            if (1 < channel.size() || !(channel.getLast() instanceof Statement)) { return false; }
-        }
-        return end(glanceSkipSpace());
-    }
-
-    private void eat() {
-        Token next = glance();
-        if (eatSpaceOrCR(next)) {
-            next(); eat(); return;
-        }
-
         if (BINARY_OPERATOR.contains(next.kind)) {
             // 语句解析里面有二元操作符
             recover();
-            Expression expression = new ExpressionChannel(this, extend(Kind.CR)).get();
-            channel.clear();
-            channel.addLast(new StatementExpression(expression));
-            removeSpace();
-            mark();
-            return;
-        }
-        if (channel.isEmpty() && CONSTANT.contains(next.kind)) {
-            Expression expression = new ExpressionChannel(this, extend(Kind.CR)).get();
-            channel.addLast(new StatementExpression(expression));
+            Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
             removeSpaceOrCR();
-            return;
+            data = new StatementExpression(expression);
+            mark();
+            return false;
         }
 
-        if (ASSIGN_OPERATOR.contains(next.kind) || RIGHT_OPERATOR.contains(next.kind)) {
+        if (contains(next, ASSIGN_OPERATOR, RIGHT_OPERATOR)) {
 
         } else {
             switch (next.kind) {
-                // 直接指明的特殊语句，直接吃
-                case MATCH: channel.addLast(new MatchChannel(getName(), getStream()).get()); return;
-                case IF: channel.addLast(new IfChannel(getName(), getStream()).get()); return;
+                // 直接能确定语句类型的就不一个一个吃了
+                case MATCH: data = MatchChannel.produce(this, Kind.CR);return false;
+                case IF: data = IfChannel.produce(this, Kind.CR); return false;
+                case LOOP: data = LoopChannel.produce(this, Kind.CR); return false;
 
                 case ID:
-
                     break;
-
-
-                default: panic("can not be: " + next, next);
+                default: panic("???", next);
             }
         }
-        channel.addLast(next());
-        digest();
+        return true;
     }
 
-    private void digest() {
-
+    @Override
+    protected void digest() {
         if (digest1()) { digest(); return; }
         if (digest2()) { digest(); return; }
 
         String status = status();
 
         switch (status) {
-            case "StatementAssign": break;
-
-            case "ID":
-                channel.addLast(new ExpressionID((Token) channel.removeLast()));
-                accept(true, false); break;
-            case "ExpressionOpRight":
             case "ExpressionID":
-                if (end(glanceSkipSpace())) {
-                    channel.addLast(new StatementExpression((Expression) channel.removeLast()));
-                    break;
-                } else {
-                    accept(true, false); break;
-                }
-
-
-            case "ExpressionID MergeAssign":
+            case "StatementAssign":
+            case "ExpressionOpRight":
                 break;
 
-
-
-            default: panic("wrong statement.", current());
+            default: panic("wrong statement.");
         }
     }
 
     private boolean digest2() {
-        if (channel.size() <= 1) { return false; }
-        Object o1 = channel.removeLast();
-        Object o2 = channel.removeLast();
-        String status = getKind(o2) + " " + getKind(o1);
+        if (channelSizeLess(2)) { return false; }
+        Object o1 = removeLast();
+        Object o2 = removeLast();
+        String status = parseName(o2) + " " + parseName(o1);
         switch (status) {
             case "ExpressionID MergeAssign":
                 removeSpace();
-                Expression expression = new ExpressionChannel(this, Kind.CR).get();
-                channel.addLast(new StatementAssign((Expression) o2, ((MergeAssign) o1).getToken(), expression));
+                Expression expression = ExpressionChannel.produce(this, Kind.CR);
+                addLast(new StatementAssign((Expression) o2, ((MergeAssign) o1).getToken(), expression));
+                ignoreSpace().refuseCR().over(this::full);
                 return true;
             case "ExpressionID MergeOperatorRight":
-                channel.addLast(new ExpressionOpRight((Expression) o2, ((MergeOperatorRight) o1).getToken()));
+                addLast(new ExpressionOpRight((Expression) o2, ((MergeOperatorRight) o1).getToken()));
+                ignoreSpace().refuseCR().over(this::full);
                 return true;
-//            case "BIT_NOT ExpressionBool": objects.addLast(new ExpressionLeftOp((Token) o2, (Expression) o1)); return true;
-//            case "ExpressionID ADD_ADD":
-//            case "ExpressionRightOp ADD_ADD": objects.addLast(new ExpressionRightOp((Expression) o2, (Token) o1)); return true;
-//            case "ExpressionID ExpressionRoundBracket": objects.addLast(new ExpressionFunction((Expression) o2, (ExpressionRoundBracket) o1)); return true;
-//            case "LR RR":
-//                objects.addLast(new ExpressionRoundBracket((Token) o2, new ExpressionEmpty(),(Token) o1)); return true;
-//
+////            case "BIT_NOT ExpressionBool": objects.addLast(new ExpressionLeftOp((Token) o2, (Expression) o1)); return true;
+////            case "ExpressionID ADD_ADD":
+////            case "ExpressionRightOp ADD_ADD": objects.addLast(new ExpressionRightOp((Expression) o2, (Token) o1)); return true;
+////            case "ExpressionID ExpressionRoundBracket": objects.addLast(new ExpressionFunction((Expression) o2, (ExpressionRoundBracket) o1)); return true;
+////            case "LR RR":
+////                objects.addLast(new ExpressionRoundBracket((Token) o2, new ExpressionEmpty(),(Token) o1)); return true;
+////
             default:
         }
-        channel.addLast(o2);
-        channel.addLast(o1);
+        addLast(o2);
+        addLast(o1);
         return false;
     }
 
     private boolean digest1() {
-        if (channel.isEmpty()) { return false; }
-        Object o1 = channel.removeLast();
+        if (isChannelEmpty()) { return false; }
+        Object o1 = removeLast();
 
         if (o1 instanceof Token) {
             Token token = (Token) o1;
             if (ASSIGN_OPERATOR.contains(token.kind)) {
-                channel.addLast(new MergeAssign(token));
+                addLast(new MergeAssign(token));
+                ignoreSpace();
                 return true;
             }
             if (RIGHT_OPERATOR.contains(token.kind)) {
-                channel.addLast(new MergeOperatorRight(token));
+                addLast(new MergeOperatorRight(token));
+                ignoreSpace();
+                return true;
+            }
+            if (token.is(Kind.ID)) {
+                addLast(new ExpressionID((Token) o1));
+                ignoreSpace();
+                if (channelSize(1)) {
+                    over(this::full);
+                }
                 return true;
             }
         }
 
-        String status = getKind(o1);
-        switch (status) {
-            case "ID":
-                channel.addLast(new ExpressionID((Token) o1));
-                return true;
-            default:
-        }
-        channel.addLast(o1);
+//        String status = parseName(o1);
+//        switch (status) {
+//
+//            default:
+//        }
+        addLast(o1);
         return false;
     }
 
+    private void full() {
+        if (channelSize(1) ) {
+            Object o = getLast();
+            if (o instanceof Statement) {
+                data = (Statement) removeLast();
+            } else if (o instanceof Expression) {
+                data = new StatementExpression((Expression) o);
+            }
+            if (null != data) {
+                return;
+            }
+        }
+        panic("should not end.");
+    }
 
+    public static Statement produce(Channel channel, Kind... end) {
+        return new StatementChannel(channel, end).produce();
+    }
 
 }

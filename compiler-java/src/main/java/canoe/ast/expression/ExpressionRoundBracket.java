@@ -1,7 +1,6 @@
-package canoe2.ast.expression;
+package canoe.ast.expression;
 
-import canoe2.lexis.Kind;
-import canoe2.lexis.Token;
+import canoe.lexer.Token;
 
 /**
  * @author dawn
@@ -20,9 +19,4 @@ public class ExpressionRoundBracket implements Expression {
         this.rr = rr;
     }
 
-
-    @Override
-    public boolean endWith(Kind kind) {
-        return rr.getKind() == kind;
-    }
 }

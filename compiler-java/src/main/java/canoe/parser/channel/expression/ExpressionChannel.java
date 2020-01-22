@@ -6,30 +6,29 @@ import canoe.ast.merge.MergeOperatorRight;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
-import canoe.parser.channel.statement.IfChannel;
-import canoe.parser.channel.statement.MatchChannel;
+import canoe.parser.channel.statement.special.IfChannel;
+import canoe.parser.channel.statement.special.MatchChannel;
 
 import java.util.HashMap;
-import java.util.Stack;
 
 import static canoe.lexer.KindSet.*;
 
 /**
  * @author dawn
  */
-public class ExpressionChannel extends Channel {
+public class ExpressionChannel extends Channel<Expression> {
 
     private static HashMap<String, Integer> PRIORITY = new HashMap<>(97);
 
     static {
         // ( ) [ ] -> 后缀运算符 从左到右
-        PRIORITY.put(".", 1);
-        PRIORITY.put("..", 1);
         PRIORITY.put("(", 1);
-        PRIORITY.put(")", 1);
+//        PRIORITY.put(")", 1);
         PRIORITY.put("[", 1);
-        PRIORITY.put("]", 1);
+//        PRIORITY.put("]", 1);
         PRIORITY.put("->", 1);
+        PRIORITY.put(".", 2);
+        PRIORITY.put("..", 2);
         // ! + - ++ -- 单目运算符 从右到左
         PRIORITY.put("!", 2);
         PRIORITY.put("+l", 2);
@@ -81,15 +80,15 @@ public class ExpressionChannel extends Channel {
         PRIORITY.put(",", 14);
     }
 
-    private Stack<Token> pairSign = new Stack<>();
+//    private Stack<Token> pairSign = new Stack<>();
 
-    public ExpressionChannel(Channel channel, Kind... end) {
+    private ExpressionChannel(Channel channel, Kind... end) {
         super(channel, end);
-
         Token next = glance();
         if (!COMMON_KEY_WORDS.contains(next.kind)
                 && !LEFT_OPERATOR.contains(next.kind)
                 && !CONSTANT.contains(next.kind)) {
+            if (end(next)) { panic("can not start with " + next.kind.getSign(), next); }
             switch (next.kind) {
                 case LR:
                 case ID:
@@ -97,239 +96,273 @@ public class ExpressionChannel extends Channel {
                 default: panic("can not be this kind of token.", next);
             }
         }
-        while (!done()) { eat(); }
+        init();
     }
 
-    public Expression get() {
-        if (!done()) {
-            panic("expression is not done.");
+    @Override
+    protected boolean eat(Token next) {
+        switch (next.kind) {
+            // 直接能确定语句类型的就不一个一个吃了
+            case MATCH: data = new ExpressionMatch(MatchChannel.produce(this, extend())); return false;
+            case IF: data = new ExpressionIf(IfChannel.produce(this, extend())); return false;
+
+            default:
         }
-        return 0 < channel.size() ? (Expression) channel.getLast() : new ExpressionEmpty();
+        return true;
     }
 
-    private boolean done() {
-        if (1 <= channel.size()) {
-            if (1 < channel.size() || !(channel.getLast() instanceof Expression)) { return false; }
-        }
-        return end(glanceSkipSpace());
-    }
 
-    private void eat() {
-        Token next = glance();
-
-        if (eatSpaceOrCR(next)) { next(); eat(); return; }
-
-        // 遇到左花括号 { 谨慎通过
-//        if (next.getKind() == Kind.LB) {
-//            if (!objects.isEmpty()) {
-//                java.lang.Object o = objects.getLast();
-//                if (o instanceof Token) {
-//                    Token last = (Token) o;
-//                    switch (last.getKind()) {
-//                        case RS:
-//                        case LAMBDA: break;
-//                        // 不允许继续找表达式了
-//                        default: return true;
-//                    }
+//    private void eat() {
+//        Token next = glance();
 //
-//                } else {
-//                    // 上一个不是 token 就不允许继续找表达式了
-//                    return true;
-//                }
+//        if (eatSpaceOrCR(next)) { next(); eat(); return; }
+//
+//        // 遇到左花括号 { 谨慎通过
+////        if (next.getKind() == Kind.LB) {
+////            if (!objects.isEmpty()) {
+////                java.lang.Object o = objects.getLast();
+////                if (o instanceof Token) {
+////                    Token last = (Token) o;
+////                    switch (last.getKind()) {
+////                        case RS:
+////                        case LAMBDA: break;
+////                        // 不允许继续找表达式了
+////                        default: return true;
+////                    }
+////
+////                } else {
+////                    // 上一个不是 token 就不允许继续找表达式了
+////                    return true;
+////                }
+////            }
+////        }
+//
+////        Token top;
+////        switch (next.getKind()) {
+////            // [ 和 {
+////            case LS: case LB: stack.add(next); break;
+////            // ] 和 }
+////            case RS: case RB: if (stack.empty()) { return true; }
+////                top = stack.pop();
+////                if (top.getKind() == Kind.LS) {
+////                    if (next.getKind() == Kind.RS) { break; } else { panicToken("try find ] match with: " + top, next); }
+////                } else if (top.getKind() == Kind.LB) {
+////                    if (next.getKind() == Kind.RB) { break; } else { panicToken("try find } match with: " + top, next); }
+////                } else { panicToken("token can not be.", next); }
+////                return true;
+////
+////            case IF:
+////                StatementIf statementIf = parseStatementIf.get();
+////                objects.addLast(new ExpressionIf(statementIf));
+////                return done();
+////            case MATCH:
+////                StatementMatch statementMatch = parseStatementMatch.get();
+////                objects.addLast(new ExpressionMatch(statementMatch));
+////                return done();
+////
+////            case CANOE:
+////            case DOT:
+////
+////            case TRUE:
+////            case FALSE:
+////            case NUMBER_HEXADECIMAL:
+////            case NUMBER_DECIMAL:
+////            case NUMBER_OCTAL:
+////            case NUMBER_BINARY:
+////            case REAL_DECIMAL:
+////            case STRING:
+////            case BIT_NOT:
+////            case ID: break;
+////
+////            case LR: stack.add(next); break;
+////            case RR:
+////                if (!stack.empty()) {
+////                    top = stack.pop();
+////                    if (top.getKind() == Kind.LR) { break; } else { panicToken("try find ) match with: " + top, next); }
+////                } else {
+////                    return true;
+////                }
+////
+////            case EQ: case NE: case GT: case GE: case LT: case LE:
+////            case ADD: case SUB:  case MUL: case DIV: case MOD:
+////            case ADD_ADD: case SUB_SUB:
+////            case LAMBDA:
+////            case COMMA:
+////                break;
+////
+////            case SPACES: reader.nextToken(); return done();
+////
+////            case IN: return true;
+////
+////            case CR: if (objects.size() == 1 && objects.getLast() instanceof Expression) { return true; }
+////            case COLON: if (objects.size() == 1 && objects.getLast() instanceof Expression) { return true; }
+////
+////            default: panicToken("can not be this kind of token.", next);
+////        }
+//
+//        if (!CONSTANT.contains(next.kind)
+//                && !BINARY_OPERATOR.contains(next.kind)
+//                && !RIGHT_OPERATOR.contains(next.kind)) {
+//            switch (next.kind) {
+//                case MATCH: channel.addLast(new ExpressionMatch(
+//                        new MatchChannel(getName(), getStream()).get())); return;
+//                case IF: channel.addLast(new ExpressionIf(
+//                        new IfChannel(getName(), getStream()).get())); return;
+//                case ID:
+//
+//                case LR: case RR:
+//
+//                case COMMA:
+//                    break;
+//                default: panic("can not be this kind of token.", next);
 //            }
 //        }
+//        channel.addLast(next());
+//        reduce();
+//    }
 
-//        Token top;
-//        switch (next.getKind()) {
-//            // [ 和 {
-//            case LS: case LB: stack.add(next); break;
-//            // ] 和 }
-//            case RS: case RB: if (stack.empty()) { return true; }
-//                top = stack.pop();
-//                if (top.getKind() == Kind.LS) {
-//                    if (next.getKind() == Kind.RS) { break; } else { panicToken("try find ] match with: " + top, next); }
-//                } else if (top.getKind() == Kind.LB) {
-//                    if (next.getKind() == Kind.RB) { break; } else { panicToken("try find } match with: " + top, next); }
-//                } else { panicToken("token can not be.", next); }
-//                return true;
-//
-//            case IF:
-//                StatementIf statementIf = parseStatementIf.get();
-//                objects.addLast(new ExpressionIf(statementIf));
-//                return done();
-//            case MATCH:
-//                StatementMatch statementMatch = parseStatementMatch.get();
-//                objects.addLast(new ExpressionMatch(statementMatch));
-//                return done();
-//
-//            case CANOE:
-//            case DOT:
-//
-//            case TRUE:
-//            case FALSE:
-//            case NUMBER_HEXADECIMAL:
-//            case NUMBER_DECIMAL:
-//            case NUMBER_OCTAL:
-//            case NUMBER_BINARY:
-//            case REAL_DECIMAL:
-//            case STRING:
-//            case BIT_NOT:
-//            case ID: break;
-//
-//            case LR: stack.add(next); break;
-//            case RR:
-//                if (!stack.empty()) {
-//                    top = stack.pop();
-//                    if (top.getKind() == Kind.LR) { break; } else { panicToken("try find ) match with: " + top, next); }
-//                } else {
-//                    return true;
-//                }
-//
-//            case EQ: case NE: case GT: case GE: case LT: case LE:
-//            case ADD: case SUB:  case MUL: case DIV: case MOD:
-//            case ADD_ADD: case SUB_SUB:
-//            case LAMBDA:
-//            case COMMA:
-//                break;
-//
-//            case SPACES: reader.nextToken(); return done();
-//
-//            case IN: return true;
-//
-//            case CR: if (objects.size() == 1 && objects.getLast() instanceof Expression) { return true; }
-//            case COLON: if (objects.size() == 1 && objects.getLast() instanceof Expression) { return true; }
-//
-//            default: panicToken("can not be this kind of token.", next);
-//        }
-
-        if (!CONSTANT.contains(next.kind)
-                && !BINARY_OPERATOR.contains(next.kind)
-                && !RIGHT_OPERATOR.contains(next.kind)) {
-            switch (next.kind) {
-                case MATCH: channel.addLast(new ExpressionMatch(
-                        new MatchChannel(getName(), getStream()).get())); return;
-                case IF: channel.addLast(new ExpressionIf(
-                        new IfChannel(getName(), getStream()).get())); return;
-                case ID:
-                    break;
-                default: panic("can not be this kind of token.", next);
-            }
-        }
-        channel.addLast(next());
-        reduce();
-    }
-
-    private void reduce() {
-        boolean constant = false;
-        while (reduceConstant()) { constant = true; }
-        if (constant) { reduce(); return; }
-
-        if (reduce1()) { reduce(); return; }
-
-        if (reduce2()) { reduce(); return; }
-
-        if (reduce3()) { reduce(); return; }
+    @Override
+    protected void digest() {
+        if (digest1()) { digest(); return; }
+        if (digest2()) { digest(); return; }
+        if (digest3()) { digest(); return; }
 
         String status = status();
         switch (status) {
-            case "ExpressionID":
+            // 单个表达式
             case "ExpressionConstant":
+            case "ExpressionID":
             case "ExpressionOpMiddle":
             case "ExpressionOpRight":
                 break;
+            // 单个运算符
 
+            // 表达式 运算符
             case "ExpressionID MergeOperatorBoth":
+            case "ExpressionOpMiddle MergeOperatorBoth":
+            case "ExpressionOpMiddle LR":
+            case "ExpressionOpMiddle ExpressionRoundBracket":
                 break;
 
-            default: panic("what is status.");
-        }
+            // 表达式 运算符 表达式
+            case "ExpressionOpMiddle LR ExpressionConstant":
+            case "ExpressionOpMiddle LR ExpressionOpMiddle":
+            case "ExpressionID MergeOperatorBoth ExpressionID":
+            case "ExpressionOpMiddle MergeOperatorBoth ExpressionID":
+                break;
 
+            // 表达式 运算符 表达式 运算符
+            case "ExpressionID MergeOperatorBoth ExpressionID LR":
+            case "ExpressionOpMiddle MergeOperatorBoth ExpressionID LR":
+                break;
+
+            // 表达式 运算符 表达式 运算符 表达式
+            case "ExpressionID MergeOperatorBoth ExpressionID LR ExpressionConstant":
+            case "ExpressionOpMiddle MergeOperatorBoth ExpressionID LR ExpressionConstant":
+            case "ExpressionID MergeOperatorBoth ExpressionID LR ExpressionOpMiddle":
+            case "ExpressionOpMiddle MergeOperatorBoth ExpressionID LR ExpressionOpMiddle":
+                break;
+
+            // 表达式 运算符 表达式 运算符 表达式 运算符
+            case "ExpressionID MergeOperatorBoth ExpressionID LR ExpressionConstant MergeOperatorBoth":
+            case "ExpressionOpMiddle MergeOperatorBoth ExpressionID LR ExpressionConstant MergeOperatorBoth":
+                break;
+
+            default: panic("wrong expression.");
+        }
     }
 
-    private boolean reduce3() {
-        if (channel.size() <= 2) { return false; }
-        Object o1 = channel.removeLast();
-        Object o2 = channel.removeLast();
-        Object o3 = channel.removeLast();
-        String status = getKind(o3) + " " + getKind(o2) + " " + getKind(o1);
-        Token next;
+    private boolean digest3() {
+        if (channelSizeLess(3)) { return false; }
+        Object o1 = removeLast();
+        Object o2 = removeLast();
+        Object o3 = removeLast();
+        String status = parseName(o3) + " " + parseName(o2) + " " + parseName(o1);
+
+        Token op;
+//        Token next;
         switch (status) {
             case "ExpressionID MergeOperatorBoth ExpressionID":
             case "ExpressionID MergeOperatorBoth ExpressionConstant":
+            case "ExpressionConstant MergeOperatorBoth ExpressionConstant":
+            case "ExpressionID MergeOperatorBoth ExpressionFunction":
+            case "ExpressionOpMiddle MergeOperatorBoth ExpressionID":
+            case "ExpressionOpMiddle MergeOperatorBoth ExpressionFunction":
                 // 检查运算符优先级
-                Token op = ((MergeOperatorBoth) o2).getToken();
-                if (priority3(op, glanceSkipSpace())) {
-                    channel.addLast(new ExpressionOpMiddle((Expression) o3, op, (Expression) o1));
+                op = ((MergeOperatorBoth) o2).getToken();
+                if (priority(op, glanceSkipSpace())) {
+                    addLast(new ExpressionOpMiddle((Expression) o3, op, (Expression) o1));
                     return true;
                 }
                 break;
-
-//            case "LR ExpressionNumber RR": objects.addLast(new ExpressionRoundBracket((Token) o3, (Expression) o2, (Token) o1)); return true;
-//            case "ExpressionID ADD ExpressionID":
-//            case "ExpressionID ADD ExpressionNumber":
-//            case "ExpressionNumber ADD ExpressionNumber":
-//            case "ExpressionID GT ExpressionNumber":
-//                // 检查运算符优先级
-//                Token op = (Token) o2;
-//                if (priority3(op)) {
-//                    objects.addLast(new ExpressionMiddleOp((Expression) o3, op, (Expression) o1));
-//                    return true;
-//                }
-//                break;
-//            case "ExpressionID LAMBDA ExpressionMiddleOp":
-//            case "ExpressionID LAMBDA ExpressionID":
-//                next = nextTokenSkipSpaces();
-//                if (next.getKind() == Kind.CR) {
-//                    objects.addLast(new ExpressionLambdaExpression((Expression) o3, (Token) o2, (Expression) o1));
-//                    return true;
-//                }
-//                break;
-//            case "ExpressionID COMMA ExpressionID":
-//                next = nextTokenSkipSpaces();
-//                switch (next.getKind()) {
-//                    case LAMBDA:
-//                    case IN:
-//                        objects.addLast(new ExpressionComma((Expression) o3, (Token) o2, (Expression) o1));
-//                        return true;
-//
-//                    default:
-//                }
-//                break;
-//            case "ExpressionComma LAMBDA LB":
-//                Statements statements = parseStatements.get();
-//                removeSpaceOrCR();
-//                next = reader.nextToken();
-//                if (next.getKind() != Kind.RB) {
-//                    panicToken("can not be.", next);
-//                }
-//                objects.addLast(new ExpressionLambdaStatements((Expression) o3, (Token) o2, (Token) o1, statements, next));
-//                return true;
-//            case "ExpressionDotID DOT ExpressionID":
-//            case "ExpressionID DOT ExpressionID":
-//                next = nextTokenSkipSpaces();
-//                if (next.getKind() != Kind.LR) {
-//                    objects.addLast(new ExpressionDotID((Expression) o3, (Token) o2, (ExpressionID) o1)); return true;
-//                }
-//                break;
-//            case "ExpressionID DOT ExpressionFunction":
-//            case "ExpressionFunction DOT ExpressionFunction":
-//                next = nextTokenSkipSpaces();
-//                if (next.getKind() != Kind.LR) {
-//                    objects.addLast(new ExpressionDotFunction((Expression) o3, (Token) o2, (ExpressionFunction) o1)); return true;
-//                }
-//                break;
-//            case "LR ExpressionDotFunction RR":
-//                objects.addLast(new ExpressionRoundBracket((Token) o3, (Expression) o2, (Token) o1)); return true;
-//
+            case "LR ExpressionOpMiddle RR":
+            case "LR ExpressionConstant RR":
+                addLast(new ExpressionRoundBracket((Token) o3, (Expression) o2, (Token) o1));
+                return true;
+////            case "ExpressionID ADD ExpressionID":
+////            case "ExpressionID ADD ExpressionNumber":
+////            case "ExpressionNumber ADD ExpressionNumber":
+////            case "ExpressionID GT ExpressionNumber":
+////                // 检查运算符优先级
+////                Token op = (Token) o2;
+////                if (priority3(op)) {
+////                    objects.addLast(new ExpressionMiddleOp((Expression) o3, op, (Expression) o1));
+////                    return true;
+////                }
+////                break;
+////            case "ExpressionID LAMBDA ExpressionMiddleOp":
+////            case "ExpressionID LAMBDA ExpressionID":
+////                next = nextTokenSkipSpaces();
+////                if (next.getKind() == Kind.CR) {
+////                    objects.addLast(new ExpressionLambdaExpression((Expression) o3, (Token) o2, (Expression) o1));
+////                    return true;
+////                }
+////                break;
+////            case "ExpressionID COMMA ExpressionID":
+////                next = nextTokenSkipSpaces();
+////                switch (next.getKind()) {
+////                    case LAMBDA:
+////                    case IN:
+////                        objects.addLast(new ExpressionComma((Expression) o3, (Token) o2, (Expression) o1));
+////                        return true;
+////
+////                    default:
+////                }
+////                break;
+////            case "ExpressionComma LAMBDA LB":
+////                Statements statements = parseStatements.get();
+////                removeSpaceOrCR();
+////                next = reader.nextToken();
+////                if (next.getKind() != Kind.RB) {
+////                    panicToken("can not be.", next);
+////                }
+////                objects.addLast(new ExpressionLambdaStatements((Expression) o3, (Token) o2, (Token) o1, statements, next));
+////                return true;
+////            case "ExpressionDotID DOT ExpressionID":
+////            case "ExpressionID DOT ExpressionID":
+////                next = nextTokenSkipSpaces();
+////                if (next.getKind() != Kind.LR) {
+////                    objects.addLast(new ExpressionDotID((Expression) o3, (Token) o2, (ExpressionID) o1)); return true;
+////                }
+////                break;
+////            case "ExpressionID DOT ExpressionFunction":
+////            case "ExpressionFunction DOT ExpressionFunction":
+////                next = nextTokenSkipSpaces();
+////                if (next.getKind() != Kind.LR) {
+////                    objects.addLast(new ExpressionDotFunction((Expression) o3, (Token) o2, (ExpressionFunction) o1)); return true;
+////                }
+////                break;
+////            case "LR ExpressionDotFunction RR":
+////                objects.addLast(new ExpressionRoundBracket((Token) o3, (Expression) o2, (Token) o1)); return true;
             default:
         }
-        channel.addLast(o3);
-        channel.addLast(o2);
-        channel.addLast(o1);
+        addLast(o3);
+        addLast(o2);
+        addLast(o1);
         return false;
     }
 
-    private boolean priority3(Token self, Token other) {
+    private boolean priority(Token self, Token other) {
         Integer p1 = PRIORITY.get(self.kind.getSign());
         if (null == p1) {
             panic("not a operator sign.", self);
@@ -340,92 +373,88 @@ public class ExpressionChannel extends Channel {
         return p1 <= p2;
     }
 
-    private boolean reduce2() {
-        if (channel.size() <= 1) { return false; }
-        Object o1 = channel.removeLast();
-        Object o2 = channel.removeLast();
-        String status = getKind(o2) + " " + getKind(o1);
+    private boolean digest2() {
+        if (channelSizeLess(2)) { return false; }
+        Object o1 = removeLast();
+        Object o2 = removeLast();
+        String status = parseName(o2) + " " + parseName(o1);
         switch (status) {
             case "ExpressionOpMiddle MergeOperatorRight":
-            case "ExpressionID MergeOperatorRight":
-                channel.addLast(new ExpressionOpRight((Expression) o2, ((MergeOperatorRight) o1).getToken()));
+//            case "ExpressionID MergeOperatorRight":
+                addLast(new ExpressionOpRight((Expression) o2, ((MergeOperatorRight) o1).getToken()));
+                ignoreSpace();
                 return true;
-//            case "BIT_NOT ExpressionBool": objects.addLast(new ExpressionLeftOp((Token) o2, (Expression) o1)); return true;
-//            case "ExpressionID ADD_ADD":
-//            case "ExpressionRightOp ADD_ADD": objects.addLast(new ExpressionRightOp((Expression) o2, (Token) o1)); return true;
-//            case "ExpressionID ExpressionRoundBracket": objects.addLast(new ExpressionFunction((Expression) o2, (ExpressionRoundBracket) o1)); return true;
-//            case "LR RR":
-//                objects.addLast(new ExpressionRoundBracket((Token) o2, new ExpressionEmpty(),(Token) o1)); return true;
-//
+            case "ExpressionID ExpressionRoundBracket":
+                addLast(new ExpressionFunction((ExpressionID) o2, (ExpressionRoundBracket) o1));
+                ignoreSpace();
+                return true;
+////            case "BIT_NOT ExpressionBool": objects.addLast(new ExpressionLeftOp((Token) o2, (Expression) o1)); return true;
+////            case "ExpressionID ADD_ADD":
+////            case "ExpressionRightOp ADD_ADD": objects.addLast(new ExpressionRightOp((Expression) o2, (Token) o1)); return true;
+////            case "ExpressionID ExpressionRoundBracket": objects.addLast(new ExpressionFunction((Expression) o2, (ExpressionRoundBracket) o1)); return true;
+////            case "LR RR":
+////                objects.addLast(new ExpressionRoundBracket((Token) o2, new ExpressionEmpty(),(Token) o1)); return true;
+
             default:
         }
-        channel.addLast(o2);
-        channel.addLast(o1);
+        addLast(o2);
+        addLast(o1);
         return false;
     }
 
-    private boolean reduce1() {
-        if (channel.isEmpty()) { return false; }
-        Object o1 = channel.removeLast();
+    private boolean digest1() {
+        if (isChannelEmpty()) { return false; }
+        Object o1 = removeLast();
 
         if (o1 instanceof Token) {
             Token token = (Token) o1;
+            if (token.is(Kind.ID)) {
+                addLast(new ExpressionID((Token) o1));
+                ignoreSpace();
+                return true;
+            }
+            if (CONSTANT.contains(token.kind)) {
+                addLast(new ExpressionConstant(token));
+                ignoreSpace();
+                return true;
+            }
             if (BINARY_OPERATOR.contains(token.kind)) {
-                channel.addLast(new MergeOperatorBoth(token));
+                addLast(new MergeOperatorBoth(token));
+                ignoreSpace();
                 return true;
             }
             if (RIGHT_OPERATOR.contains(token.kind)) {
-                channel.addLast(new MergeOperatorRight(token));
+                addLast(new MergeOperatorRight(token));
+                ignoreSpace();
                 return true;
             }
         }
 
-        String status = getKind(o1);
-        switch (status) {
-            case "ID":
-                Token next = glanceSkipSpace();
-                if (end(next) || BINARY_OPERATOR.contains(next.kind)
-                        || RIGHT_OPERATOR.contains(next.kind)) {
-                    channel.addLast(new ExpressionID((Token) o1));
-                    accept(true, false);
-                    return true;
-                }
-                switch (next.kind) {
-//                    case EQ: case NE: case GT: case GE: case LT: case LE:
-//                    case ADD_ADD: case SUB_SUB:
-//                    case LAMBDA:
-//                    case ADD: case SUB: case MUL: case DIV: case MOD:
-//                    case COMMA:
-//                    case COLON:
-//                    case CR:
-//                    case IN:
-//                    case LR:
-//                    case LB:
-//                        objects.addLast(new ExpressionID((Token) o1));
-//                        return true;
-                    default:
-                }
-                break;
-//            case "CANOE":
-//                objects.addLast(new ExpressionID((Token) o1));
-//                return true;
-            default:
-        }
-        channel.addLast(o1);
+//        String status = parseName(o1);
+//        switch (status) {
+//            default:
+//        }
+        addLast(o1);
         return false;
     }
 
-    private boolean reduceConstant() {
-        if (channel.isEmpty()) { return false; }
-        Object o = channel.removeLast();
-        if (o instanceof Token) {
-            Token token = (Token) o;
-            if (CONSTANT.contains(token.kind)) {
-                channel.add(new ExpressionConstant(token)); return true;
-            }
+    @Override
+    protected void digested() {
+        if (end(glanceSkipSpace())) {
+            this.full();
         }
-        channel.addLast(o);
-        return false;
+    }
+
+    private void full() {
+        if (channelSize(1) && getLast() instanceof Expression) {
+            data = (Expression) removeLast();
+            return ;
+        }
+        panic("should not end.");
+    }
+
+    public static Expression produce(Channel channel, Kind... end) {
+        return new ExpressionChannel(channel, end).produce();
     }
 
 }
