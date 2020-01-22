@@ -8,6 +8,14 @@ import java.util.Set;
  */
 public class KindSet {
 
+    public static boolean contains(Set<Kind> set, Token token) {
+        return set.contains(token.kind);
+    }
+
+    public static boolean contains(Set<Kind> set, Kind kind) {
+        return set.contains(kind);
+    }
+
     public static final Set<Kind> COMMON_KEY_WORDS = new HashSet<>();
 
     static {
@@ -51,6 +59,9 @@ public class KindSet {
         CONSTANT.add(Kind.DECIMAL);
 
         CONSTANT.add(Kind.STRING);
+
+        CONSTANT.add(Kind.TRUE);
+        CONSTANT.add(Kind.FALSE);
     }
 
     public static final Set<Kind> BINARY_OPERATOR = new HashSet<>();
@@ -82,6 +93,8 @@ public class KindSet {
         BINARY_OPERATOR.add(Kind.BIT_XOR);
         BINARY_OPERATOR.add(Kind.BIT_LEFT);
         BINARY_OPERATOR.add(Kind.BIT_RIGHT);
+
+        BINARY_OPERATOR.add(Kind.COMMA);
 
     }
 

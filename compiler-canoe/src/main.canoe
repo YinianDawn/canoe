@@ -1,6 +1,6 @@
 // this is comment
 /** this is another comment */
-package main
+package main.canoe1 
 /** this is another comment again 
 
 */

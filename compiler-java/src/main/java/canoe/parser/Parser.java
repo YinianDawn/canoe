@@ -3,18 +3,8 @@ package canoe.parser;
 
 import canoe.ast.AST;
 import canoe.ast.PackageInfo;
-import canoe.ast.imports.ImportStatements;
-import canoe.ast.statement.Statements;
-import canoe.lexer.Kind;
-import canoe.lexer.Lexer;
-import canoe.lexer.Token;
 import canoe.lexer.Tokens;
-import canoe.parser.channel.ImportChannel;
-import canoe.parser.channel.StatementsChannel;
-
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import canoe.parser.channel.packages.PackageChannel;
 
 import static canoe.util.PanicUtil.panic;
 
@@ -41,19 +31,20 @@ public class Parser {
             panic("tokens can not be empty.");
         }
 
-        PackageInfo packageInfo = parsePackageInfo();
-        ImportStatements importStatements = parseImportStatements();
-        Statements statements = parseStatements();
+        PackageInfo packageInfo = PackageChannel.produce(tokens.getSourceFile().getName(), stream);
+//        ImportStatements importStatements = parseImportStatements();
+//        Statements statements = parseStatements();
 
-        return new AST(tokens, packageInfo, importStatements, statements);
+//        return new AST(tokens, packageInfo, importStatements, statements);
+        return new AST(tokens, packageInfo, null, null);
     }
 
-    private Statements parseStatements() {
-        stream.removeSpaceOrCR();
-        StatementsChannel channel = new StatementsChannel(tokens.getSourceFile().getName(),
-                stream, -1, Kind.EOF);
-        return channel.get();
-    }
+//    private Statements parseStatements() {
+//        stream.removeSpaceOrCR();
+//        StatementsChannel channel = new StatementsChannel(tokens.getSourceFile().getName(),
+//                stream, -1, Kind.EOF);
+//        return channel.get();
+//    }
 
 //    private Statement parseStatement() {
 //        removeSpaceOrCR();
@@ -825,73 +816,13 @@ public class Parser {
 
     // ============== 解析导入 ==============
 
-    private ImportStatements parseImportStatements() {
-        Token importToken = stream.glance();
-        if (importToken.not(Kind.IMPORT)) {
-            return new ImportStatements(Collections.emptyList());
-        }
-        ImportChannel channel = new ImportChannel(tokens.getSourceFile().getName(), stream);
-        return channel.get();
-    }
-
-    // ============== 解析包 ==============
-
-    private PackageInfo parsePackageInfo() {
-        PackageInfo packageInfo;
-        if (stream.glance().is(Kind.PACKAGE)) {
-            // 取出packageToken
-            Token packageToken = stream.next();
-            stream.removeSpace();
-
-            List<Token> names = new LinkedList<>();
-            loop:
-            while (stream.has() && !stream.glance().isSpaces()) {
-                Token next = stream.glance();
-                switch (next.kind) {
-                    case ID: case DOT: break;
-                    // 遇到换行符强制认为结束包声明语句
-                    case CR: break loop;
-                    // 这些关键字允许通过 但不允许结尾
-                    case PACKAGE: case IMPORT: case AS:
-                    case OPEN: case NATIVE: case GOTO: case ENUM: case CANOE:
-                    case RETURN:
-                    case IF: case ELSE: case MATCH: case WITH: case WITHOUT: case IN:
-                    case LOOP: case BREAK: case CONTINUE: case FOR:
-                    case TRUE: case FALSE:
-                    case INT8: case INT16: case INT32: case INT64:
-                    case FLOAT32: case FLOAT64: break;
-                    default: panicToken("package name can not contains " + next, next);
-                }
-                names.add(stream.next());
-            }
-            if (names.isEmpty()) {
-                panicToken("package name can not be empty. ", packageToken);
-            }
-            Token first = names.get(0);
-            Token last = names.get(names.size() - 1);
-            if (first.isDot()) {
-                panicToken("package name can not start with " + first, first);
-            }
-            if (last.isDot()) {
-                panicToken("package name can not end with " + last, last);
-            }
-            if (Lexer.KINDS.containsKey(last.getValue())) {
-                panicToken("package name can not end with key word: " + last, last);
-            }
-            packageInfo = new PackageInfo(packageToken, names);
-        } else {
-            packageInfo = new PackageInfo(new Token(Kind.PACKAGE, null, 0, 0, 7), Collections.emptyList());
-        }
-        stream.removeSpaceOrCR();
-        return packageInfo;
-    }
-
-    private void panicToken(String tip, Token token) {
-        panic(tip, tokens.getSourceFile().getName(), token);
-    }
-
-    private void panicToken(String tip) {
-        panic(tip, tokens.getSourceFile().getName(), stream.current());
-    }
+//    private ImportStatements parseImportStatements() {
+//        Token importToken = stream.glance();
+//        if (importToken.not(Kind.IMPORT)) {
+//            return new ImportStatements(Collections.emptyList());
+//        }
+//        ImportChannel channel = new ImportChannel(tokens.getSourceFile().getName(), stream);
+//        return channel.get();
+//    }
 
 }
