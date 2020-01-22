@@ -11,6 +11,7 @@ import canoe.util.PanicUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +30,7 @@ public class Channel<T> {
     private boolean acceptAll = false;
     private boolean refuseAll = false;
     private Set<Kind> end;
+    private HashMap<Kind, Supplier<Boolean>> match = new HashMap<>();
     private Runnable full;
     protected T data;
 
@@ -53,12 +55,11 @@ public class Channel<T> {
     }
 
     /**
-     * 每个子类必须继承这个方法判断这个通道是否结束
+     * 判断这个通道是否结束
      * @return
      */
     protected boolean hunger() {
-        panic("should override this method");
-        return false;
+        return null == data || !end();
     }
 
     /**
@@ -66,7 +67,36 @@ public class Channel<T> {
      * @return
      */
     protected void eat() {
-        panic("should override this method");
+        Token next = glance();
+        if (!pass(next)) {
+            if (!check(next)) {
+                return;
+            }
+        }
+
+        if (match.containsKey(next.kind)) {
+            boolean result = match.get(next.kind).get();
+            if (result) { return; }
+        } else {
+            if (null != full && end(next)) {
+                full.run();
+                return;
+            }
+        }
+
+        addLast(next());
+        clear();
+
+        digest();
+    }
+
+    /**
+     * 如果真的遇到问题，就panic了 返回值得意思是是否继续执行 true就继续执行 false就本轮结束
+     * @param next
+     * @return
+     */
+    protected boolean check(Token next) {
+        return true;
     }
 
     /**
@@ -134,27 +164,22 @@ public class Channel<T> {
     }
 
     /**
-     * 统一判断是否拒绝或接受
-     * @param next
-     * @return
-     */
-    protected boolean over(Token next) {
-        if (null != full && end(next)) {
-            full.run();
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * 清除接受或拒绝类型
      */
-    protected void clear() {
+    private void clear() {
         accept.clear();
         refuse.clear();
         acceptAll = false;
         refuseAll = false;
+        match.clear();
         full = null;
+    }
+
+    public void match(Kind kind, Supplier<Boolean> end) {
+        match.put(kind, end);
+        if (!acceptAll) {
+            accept.add(kind);
+        }
     }
 
     public void over(Runnable full) {
