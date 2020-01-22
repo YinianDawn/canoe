@@ -1,16 +1,13 @@
-package canoe.parser.channel.statement.special;
+package canoe.parser.channel.statement.condition;
 
 import canoe.ast.expression.Expression;
-import canoe.ast.statement.Statement;
-import canoe.ast.statement.StatementEmpty;
-import canoe.ast.statement.StatementIf;
 import canoe.ast.statement.Statements;
-import canoe.ast.statement.elseif.ElseIf;
+import canoe.ast.statement.condition.StatementIf;
+import canoe.ast.statement.condition.elseif.ElseIf;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
 import canoe.parser.channel.expression.ExpressionChannel;
-import canoe.parser.channel.statement.StatementChannel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,26 +82,13 @@ public class IfChannel extends Channel<StatementIf> {
             panic("statement must start with { .", lb);
         }
         removeSpaceOrCR();
-        statements = parseStatements();
+        statements = parseStatements(Kind.RB, Kind.CR);
         removeSpaceOrCR();
         rb = next();
         if (rb.not(Kind.RB)) {
             panic("statement must end with } .", rb);
         }
         return new Block(boolExpression, lb, statements, rb);
-    }
-
-    private Statements parseStatements() {
-        List<Statement> statements = new ArrayList<>();
-        // 解析多个语句
-        removeSpaceOrCR();
-        Statement statement = StatementChannel.produce(this, Kind.RB, Kind.CR);
-        while (!(statement instanceof StatementEmpty)) {
-            statements.add(statement);
-            removeSpaceOrCR();
-            statement = StatementChannel.produce(this, Kind.RB, Kind.CR);
-        }
-        return new Statements(statements);
     }
 
     private static class Block {

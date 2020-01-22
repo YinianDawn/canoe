@@ -3,9 +3,12 @@ package canoe.parser.channel;
 import canoe.ast.expression.Expression;
 import canoe.ast.merge.Merge;
 import canoe.ast.statement.Statement;
+import canoe.ast.statement.StatementEmpty;
+import canoe.ast.statement.Statements;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.TokenStream;
+import canoe.parser.channel.statement.StatementChannel;
 import canoe.util.PanicException;
 import canoe.util.PanicUtil;
 
@@ -200,6 +203,21 @@ public class Channel<T> {
         }
         panic("can not parse to a name: " + o);
         return "";
+    }
+
+    // ================ 解析多个语句 ================
+
+    protected Statements parseStatements(Kind... end) {
+        List<Statement> statements = new ArrayList<>();
+        // 解析多个语句
+        removeSpaceOrCR();
+        Statement statement = StatementChannel.produce(this, end);
+        while (!(statement instanceof StatementEmpty)) {
+            statements.add(statement);
+            removeSpaceOrCR();
+            statement = StatementChannel.produce(this, end);
+        }
+        return new Statements(statements);
     }
 
     // ================ channel方法 ================

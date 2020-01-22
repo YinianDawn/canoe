@@ -29,6 +29,7 @@ public class KindSet {
         COMMON_KEY_WORDS.add(Kind.LOOP);
         COMMON_KEY_WORDS.add(Kind.BREAK);
         COMMON_KEY_WORDS.add(Kind.CONTINUE);
+        COMMON_KEY_WORDS.add(Kind.EACH);
         COMMON_KEY_WORDS.add(Kind.FOR);
         COMMON_KEY_WORDS.add(Kind.TRUE);
         COMMON_KEY_WORDS.add(Kind.FALSE);

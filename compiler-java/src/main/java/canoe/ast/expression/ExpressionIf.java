@@ -1,7 +1,7 @@
 package canoe.ast.expression;
 
 
-import canoe.ast.statement.StatementIf;
+import canoe.ast.statement.condition.StatementIf;
 
 /**
  * @author dawn

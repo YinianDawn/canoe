@@ -43,12 +43,6 @@ public class Parser {
         return new AST(tokens, packageInfo, importStatements, statements);
     }
 
-//    private Statements parseStatements() {
-//        stream.removeSpaceOrCR();
-//        StatementsChannel channel = new StatementsChannel(tokens.getSourceFile().getName(),
-//                stream, -1, Kind.EOF);
-//        return channel.get();
-//    }
 
 //    private Statement parseStatement() {
 //        removeSpaceOrCR();
@@ -228,185 +222,8 @@ public class Parser {
 //
 //        return new StatementExpression(expression);
 //    }
-//
-//    // ============== 解析match语句 ==============
-//
-//    private StatementMatch parseStatementMatch() {
-//        Token match = stream.nextToken();
-//        if (match.getKind() != Kind.MATCH) { panicToken("must be match"); }
-//
-//        removeSpaceOrCR();
-//        Token with = stream.nextToken(false);
-//        if (with.getKind() == Kind.COLON_WITH) { with = stream.nextToken(); } else { with = null; }
-//
-//        removeSpaceOrCR();
-//        Expression expression = parseObjectExpression().getExpression();
-//
-//        removeSpaceOrCR();
-//        Token lb = stream.nextToken();
-//        if (lb.getKind() != Kind.LB) { panicToken("must be {"); }
-//
-//        List<StatementMatchClause> clauses = new ArrayList<>();
-//        StatementMatchClause elseClause = null;
-//
-//        Token op;
-//        Expression targetExpression;
-//        Token colon;
-//        Token clauseLb;
-//        Statements statements;
-//        Token clauseRb;
-//
-//        Token next = stream.nextTokenSkipSpaceOrCR();
-//        loop:
-//        while (null != next) {
-//            op = null;
-//            clauseLb = null;
-//            statements = null;
-//            clauseRb = null;
-//            switch (next.getKind()) {
-//                case GT:
-//                    removeSpaceOrCR();
-//                    op = stream.nextToken();
-//                // 没有比较符号 直接就是个表达式
-//                case NUMBER_DECIMAL:
-//                    removeSpaceOrCR();
-//                    targetExpression = parseObjectExpression().getExpression();
-//                    removeSpaceOrCR();
-//                    colon = stream.nextToken();
-//                    if (colon.getKind() != Kind.COLON) { panicToken("must be :"); }
-//                    removeSpaceOrCR();
-//                    next = stream.nextToken(false);
-//                    switch (next.getKind()) {
-//                        case BREAK: statements = new Statements(Collections.singletonList(new StatementBreak(stream.nextToken()))); break;
-//                        case LB:
-//                            clauseLb = stream.nextToken();
-//                            statements = parseStatements();
-//                            removeSpaceOrCR();
-//                            clauseRb = stream.nextToken();
-//                            if (clauseRb.getKind() != Kind.RB) { panicToken("must be }");  }
-//                            break;
-//                        default: panicToken("can not be", next);
-//                    }
-//                    clauses.add(new StatementMatchClause(op, targetExpression, colon, clauseLb, statements, clauseRb));
-//                    break;
-//                case ELSE:
-//                    removeSpaceOrCR();
-//                    op = stream.nextToken();
-//                    if (op.getKind() != Kind.ELSE) { panicToken("must be else"); }
-//                    removeSpaceOrCR();
-//                    colon = stream.nextToken();
-//                    if (colon.getKind() != Kind.COLON) { panicToken("must be :"); }
-//                    removeSpaceOrCR();
-//                    next = stream.nextToken(false);
-//                    switch (next.getKind()) {
-//                        case BREAK: panicToken("else clause does not need break"); break;
-//                        // id 开头解析一个表达式得了
-//                        case ID:
-//                            statements = new Statements(Collections.singletonList(new StatementExpression(parseObjectExpression().getExpression()))); break;
-//                        case LB:
-//                            clauseLb = stream.nextToken();
-//                            statements = parseStatements();
-//                            removeSpaceOrCR();
-//                            clauseRb = stream.nextToken();
-//                            if (clauseRb.getKind() != Kind.RB) { panicToken("must be }");  }
-//                            break;
-//                        default: panicToken("can not be", next);
-//                    }
-//                    elseClause = new StatementMatchClause(op, null, colon, clauseLb, statements, clauseRb);
-//                    break loop;
-//                default: panicToken("can not be", next);
-//            }
-//            next = stream.nextTokenSkipSpaceOrCR();
-//        }
-//
-//        removeSpaceOrCR();
-//        Token rb = stream.nextToken();
-//        if (rb.getKind() != Kind.RB) { panicToken("must be }"); }
-//        removeSpace();
-//
-//        return new StatementMatch(match, with, expression, lb, clauses, elseClause, rb);
-//    }
-//
-//    // ============== 解析if语句 ==============
-//
-//    private StatementIf parseStatementIf() {
-//        Token ifToken = stream.nextToken();
-//        if (ifToken.getKind() != Kind.IF) { panicToken("must be if"); }
-//        removeSpaceOrCR();
-//        Expression expression = parseObjectExpression().getExpression();
-//        removeSpaceOrCR();
-//        Token lb = stream.nextToken();
-//        if (lb.getKind() != Kind.LB) { panicToken("must be {"); }
-//        Statements statements = parseStatements();
-//        removeSpaceOrCR();
-//        Token rb = stream.nextToken();
-//        if (rb.getKind() != Kind.RB) { panicToken("must be }"); }
-//        removeSpace();
-//        Token next = stream.nextTokenSkipSpaceOrCR();
-//        switch (next.getKind()) {
-//            case ELSE: case ELSE_IF: break;
-//            default: return new StatementIf(ifToken, expression, lb, statements, rb,
-//                        Collections.emptyList(), null, null, null, null);
-//        }
-//        removeSpaceOrCR();
-//
-//        List<StatementElseIf> elseIfs = new ArrayList<>();
-//        next = stream.nextTokenSkipSpaceOrCR();
-//        Token elseIf;
-//        Expression elseIfExpression;
-//        Token elseIfLb;
-//        Statements elseIfStatements;
-//        Token elseIfRb;
-//        while (next.getKind() == Kind.ELSE_IF) {
-//            removeSpaceOrCR();
-//            elseIf = stream.nextToken();
-//            removeSpaceOrCR();
-//            elseIfExpression = parseObjectExpression().getExpression();
-//            removeSpaceOrCR();
-//            elseIfLb = stream.nextToken();
-//            if (lb.getKind() != Kind.LB) {
-//                panicToken("must be {");
-//            }
-//            elseIfStatements = parseStatements();
-//            removeSpaceOrCR();
-//            elseIfRb = stream.nextToken();
-//            if (rb.getKind() != Kind.RB) {
-//                panicToken("must be }");
-//            }
-//            removeSpace();
-//            elseIfs.add(new StatementElseIf(elseIf, elseIfExpression, elseIfLb, elseIfStatements, elseIfRb));
-//            next = stream.nextTokenSkipSpaceOrCR();
-//        }
-//        removeSpace();
-//
-//        next = stream.nextTokenSkipSpaceOrCR();
-//        if (next.getKind() != Kind.ELSE) {
-//            return new StatementIf(ifToken, expression, lb, statements, rb,
-//                    elseIfs, null, null, null, null);
-//        }
-//
-//        removeSpaceOrCR();
-//        Token elseToken = stream.nextToken();
-//        if (elseToken.getKind() != Kind.ELSE) {
-//            panicToken("must be else");
-//        }
-//        removeSpaceOrCR();
-//        Token elseLb = stream.nextToken();
-//        if (elseLb.getKind() != Kind.LB) {
-//            panicToken("must be {");
-//        }
-//        Statements elseStatements = parseStatements();
-//        removeSpaceOrCR();
-//        Token elseRb = stream.nextToken();
-//        if (elseRb.getKind() != Kind.RB) {
-//            panicToken("must be }");
-//        }
-//        removeSpace();
-//
-//        return new StatementIf(ifToken, expression, lb, statements, rb,
-//                elseIfs, elseToken, elseLb, elseStatements, elseRb);
-//    }
-//
+
+
 //    // ============== 解析运算赋值语句 ==============
 //
 //    private StatementOpAndAssign parseStatementOpAndAssign(Expression idExpression) {
@@ -820,13 +637,5 @@ public class Parser {
 
     // ============== 解析导入 ==============
 
-//    private ImportStatements parseImportStatements() {
-//        Token importToken = stream.glance();
-//        if (importToken.not(Kind.IMPORT)) {
-//            return new ImportStatements(Collections.emptyList());
-//        }
-//        ImportChannel channel = new ImportChannel(tokens.getSourceFile().getName(), stream);
-//        return channel.get();
-//    }
 
 }

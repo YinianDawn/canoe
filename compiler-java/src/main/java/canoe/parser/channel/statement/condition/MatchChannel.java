@@ -1,10 +1,12 @@
-package canoe.parser.channel.statement.special;
+package canoe.parser.channel.statement.condition;
 
 import canoe.ast.expression.Expression;
 import canoe.ast.statement.*;
-import canoe.ast.statement.match.MatchClause;
-import canoe.ast.statement.match.MatchElseClause;
-import canoe.ast.statement.match.MatchOpExpression;
+import canoe.ast.statement.condition.StatementMatch;
+import canoe.ast.statement.condition.StatementWith;
+import canoe.ast.statement.condition.match.MatchClause;
+import canoe.ast.statement.condition.match.MatchElseClause;
+import canoe.ast.statement.condition.match.MatchOpExpression;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
@@ -118,7 +120,7 @@ public class MatchChannel extends Channel<StatementMatch> {
         if (colonToken.not(Kind.COLON)) {
             panic("must be : ", colonToken);
         }
-        ClauseStatements cs = parseStatements();
+        ClauseStatements cs = parseClauseStatements();
         clauses.add(new MatchClause(op, expression, others, colonToken,
                 cs.clauseLB, cs.clauseStatements, cs.clauseRB));
     }
@@ -139,12 +141,12 @@ public class MatchChannel extends Channel<StatementMatch> {
         if (colonToken.not(Kind.COLON)) {
             panic("must be : ", colonToken);
         }
-        ClauseStatements cs = parseStatements();
+        ClauseStatements cs = parseClauseStatements();
         elseClause = new MatchElseClause(elseToken, colonToken,
                 cs.clauseLB, cs.clauseStatements, cs.clauseRB);
     }
 
-    private ClauseStatements parseStatements() {
+    private ClauseStatements parseClauseStatements() {
         Token clauseLB = null;
         Statements clauseStatements = null;
         Token clauseRB = null;

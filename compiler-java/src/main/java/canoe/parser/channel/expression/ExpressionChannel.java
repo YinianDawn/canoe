@@ -6,8 +6,8 @@ import canoe.ast.merge.MergeOperatorRight;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
-import canoe.parser.channel.statement.special.IfChannel;
-import canoe.parser.channel.statement.special.MatchChannel;
+import canoe.parser.channel.statement.condition.IfChannel;
+import canoe.parser.channel.statement.condition.MatchChannel;
 
 import java.util.HashMap;
 
@@ -234,6 +234,7 @@ public class ExpressionChannel extends Channel<Expression> {
             case "ExpressionID":
             case "ExpressionOpMiddle":
             case "ExpressionOpRight":
+            case "ExpressionFunction":
                 break;
             // 单个运算符
 
@@ -241,12 +242,14 @@ public class ExpressionChannel extends Channel<Expression> {
             case "ExpressionID MergeOperatorBoth":
             case "ExpressionOpMiddle MergeOperatorBoth":
             case "ExpressionOpMiddle LR":
+            case "ExpressionID LR":
             case "ExpressionOpMiddle ExpressionRoundBracket":
                 break;
 
             // 表达式 运算符 表达式
             case "ExpressionOpMiddle LR ExpressionConstant":
             case "ExpressionOpMiddle LR ExpressionOpMiddle":
+            case "ExpressionID LR ExpressionConstant":
             case "ExpressionID MergeOperatorBoth ExpressionID":
             case "ExpressionOpMiddle MergeOperatorBoth ExpressionID":
                 break;

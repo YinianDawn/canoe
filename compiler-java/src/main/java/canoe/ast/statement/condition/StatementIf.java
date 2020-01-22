@@ -1,8 +1,10 @@
-package canoe.ast.statement;
+package canoe.ast.statement.condition;
 
 
 import canoe.ast.expression.Expression;
-import canoe.ast.statement.elseif.ElseIf;
+import canoe.ast.statement.Statement;
+import canoe.ast.statement.Statements;
+import canoe.ast.statement.condition.elseif.ElseIf;
 import canoe.lexer.Token;
 
 import java.util.List;

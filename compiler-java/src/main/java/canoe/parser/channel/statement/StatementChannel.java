@@ -13,8 +13,11 @@ import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
 import canoe.parser.channel.expression.ExpressionChannel;
-import canoe.parser.channel.statement.special.IfChannel;
-import canoe.parser.channel.statement.special.MatchChannel;
+import canoe.parser.channel.statement.condition.IfChannel;
+import canoe.parser.channel.statement.condition.MatchChannel;
+import canoe.parser.channel.statement.loop.EachChannel;
+import canoe.parser.channel.statement.loop.ForChannel;
+import canoe.parser.channel.statement.loop.LoopChannel;
 
 import static canoe.lexer.KindSet.*;
 
@@ -68,9 +71,11 @@ public class StatementChannel extends Channel<Statement> {
         } else {
             switch (next.kind) {
                 // 直接能确定语句类型的就不一个一个吃了
-                case MATCH: data = MatchChannel.produce(this, Kind.CR);return false;
-                case IF: data = IfChannel.produce(this, Kind.CR); return false;
-                case LOOP: data = LoopChannel.produce(this, Kind.CR); return false;
+                case MATCH: data = MatchChannel.produce(this, extend(Kind.CR));return false;
+                case IF: data = IfChannel.produce(this, extend(Kind.CR)); return false;
+                case LOOP: data = LoopChannel.produce(this, extend(Kind.CR)); return false;
+                case EACH: data = EachChannel.produce(this, extend(Kind.CR)); return false;
+                case FOR: data = ForChannel.produce(this, extend(Kind.CR)); return false;
 
                 case ID:
                     break;
@@ -105,7 +110,7 @@ public class StatementChannel extends Channel<Statement> {
         switch (status) {
             case "ExpressionID MergeAssign":
                 removeSpace();
-                Expression expression = ExpressionChannel.produce(this, Kind.CR);
+                Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
                 addLast(new StatementAssign((Expression) o2, ((MergeAssign) o1).getToken(), expression));
                 ignoreSpace().refuseCR().over(this::full);
                 return true;

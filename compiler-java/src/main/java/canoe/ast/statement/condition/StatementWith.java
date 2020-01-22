@@ -1,5 +1,6 @@
-package canoe.ast.statement;
+package canoe.ast.statement.condition;
 
+import canoe.ast.statement.Statement;
 import canoe.lexer.Token;
 
 /**

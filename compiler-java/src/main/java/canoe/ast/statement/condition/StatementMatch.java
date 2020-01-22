@@ -1,9 +1,10 @@
-package canoe.ast.statement;
+package canoe.ast.statement.condition;
 
 
 import canoe.ast.expression.Expression;
-import canoe.ast.statement.match.MatchClause;
-import canoe.ast.statement.match.MatchElseClause;
+import canoe.ast.statement.Statement;
+import canoe.ast.statement.condition.match.MatchClause;
+import canoe.ast.statement.condition.match.MatchElseClause;
 import canoe.lexer.Token;
 
 import java.util.List;

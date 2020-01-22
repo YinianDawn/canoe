@@ -1,7 +1,7 @@
 package canoe.ast.expression;
 
 
-import canoe.ast.statement.StatementMatch;
+import canoe.ast.statement.condition.StatementMatch;
 
 /**
  * @author dawn
