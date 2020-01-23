@@ -20,11 +20,11 @@ public class Lexer {
     static {
         KINDS = new HashMap<>(277);
         for (Kind kind : Kind.values()) {
-            if (null != kind.getSign()) {
-                if (KINDS.containsKey(kind.getSign())) {
+            if (null != kind.sign) {
+                if (KINDS.containsKey(kind.sign)) {
                     panic("Kind should not repeat. " + kind);
                 }
-                KINDS.put(kind.getSign(), kind);
+                KINDS.put(kind.sign, kind);
             }
         }
     }
@@ -72,7 +72,7 @@ public class Lexer {
             next3 = origin.get(i + 2);
             switch (next.kind) {
                 case ELSE:
-                    if (next2.is(Kind.SPACES) && next2.size == 1 && next3.is(Kind.IF)) {
+                    if (next2.is(Kind.BLANK) && next2.size == 1 && next3.is(Kind.IF)) {
                         tokens.add(new Token(Kind.ELSE_IF, null, next.line, next.position, 7));
                         i++; i++; continue;
                     } break;
@@ -87,7 +87,17 @@ public class Lexer {
                 case BIT_XOR: if (next2.is(Kind.ASSIGN) && merge(Kind.BIT_XOR_ASSIGN)) { i++; continue; } break;
                 case BIT_NOT: if (next2.is(Kind.ASSIGN) && merge(Kind.NE)) { i++; continue; } break;
                 case ASSIGN: if (next2.is(Kind.ASSIGN) && merge(Kind.EQ)) { i++; continue; } break;
-                case COLON: if (next2.is(Kind.ASSIGN) && merge(Kind.ASSIGN_FORCE)) { i++; continue; } break;
+                case COLON:
+                    if (next2.is(Kind.ASSIGN) && merge(Kind.ASSIGN_FORCE)) { i++; continue; }
+                    if (next2.is(Kind.BLANK) && next2.size <= 2) {
+                        tokens.add(new Token(Kind.COLON_BLANK, null, next.line, next.position, 2));
+                        i++; continue;
+                    }
+                    if (next2.is(Kind.CR)) {
+                        tokens.add(new Token(Kind.COLON_BLANK, null, next.line, next.position, 2));
+                        continue;
+                    }
+                    break;
                 case GT:
                     if (next2.is(Kind.ASSIGN) && merge(Kind.GE)) { i++; continue; }
                     if (next2.is(Kind.GT)) {
@@ -98,6 +108,7 @@ public class Lexer {
                     } break;
                 case LT:
                     if (next2.is(Kind.ASSIGN) && merge(Kind.LE)) { i++; continue; }
+                    if (next2.is(Kind.SUB) && merge(Kind.IS)) { i++; continue; }
                     if (next2.is(Kind.LT)) {
                         if (next3.is(Kind.ASSIGN) && next.next(next2) && next2.next(next3)) {
                             this.tokens.add(new Token(Kind.BIT_LEFT_ASSIGN, null, next.line, next.position, 3));
@@ -139,11 +150,15 @@ public class Lexer {
                 case MUL: if (next2.is(Kind.ASSIGN) && merge(Kind.MUL_ASSIGN)) { i++; continue; } break;
                 case DIV: if (next2.is(Kind.ASSIGN) && merge(Kind.DIV_ASSIGN)) { i++; continue; } break;
                 case MOD: if (next2.is(Kind.ASSIGN) && merge(Kind.MOD_ASSIGN)) { i++; continue; } break;
-                case SPACES:
+                case BLANK:
+                    if (next2.not(Kind.BLANK)) {
+                        next = new Token(Kind.SPACES, null, next.line, next.position, next.size);
+                        break;
+                    }
                     // 合并多个空格
-                    while (next2.is(Kind.SPACES)) {
+                    while (next2.is(Kind.BLANK)) {
                         i++;
-                        next = new Token(next.kind, null, next.line, next.position, next.size + next2.size);
+                        next = new Token(Kind.SPACES, null, next.line, next.position, next.size + next2.size);
                         if (size <= i) { break; }
                         next2 = origin.get(i + 1);
                     }
@@ -162,8 +177,8 @@ public class Lexer {
     }
 
     private boolean merge(Kind kind) {
-        if (kind.getSign().equals(next.kind.getSign() + next2.kind.getSign()) && next.next(next2)) {
-            tokens.add(new Token(kind, null, next.line, next.position, kind.getSign().length()));
+        if (kind.sign.equals(next.kind.sign + next2.kind.sign) && next.next(next2)) {
+            tokens.add(new Token(kind, null, next.line, next.position, kind.sign.length()));
             return true;
         }
         return false;
@@ -174,8 +189,8 @@ public class Lexer {
             case '\r': if (stream.has() && stream.next('\n')) { stream.next(); }
             case '\n': addToken(); addToken(Kind.CR, null); newLine(); break;
 
-            case '\t': addToken(); addSpacesToken(2); position++; break;
-            case ' ':  addToken(); addSpacesToken(1); position++; break;
+            case '\t': addToken(); addBlankToken(2); position++; break;
+            case ' ':  addToken(); addBlankToken(1); position++; break;
 
             case '\"': addToken(); position++;
                 while (stream.has()) {
@@ -319,15 +334,15 @@ public class Lexer {
         if (0 == size) {
             switch (kind) {
                 case CR: case SPACES: case EOF: break;
-                default: size = kind.getSign().length();
+                default: size = kind.sign.length();
             }
         }
         tokens.add(new Token(kind, value, line, position, size));
         clear();
     }
 
-    private void addSpacesToken(int size) {
-        Token token = new Token(Kind.SPACES, null, line, position, size);
+    private void addBlankToken(int size) {
+        Token token = new Token(Kind.BLANK, null, line, position, size);
         tokens.add(token);
         clear();
     }

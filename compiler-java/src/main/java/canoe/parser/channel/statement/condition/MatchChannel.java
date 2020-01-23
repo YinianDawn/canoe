@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static canoe.lexer.KindSet.CONSTANT;
-import static canoe.lexer.KindSet.RELATIONAL_OPERATOR;
+import static canoe.lexer.KindSet.*;
 
 /**
  * @author dawn
@@ -55,7 +54,7 @@ public class MatchChannel extends Channel<StatementMatch> {
                 panic("must be with or without", withToken);
             }
             if (!colonToken.next(withToken)) {
-                panic(withToken.kind.getSign() + " must follow sign : , no space", withToken);
+                panic(withToken.kind.sign + " must follow sign : , no space", withToken);
             }
         } else {
             colonToken = null;
@@ -79,13 +78,14 @@ public class MatchChannel extends Channel<StatementMatch> {
         }
         data = new StatementMatch(matchToken, colonToken, withToken,
                 expression, lb, clauses, elseClause, rb);
+        removeEnd();
     }
 
     private void parseClauses() {
         Token next = glance();
         while (null != next) {
             if (next.is(Kind.ELSE)) { parseElseClause(); return; }
-            if (contains(next, CONSTANT, RELATIONAL_OPERATOR)) {
+            if (contains(next, CONSTANT, RELATION_OPERATOR)) {
                 parseClause();
             } else {
                 switch (next.kind) {
@@ -101,7 +101,7 @@ public class MatchChannel extends Channel<StatementMatch> {
 
     private void parseClause() {
         Token op = parseMatchOp();
-        Expression expression = ExpressionChannel.produce(this, Kind.COMMA, Kind.COLON);
+        Expression expression = ExpressionChannel.produce(this, Kind.COMMA, Kind.COLON_BLANK);
 
         List<MatchOpExpression> others = new ArrayList<>();
         removeSpace();
@@ -110,24 +110,30 @@ public class MatchChannel extends Channel<StatementMatch> {
             Token comma = next();
             removeSpaceOrCR();
             Token otherOp = parseMatchOp();
-            Expression e = ExpressionChannel.produce(this, Kind.COMMA, Kind.COLON);
+            Expression e = ExpressionChannel.produce(this, Kind.COMMA, Kind.COLON_BLANK);
             others.add(new MatchOpExpression(comma, otherOp, e));
             removeSpace();
             token = glance();
         }
         removeSpace();
         Token colonToken = next();
-        if (colonToken.not(Kind.COLON)) {
-            panic("must be : ", colonToken);
+        if (colonToken.not(Kind.COLON_BLANK)) {
+            panic("must be :< >", colonToken);
         }
         ClauseStatements cs = parseClauseStatements();
+
+
+
+
+        if (!end(Kind.SPACES)) { removeSpace(); }
+        if (!end(Kind.CR)) { removeSpaceOrCR(); }
         clauses.add(new MatchClause(op, expression, others, colonToken,
                 cs.clauseLB, cs.clauseStatements, cs.clauseRB));
     }
 
     private Token parseMatchOp() {
         Token op = glance();
-        if (contains(op, RELATIONAL_OPERATOR)) {
+        if (contains(op, RELATION_OPERATOR)) {
             op = next();
             removeSpace();
         } else { op = null; }
@@ -138,8 +144,8 @@ public class MatchChannel extends Channel<StatementMatch> {
         Token elseToken = next();
         removeSpace();
         Token colonToken = next();
-        if (colonToken.not(Kind.COLON)) {
-            panic("must be : ", colonToken);
+        if (colonToken.not(Kind.COLON_BLANK)) {
+            panic("must be :< >", colonToken);
         }
         ClauseStatements cs = parseClauseStatements();
         elseClause = new MatchElseClause(elseToken, colonToken,
@@ -184,7 +190,12 @@ public class MatchChannel extends Channel<StatementMatch> {
                 }
                 removeSpaceOrCR();
                 switch (glance().kind){
-                    case WITH: case WITHOUT: statements.add(new StatementWith(next())); break;
+                    case WITH: case WITHOUT:
+                        if (!glanceSkipSpace().isCR()) {
+                            panic("must be CR(\\ n) ", glanceSkipSpace());
+                        }
+                        statements.add(new StatementWith(next()));
+                        break;
                     default:
                 }
                 clauseStatements = new Statements(statements);

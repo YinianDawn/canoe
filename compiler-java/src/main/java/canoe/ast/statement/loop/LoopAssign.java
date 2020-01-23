@@ -6,14 +6,13 @@ import canoe.lexer.Token;
 /**
  * @author dawn
  */
-public class StatementLoopAssign {
+public class LoopAssign {
 
     private Token comma;
 
     private StatementAssign statementAssign;
 
-
-    public StatementLoopAssign(Token comma, StatementAssign statementAssign) {
+    public LoopAssign(Token comma, StatementAssign statementAssign) {
         this.comma = comma;
         this.statementAssign = statementAssign;
     }

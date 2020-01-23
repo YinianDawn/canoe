@@ -1,5 +1,7 @@
 package canoe.ast.expression;
 
+import canoe.lexer.Token;
+
 /**
  * @author dawn
  */
@@ -14,4 +16,14 @@ public class ExpressionFunction implements Expression {
         this.roundBracket = roundBracket;
     }
 
+
+    @Override
+    public Token first() {
+        return expressionId.first();
+    }
+
+    @Override
+    public Token last() {
+        return roundBracket.last();
+    }
 }

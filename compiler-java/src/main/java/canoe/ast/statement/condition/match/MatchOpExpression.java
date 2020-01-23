@@ -1,4 +1,4 @@
-package canoe.ast.statement.match;
+package canoe.ast.statement.condition.match;
 
 import canoe.ast.expression.Expression;
 import canoe.lexer.Token;

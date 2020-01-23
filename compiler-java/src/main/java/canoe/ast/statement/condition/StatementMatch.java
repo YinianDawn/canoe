@@ -40,4 +40,13 @@ public class StatementMatch implements Statement {
         this.rb = rb;
     }
 
+    @Override
+    public Token first() {
+        return matchToken;
+    }
+
+    @Override
+    public Token last() {
+        return rb;
+    }
 }

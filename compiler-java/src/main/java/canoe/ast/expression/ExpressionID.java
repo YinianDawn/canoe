@@ -14,4 +14,13 @@ public class ExpressionID implements Expression {
         this.id = id;
     }
 
+    @Override
+    public Token first() {
+        return id;
+    }
+
+    @Override
+    public Token last() {
+        return id;
+    }
 }

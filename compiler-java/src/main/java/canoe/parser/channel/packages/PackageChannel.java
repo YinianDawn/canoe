@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static canoe.lexer.Kind.*;
-import static canoe.lexer.KindSet.COMMON_KEY_WORDS;
+import static canoe.lexer.KindSet.SINGLE_KEY_WORDS;
 
 /**
  * @author dawn
@@ -44,7 +44,7 @@ public class PackageChannel extends Channel<PackageInfo> {
                         }
                     }
                 }
-                if (contains(last, COMMON_KEY_WORDS)) { accept(DOT).refuseAll(); return; }
+                if (contains(last, SINGLE_KEY_WORDS)) { accept(DOT).refuseAll(); return; }
                 if (last.is(ID)) { accept(DOT).acceptSpaces().refuseAll().over(this::full); return; }
                 if (last.is(DOT)) { accept(ID).acceptKeyWords().refuseAll(); return; }
             }
@@ -57,7 +57,7 @@ public class PackageChannel extends Channel<PackageInfo> {
     private void full() {
         Token packageToken = (Token) removeFirst();
         List<Token> names = new ArrayList<>(channelSize());
-        while (channelFull()) { names.add((Token) removeFirst()); }
+        while (isChannelFull()) { names.add((Token) removeFirst()); }
         data = new PackageInfo(packageToken, names);
     }
 

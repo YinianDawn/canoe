@@ -1,4 +1,4 @@
-package canoe.ast.statement.elseif;
+package canoe.ast.statement.condition.elseif;
 
 import canoe.ast.expression.Expression;
 import canoe.ast.statement.Statements;
@@ -7,7 +7,7 @@ import canoe.lexer.Token;
 /**
  * @author dawn
  */
-public class ElseIf{
+public class ElseIf {
 
     private Token elseIf;
 
@@ -25,5 +25,9 @@ public class ElseIf{
         this.lb = lb;
         this.elseIfStatements = elseIfStatements;
         this.rb = rb;
+    }
+
+    public Token last() {
+        return rb;
     }
 }

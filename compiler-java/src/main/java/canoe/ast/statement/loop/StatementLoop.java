@@ -18,13 +18,13 @@ public class StatementLoop implements Statement {
     private Token mark;
 
     private StatementAssign assign;
-    private List<StatementLoopAssign> loopAssigns;
+    private List<LoopAssign> loopAssigns;
 
     private Token lb;
     private Statements statements;
     private Token rb;
 
-    public StatementLoop(Token loop, Token colon, Token mark, StatementAssign assign, List<StatementLoopAssign> loopAssigns, Token lb, Statements statements, Token rb) {
+    public StatementLoop(Token loop, Token colon, Token mark, StatementAssign assign, List<LoopAssign> loopAssigns, Token lb, Statements statements, Token rb) {
         this.loop = loop;
         this.colon = colon;
         this.mark = mark;
@@ -33,5 +33,15 @@ public class StatementLoop implements Statement {
         this.lb = lb;
         this.statements = statements;
         this.rb = rb;
+    }
+
+    @Override
+    public Token first() {
+        return loop;
+    }
+
+    @Override
+    public Token last() {
+        return rb;
     }
 }

@@ -40,4 +40,14 @@ public class StatementEach implements Statement {
         this.statements = statements;
         this.rb = rb;
     }
+
+    @Override
+    public Token first() {
+        return each;
+    }
+
+    @Override
+    public Token last() {
+        return rb;
+    }
 }

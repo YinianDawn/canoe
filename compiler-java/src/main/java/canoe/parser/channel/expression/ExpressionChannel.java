@@ -2,14 +2,18 @@ package canoe.parser.channel.expression;
 
 import canoe.ast.expression.*;
 import canoe.ast.merge.MergeOperatorBoth;
+import canoe.ast.merge.MergeOperatorLeft;
 import canoe.ast.merge.MergeOperatorRight;
+import canoe.ast.statement.Statements;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
 import canoe.parser.channel.statement.condition.IfChannel;
 import canoe.parser.channel.statement.condition.MatchChannel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static canoe.lexer.KindSet.*;
 
@@ -26,58 +30,64 @@ public class ExpressionChannel extends Channel<Expression> {
 //        PRIORITY.put(")", 1);
         PRIORITY.put("[", 1);
 //        PRIORITY.put("]", 1);
-        PRIORITY.put("->", 1);
+
         PRIORITY.put(".", 2);
         PRIORITY.put("..", 2);
         // ! + - ++ -- 单目运算符 从右到左
-        PRIORITY.put("!", 2);
-        PRIORITY.put("+l", 2);
-        PRIORITY.put("-l", 2);
-        PRIORITY.put("++", 2);
-        PRIORITY.put("--", 2);
+        PRIORITY.put("!", 3);
+        PRIORITY.put("+l", 3);
+        PRIORITY.put("-l", 3);
+        PRIORITY.put("++", 3);
+        PRIORITY.put("--", 3);
         // * / % 双目运算符 从左到右
-        PRIORITY.put("*", 3);
-        PRIORITY.put("/", 3);
-        PRIORITY.put("%", 3);
+        PRIORITY.put("*", 4);
+        PRIORITY.put("/", 4);
+        PRIORITY.put("%", 4);
         // + - 双目运算符 从左到右
-        PRIORITY.put("+", 4);
-        PRIORITY.put("-", 4);
+        PRIORITY.put("+", 5);
+        PRIORITY.put("-", 5);
         // >> << 位移运算符 双目 从左到右
-        PRIORITY.put(">>", 5);
-        PRIORITY.put("<<", 5);
+        PRIORITY.put(">>", 6);
+        PRIORITY.put("<<", 6);
         // < <= > >= 关系运算符 双目 从左到右
-        PRIORITY.put(">", 6);
-        PRIORITY.put(">=", 6);
-        PRIORITY.put("<", 6);
-        PRIORITY.put("<=", 6);
+        PRIORITY.put(">", 7);
+        PRIORITY.put(">=", 7);
+        PRIORITY.put("<", 7);
+        PRIORITY.put("<=", 7);
+
+        PRIORITY.put("<-", 7);
         // == != 关系运算符 双目 从左到右
-        PRIORITY.put("==", 7);
-        PRIORITY.put("!=", 7);
+        PRIORITY.put("==", 8);
+        PRIORITY.put("!=", 8);
         // & 按位与 双目 从左到右
-        PRIORITY.put("&", 8);
+        PRIORITY.put("&", 9);
         // & 按位异或 双目 从左到右
-        PRIORITY.put("^", 9);
+        PRIORITY.put("^", 10);
         // & 按位或 双目 从左到右
-        PRIORITY.put("|", 10);
+        PRIORITY.put("|", 11);
         // & 逻辑与 双目 从左到右
-        PRIORITY.put("&&", 11);
+        PRIORITY.put("&&", 12);
         // & 逻辑或 双目 从左到右
-        PRIORITY.put("||", 12);
+        PRIORITY.put("||", 13);
         // := = += -= /= %= >>= <<= &= |= 赋值运算 双目 从右到左
-        PRIORITY.put(":=", 13);
-        PRIORITY.put("=", 13);
-        PRIORITY.put("+=", 13);
-        PRIORITY.put("-=", 13);
-        PRIORITY.put("*=", 13);
-        PRIORITY.put("/=", 13);
-        PRIORITY.put("%=", 13);
-        PRIORITY.put(">>=", 13);
-        PRIORITY.put("<<=", 13);
-        PRIORITY.put("&=", 13);
-        PRIORITY.put("^=", 13);
-        PRIORITY.put("|=", 13);
+        PRIORITY.put(":=", 14);
+        PRIORITY.put("=", 14);
+        PRIORITY.put("+=", 14);
+        PRIORITY.put("-=", 14);
+        PRIORITY.put("*=", 14);
+        PRIORITY.put("/=", 14);
+        PRIORITY.put("%=", 14);
+        PRIORITY.put(">>=", 14);
+        PRIORITY.put("<<=", 14);
+        PRIORITY.put("&=", 14);
+        PRIORITY.put("^=", 14);
+        PRIORITY.put("|=", 14);
         // , 运算 双目 从左到右
-        PRIORITY.put(",", 14);
+        PRIORITY.put(",", 15);
+
+        // lambda表达式的优先级应该很低
+        PRIORITY.put("->", 16);
+
     }
 
 //    private Stack<Token> pairSign = new Stack<>();
@@ -85,12 +95,14 @@ public class ExpressionChannel extends Channel<Expression> {
     private ExpressionChannel(Channel channel, Kind... end) {
         super(channel, end);
         Token next = glance();
-        if (!COMMON_KEY_WORDS.contains(next.kind)
+        if (!SINGLE_KEY_WORDS.contains(next.kind)
                 && !LEFT_OPERATOR.contains(next.kind)
                 && !CONSTANT.contains(next.kind)) {
-            if (end(next)) { panic("can not start with " + next.kind.getSign(), next); }
+//            if (end(next)) { panic("can not start with " + next.kind.sign, next); }
             switch (next.kind) {
+                case LB:
                 case LR:
+                case LS:
                 case ID:
                     break;
                 default: panic("can not be this kind of token.", next);
@@ -107,6 +119,15 @@ public class ExpressionChannel extends Channel<Expression> {
             case IF: data = new ExpressionIf(IfChannel.produce(this, extend())); return false;
 
             default:
+        }
+        // 检查关键词
+        if (SINGLE_KEY_WORDS.contains(next.kind) || next.kind == Kind.ELSE_IF) {
+            if (!CONSTANT.contains(next.kind)) {
+                panic("should be here.", next);
+            }
+        }
+        if (end(next) && isChannelFull()) {
+            panic("should be here.", next);
         }
         return true;
     }
@@ -234,16 +255,39 @@ public class ExpressionChannel extends Channel<Expression> {
             case "ExpressionID":
             case "ExpressionOpMiddle":
             case "ExpressionOpRight":
+            case "ExpressionOpLeft":
             case "ExpressionFunction":
+            case "ExpressionStruct":
+            case "ExpressionSquareBracket":
+            case "ExpressionRoundBracket":
+            case "ExpressionArray":
+            case "ExpressionLambda":
                 break;
             // 单个运算符
+            case "LS":
+            case "LR":
+            case "MergeOperatorLeft":
+                break;
 
             // 表达式 运算符
             case "ExpressionID MergeOperatorBoth":
             case "ExpressionOpMiddle MergeOperatorBoth":
+            case "ExpressionConstant MergeOperatorBoth":
             case "ExpressionOpMiddle LR":
             case "ExpressionID LR":
             case "ExpressionOpMiddle ExpressionRoundBracket":
+            case "ExpressionSquareBracket LB":
+                break;
+
+            // 表达式 约束
+            case "ExpressionStruct ExpressionRestrict":
+            case "ExpressionArray ExpressionRestrict":
+                break;
+
+            // 运算符 表达式
+            case "LB Statements":
+            case "LS ExpressionConstant":
+            case "LR ExpressionConstant":
                 break;
 
             // 表达式 运算符 表达式
@@ -257,6 +301,7 @@ public class ExpressionChannel extends Channel<Expression> {
             // 表达式 运算符 表达式 运算符
             case "ExpressionID MergeOperatorBoth ExpressionID LR":
             case "ExpressionOpMiddle MergeOperatorBoth ExpressionID LR":
+            case "ExpressionID MergeOperatorBoth ExpressionID MergeOperatorBoth":
                 break;
 
             // 表达式 运算符 表达式 运算符 表达式
@@ -291,16 +336,26 @@ public class ExpressionChannel extends Channel<Expression> {
             case "ExpressionID MergeOperatorBoth ExpressionFunction":
             case "ExpressionOpMiddle MergeOperatorBoth ExpressionID":
             case "ExpressionOpMiddle MergeOperatorBoth ExpressionFunction":
+            case "ExpressionID MergeOperatorBoth ExpressionOpMiddle":
+            case "ExpressionOpMiddle MergeOperatorBoth ExpressionStruct":
                 // 检查运算符优先级
                 op = ((MergeOperatorBoth) o2).getToken();
                 if (priority(op, glanceSkipSpace())) {
-                    addLast(new ExpressionOpMiddle((Expression) o3, op, (Expression) o1));
+                    if (op.is(Kind.LAMBDA)) {
+                        // lambda 要特别对待
+                        addLast(new ExpressionLambda((Expression) o3, op, (Expression) o1));
+                    } else {
+                        addLast(new ExpressionOpMiddle((Expression) o3, op, (Expression) o1));
+                    }
                     return true;
                 }
                 break;
             case "LR ExpressionOpMiddle RR":
             case "LR ExpressionConstant RR":
                 addLast(new ExpressionRoundBracket((Token) o3, (Expression) o2, (Token) o1));
+                return true;
+            case "LB Statements RB":
+
                 return true;
 ////            case "ExpressionID ADD ExpressionID":
 ////            case "ExpressionID ADD ExpressionNumber":
@@ -355,8 +410,10 @@ public class ExpressionChannel extends Channel<Expression> {
 ////                    objects.addLast(new ExpressionDotFunction((Expression) o3, (Token) o2, (ExpressionFunction) o1)); return true;
 ////                }
 ////                break;
-////            case "LR ExpressionDotFunction RR":
-////                objects.addLast(new ExpressionRoundBracket((Token) o3, (Expression) o2, (Token) o1)); return true;
+            case "LS ExpressionConstant RS":
+                addLast(new ExpressionSquareBracket((Token) o3, (Expression) o2, (Token) o1));
+                return true;
+
             default:
         }
         addLast(o3);
@@ -366,12 +423,13 @@ public class ExpressionChannel extends Channel<Expression> {
     }
 
     private boolean priority(Token self, Token other) {
-        Integer p1 = PRIORITY.get(self.kind.getSign());
+        Integer p1 = PRIORITY.get(self.kind.sign);
         if (null == p1) {
             panic("not a operator sign.", self);
+            return false;
         }
-        if (null == other.kind.getSign()) { return true; }
-        Integer p2 = PRIORITY.get(other.kind.getSign());
+        if (null == other.kind.sign) { return true; }
+        Integer p2 = PRIORITY.get(other.kind.sign);
         if (null == p2) { return true; }
         return p1 <= p2;
     }
@@ -385,19 +443,45 @@ public class ExpressionChannel extends Channel<Expression> {
             case "ExpressionOpMiddle MergeOperatorRight":
 //            case "ExpressionID MergeOperatorRight":
                 addLast(new ExpressionOpRight((Expression) o2, ((MergeOperatorRight) o1).getToken()));
-                ignoreSpace();
+                tryRemoveSpace();
                 return true;
             case "ExpressionID ExpressionRoundBracket":
                 addLast(new ExpressionFunction((ExpressionID) o2, (ExpressionRoundBracket) o1));
-                ignoreSpace();
+                tryRemoveSpace();
                 return true;
+            case "ExpressionSquareBracket ExpressionStruct":
+                ExpressionStruct struct = (ExpressionStruct) o1;
+                ExpressionSquareBracket squareBracket = (ExpressionSquareBracket) o2;
+                if (!squareBracket.last().next(struct.first())) {
+                    panic("should be connected. " + squareBracket.last() + " " + struct.first());
+                }
+                addLast(new ExpressionArray(squareBracket, struct));
+                tryRemoveSpace().acceptColon().refuseAll();
+                return true;
+            case "MergeOperatorLeft ExpressionConstant":
+                MergeOperatorLeft left = (MergeOperatorLeft) o2;
+                if (priority(left.getToken(), glanceSkipSpace())) {
+                    addLast(new ExpressionOpLeft(left.getToken(), (Expression) o1));
+                    tryRemoveSpace().acceptColon();
+                    return true;
+                }
+            case "ExpressionOpRight MergeOperatorRight":
+            case "ExpressionID MergeOperatorRight":
+                MergeOperatorRight right = (MergeOperatorRight) o1;
+                if (priority(right.getToken(), glanceSkipSpace())) {
+                    addLast(new ExpressionOpRight((Expression) o2, right.getToken()));
+                    tryRemoveSpace().acceptColon();
+                    return true;
+                } else {
+                    panic("what is situation ?");
+                }
 ////            case "BIT_NOT ExpressionBool": objects.addLast(new ExpressionLeftOp((Token) o2, (Expression) o1)); return true;
 ////            case "ExpressionID ADD_ADD":
 ////            case "ExpressionRightOp ADD_ADD": objects.addLast(new ExpressionRightOp((Expression) o2, (Token) o1)); return true;
 ////            case "ExpressionID ExpressionRoundBracket": objects.addLast(new ExpressionFunction((Expression) o2, (ExpressionRoundBracket) o1)); return true;
-////            case "LR RR":
-////                objects.addLast(new ExpressionRoundBracket((Token) o2, new ExpressionEmpty(),(Token) o1)); return true;
-
+            case "LS RS":
+                addLast(new ExpressionSquareBracket((Token) o2, new ExpressionEmpty((Token) o2, (Token) o1),(Token) o1));
+                return true;
             default:
         }
         addLast(o2);
@@ -411,17 +495,12 @@ public class ExpressionChannel extends Channel<Expression> {
 
         if (o1 instanceof Token) {
             Token token = (Token) o1;
-            if (token.is(Kind.ID)) {
-                addLast(new ExpressionID((Token) o1));
-                ignoreSpace();
-                return true;
-            }
             if (CONSTANT.contains(token.kind)) {
                 addLast(new ExpressionConstant(token));
-                ignoreSpace();
+                tryRemoveSpace();
                 return true;
             }
-            if (BINARY_OPERATOR.contains(token.kind)) {
+            if (MIDDLE_OPERATOR.contains(token.kind)) {
                 addLast(new MergeOperatorBoth(token));
                 ignoreSpace();
                 return true;
@@ -430,6 +509,67 @@ public class ExpressionChannel extends Channel<Expression> {
                 addLast(new MergeOperatorRight(token));
                 ignoreSpace();
                 return true;
+            }
+            if (LEFT_OPERATOR.contains(token.kind)) {
+                // + 和 - 需要检查前面的运算符是什么才能归结为左操作符
+                boolean change = true;
+                if (token.is(Kind.ADD, Kind.SUB) && isChannelFull()) {
+                    Object o  = getLast();
+                    if (o instanceof Expression) {
+                        change = false;
+                    } else if (o instanceof Token) {
+                        Token t = (Token) o;
+                        if (PRIORITY.containsKey(t.kind)) {
+                            if (!priority(token, t)) {
+                                change = false;
+                            }
+                        }
+                    } else {
+                        panic("what is this ?");
+                    }
+                }
+                if (change) {
+                    addLast(new MergeOperatorLeft(token));
+                    removeSpace();
+                    return true;
+                }
+            }
+            switch (token.kind) {
+                case ID:
+                    addLast(new ExpressionID((Token) o1));
+                    tryRemoveSpace();
+                    return true;
+                case LB:
+                    if (isChannelEmpty()
+                            || (channelSize(1) && getFirst() instanceof ExpressionSquareBracket)
+                            || (isChannelFull() && getLast() instanceof MergeOperatorBoth
+                                && ((MergeOperatorBoth) getLast()).getToken().is(Kind.LAMBDA)) ) {
+                        removeSpaceOrCR();
+                        Statements statements = parseStatements(Kind.RB, Kind.COMMA, Kind.CR);
+                        removeSpaceOrCR();
+                        if (glance().not(Kind.RB)) {
+                            panic("must be }.", glance());
+                        }
+                        addLast(new ExpressionStruct(token, statements, next()));
+                        tryRemoveSpace().refuseAll();
+                        if (!(isChannelFull() && getLast() instanceof MergeOperatorBoth
+                                && ((MergeOperatorBoth) getLast()).getToken().is(Kind.LAMBDA))) {
+                            acceptColon();
+                        }
+                        return true;
+                    }
+                    break;
+                case COLON:
+                    // 尝试解析一个对象
+                    Expression expression = ExpressionChannel.produce(this, extend(Kind.COLON));
+                    if (token.next(expression.first())) {
+                        addLast(new ExpressionRestrict(token, expression));
+                        tryRemoveSpace().acceptColon().refuseAll();
+                        return true;
+                    } else {
+                        panic("should be connected. " + token + " " + expression.first());
+                    }
+                default:
             }
         }
 
@@ -443,15 +583,33 @@ public class ExpressionChannel extends Channel<Expression> {
 
     @Override
     protected void digested() {
-        if (end(glanceSkipSpace())) {
+        Token next = glance();
+        if (end(next) && next.not(Kind.COLON)) {
             this.full();
         }
     }
 
     private void full() {
-        if (channelSize(1) && getLast() instanceof Expression) {
-            data = (Expression) removeLast();
-            return ;
+        int size = channelSize();
+        if (0 < size) {
+            if (getFirst() instanceof Expression) {
+                Expression expression = (Expression) removeFirst();
+                if (1 == size) {
+                    data = expression;
+                    return;
+                }
+                List<ExpressionRestrict> restricts = new ArrayList<>(size - 1);
+                do {
+                    Object n = removeFirst();
+                    if (n instanceof ExpressionRestrict) {
+                        restricts.add((ExpressionRestrict) n);
+                    } else {
+                        panic("expression can only be one expression and restricts");
+                    }
+                } while (isChannelFull());
+                data = new ExpressionWithRestrict(expression, restricts);
+                return;
+            }
         }
         panic("should not end.");
     }

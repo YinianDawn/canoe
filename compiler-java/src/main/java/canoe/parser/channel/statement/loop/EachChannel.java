@@ -46,7 +46,7 @@ public class EachChannel extends Channel<StatementEach> {
                 panic("must be ID", mark);
             }
             if (!colon.next(mark)) {
-                panic(mark.kind.getSign() + " must follow sign : , no space", mark);
+                panic(mark.kind.sign + " must follow sign : , no space", mark);
             }
         } else {
             colon = null;

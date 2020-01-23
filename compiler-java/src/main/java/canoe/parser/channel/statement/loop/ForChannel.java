@@ -5,7 +5,7 @@ import canoe.ast.statement.Statement;
 import canoe.ast.statement.StatementAssign;
 import canoe.ast.statement.Statements;
 import canoe.ast.statement.loop.StatementFor;
-import canoe.ast.statement.loop.StatementLoopAssign;
+import canoe.ast.statement.loop.LoopAssign;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
@@ -26,7 +26,7 @@ public class ForChannel extends Channel<StatementFor> {
     private Token mark;
 
     private StatementAssign assign;
-    private List<StatementLoopAssign> forAssigns = new ArrayList<>();
+    private List<LoopAssign> forAssigns = new ArrayList<>();
     private Token semi1;
     private Expression expression;
     private Token semi2;
@@ -56,7 +56,7 @@ public class ForChannel extends Channel<StatementFor> {
                 panic("must be ID", mark);
             }
             if (!colon.next(mark)) {
-                panic(mark.kind.getSign() + " must follow sign : , no space", mark);
+                panic(mark.kind.sign + " must follow sign : , no space", mark);
             }
         } else {
             colon = null;
@@ -75,7 +75,7 @@ public class ForChannel extends Channel<StatementFor> {
                 comma = next();
                 statementAssign = parseStatementAssign(
                         StatementChannel.produce(this, Kind.COMMA, Kind.SEMI));
-                forAssigns.add(new StatementLoopAssign(comma, statementAssign));
+                forAssigns.add(new LoopAssign(comma, statementAssign));
                 removeSpace();
                 next = glance();
             }

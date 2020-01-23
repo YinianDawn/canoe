@@ -46,4 +46,14 @@ public class StatementIf implements Statement {
         this.elseStatements = elseStatements;
         this.elseRB = elseRB;
     }
+
+    @Override
+    public Token first() {
+        return ifToken;
+    }
+
+    @Override
+    public Token last() {
+        return null != elseToken ? elseRB : ( elseIfs.isEmpty() ? rb : elseIfs.get(elseIfs.size() - 1).last());
+    }
 }

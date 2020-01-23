@@ -19,4 +19,13 @@ public class ExpressionRoundBracket implements Expression {
         this.rr = rr;
     }
 
+    @Override
+    public Token first() {
+        return lr;
+    }
+
+    @Override
+    public Token last() {
+        return rr;
+    }
 }

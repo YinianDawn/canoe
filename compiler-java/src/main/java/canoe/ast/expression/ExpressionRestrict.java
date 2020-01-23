@@ -1,21 +1,24 @@
-package canoe.ast.statement;
+package canoe.ast.expression;
 
-import canoe.ast.expression.Expression;
 import canoe.lexer.Token;
 
 /**
  * @author dawn
  */
-public class StatementExpression implements Statement {
+public class ExpressionRestrict implements Expression {
+
+    private Token colon;
+
     private Expression expression;
 
-    public StatementExpression(Expression expression) {
+    public ExpressionRestrict(Token colon, Expression expression) {
+        this.colon = colon;
         this.expression = expression;
     }
 
     @Override
     public Token first() {
-        return expression.first();
+        return colon;
     }
 
     @Override

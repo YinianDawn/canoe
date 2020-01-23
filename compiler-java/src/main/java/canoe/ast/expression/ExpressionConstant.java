@@ -11,4 +11,15 @@ public class ExpressionConstant implements Expression {
     public ExpressionConstant(Token constant) {
         this.constant = constant;
     }
+
+
+    @Override
+    public Token first() {
+        return constant;
+    }
+
+    @Override
+    public Token last() {
+        return constant;
+    }
 }

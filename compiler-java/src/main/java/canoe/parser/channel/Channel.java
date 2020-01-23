@@ -1,10 +1,9 @@
 package canoe.parser.channel;
 
 import canoe.ast.expression.Expression;
+import canoe.ast.expression.ExpressionComma;
 import canoe.ast.merge.Merge;
-import canoe.ast.statement.Statement;
-import canoe.ast.statement.StatementEmpty;
-import canoe.ast.statement.Statements;
+import canoe.ast.statement.*;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.TokenStream;
@@ -18,7 +17,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static canoe.lexer.KindSet.COMMON_KEY_WORDS;
+import static canoe.lexer.KindSet.SINGLE_KEY_WORDS;
 
 /**
  * @author dawn
@@ -91,9 +90,9 @@ public class Channel<T> {
 
     // ==================== 忽略符号 ====================
 
-    protected Channel ignore(Kind... kinds) { Collections.addAll(ignore, kinds); return this; }
+    public Channel ignore(Kind... kinds) { Collections.addAll(ignore, kinds); return this; }
 
-    protected Channel ignoreSpace() { ignore.add(Kind.SPACES); return this; }
+    public Channel ignoreSpace() { ignore.add(Kind.SPACES); return this; }
 
     // ==================== 某种特殊符号需要做的操作 ====================
 
@@ -106,10 +105,11 @@ public class Channel<T> {
     // ==================== 接受和拒绝的符号 ====================
 
     public Channel accept(Kind... kinds) { if (!acceptAll) { Collections.addAll(accept, kinds); } return this; }
-    public Channel acceptKeyWords() { if (!acceptAll) { accept.addAll(COMMON_KEY_WORDS); } return this; }
+    public Channel acceptKeyWords() { if (!acceptAll) { accept.addAll(SINGLE_KEY_WORDS); } return this; }
     public Channel acceptAll() { acceptAll = true; return this; }
     public Channel acceptSpaces() { if (!acceptAll) { accept.add(Kind.SPACES); } return this; }
     public Channel acceptCR() { if (!acceptAll) { accept.add(Kind.CR); } return this; }
+    public Channel acceptColon() { if (!acceptAll) { accept.add(Kind.COLON); } return this; }
 
     public Channel refuse(Kind... kinds) { if (!refuseAll) { Collections.addAll(refuse, kinds); } return this; }
     public Channel refuseAll() { refuseAll = true; return this; }
@@ -149,6 +149,31 @@ public class Channel<T> {
             panic("channel is hungering, can not produce.");
         }
         return data;
+    }
+
+
+    // ==================== 结束后是否移除末尾符号 ====================
+
+    private void removeEnds(Kind[] kinds) {
+        if (hunger()) {
+            panic("channel is hungering, can not remove end sign.");
+        }
+        if (null == kinds || 0 == kinds.length) {
+            while (glance().not(end)) { next(); }
+        } else {
+            while (glance().not(kinds)) { next(); }
+        }
+    }
+
+    protected void removeEnd(Kind... kinds) {
+        removeEnds(kinds);
+    }
+
+    public Channel tryRemoveSpace() {
+        if (!end(Kind.SPACES)) {
+            removeSpace();
+        }
+        return this;
     }
 
     // ================ 其他方法 ================
@@ -196,6 +221,7 @@ public class Channel<T> {
     protected String parseName(Object o) {
         if (o instanceof Expression
                 || o instanceof Statement
+                || o instanceof Statements
                 || o instanceof Merge) {
             return o.getClass().getSimpleName();
         } else if (o instanceof Token) {
@@ -208,16 +234,54 @@ public class Channel<T> {
     // ================ 解析多个语句 ================
 
     protected Statements parseStatements(Kind... end) {
-        List<Statement> statements = new ArrayList<>();
+        ConcurrentLinkedDeque<Statement> statements = new ConcurrentLinkedDeque<>();
         // 解析多个语句
         removeSpaceOrCR();
+        List<Token> commas = new LinkedList<>();
         Statement statement = StatementChannel.produce(this, end);
         while (!(statement instanceof StatementEmpty)) {
             statements.add(statement);
-            removeSpaceOrCR();
+            if (glanceSkipSpaceOrCR().is(Kind.COMMA) || !commas.isEmpty()) {
+                removeSpace();
+                if (glance().is(Kind.COMMA)) {
+                    commas.add(next());
+                    removeSpace();
+                }
+            } else {
+                removeSpaceOrCR();
+            }
             statement = StatementChannel.produce(this, end);
         }
-        return new Statements(statements);
+        if (commas.isEmpty() || statements.size() <= 1) {
+            return new Statements(new ArrayList<>(statements));
+        } else {
+            if (commas.size() + 1 != statements.size()) {
+                panic("statements and , can not match.");
+            }
+            Statement first = statements.removeFirst();
+            List<ExpressionComma> commaList = new ArrayList<>(commas.size());
+            for (Token comma : commas) {
+                commaList.add(new ExpressionComma(comma, statements.removeFirst()));
+            }
+            return new Statements(Collections.singletonList(new StatementComma(first, commaList)));
+        }
+    }
+
+    private void tryRemoveSpaceOrCR(Kind[] ends) {
+        if (contains(ends, Kind.SPACES)) {
+            if (contains(ends, Kind.CR)) { } else { remove(Kind.CR); }
+        } else {
+            if (contains(ends, Kind.CR)) { removeSpace(); } else { removeSpaceOrCR(); }
+        }
+    }
+
+    private static boolean contains(Kind[] ends, Kind kind) {
+        for (Kind k : ends) {
+            if (k == kind) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ================ channel方法 ================
@@ -257,7 +321,7 @@ public class Channel<T> {
         return channel.isEmpty();
     }
 
-    protected boolean channelFull() {
+    protected boolean isChannelFull() {
         return !channel.isEmpty();
     }
 
@@ -331,5 +395,7 @@ public class Channel<T> {
     public void removeSpace() { stream.removeSpace(); }
 
     public void removeSpaceOrCR() { stream.removeSpaceOrCR(); }
+
+    public void remove(Kind kind) { stream.remove(kind); }
 
 }

@@ -13,4 +13,14 @@ public class StatementWith implements Statement {
     public StatementWith(Token withToken) {
         this.withToken = withToken;
     }
+
+    @Override
+    public Token first() {
+        return withToken;
+    }
+
+    @Override
+    public Token last() {
+        return withToken;
+    }
 }

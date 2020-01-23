@@ -19,4 +19,14 @@ public class StatementAssign implements Statement {
         this.assign = assign;
         this.expression = expression;
     }
+
+    @Override
+    public Token first() {
+        return expressionId.first();
+    }
+
+    @Override
+    public Token last() {
+        return expression.last();
+    }
 }

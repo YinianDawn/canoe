@@ -8,7 +8,7 @@ import canoe.
  canoe1 as  canoe1
 import abc.canoe1 
 import abc.canoe1 as  canoe1 
-
+import abc.canoe1.* 
 import (    
     abc.
     abc   as a
@@ -19,6 +19,9 @@ import (
 )
 import (
     abc.abc   
+)
+import (
+    abc.abc.*   
 )
 import abc.canoe1 as  canoe1 
 
@@ -84,18 +87,18 @@ a.a(1).b(false, 2).c   ++         // error
 // 循环语句
 
 loop :loop1 i=0,j=0 {
-
+    break
 }
 
 loop {
-
+    break loop1
 }
 
 for :loop1 i=0;i<10;i++{
-
+continue loop1
 }
 for i=0,j=0;i<10;i++{
-    
+    continue
 }
 
 
@@ -114,11 +117,11 @@ each item,i in range(3) {
 return {
 
 } 
-return { return {} } { } { } 
+return { return {} } :{ } :{ } 
 
 return []{}
 return [1]{}
-return return11[1]{{},{}}
+return [1]{{},{}}:return1
 
 return true
 return 1
@@ -332,6 +335,16 @@ testReturn2 :{xxx:int, yyy:string} :() := () {
 }
 
 xxx, yy: yyy := testReturn2()  
+
++ :int :(x :int, y:int) {
+    // 在本范围内把 + 操作符功能修改掉 
+    // 这方法体内用的符号是上级操作符的使用方式
+    return x + y
+}
+
+- :int :(x :int) {
+    return -x
+}
 
 // 123
     

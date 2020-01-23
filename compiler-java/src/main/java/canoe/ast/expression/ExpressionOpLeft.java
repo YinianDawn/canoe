@@ -1,21 +1,24 @@
-package canoe.ast.statement;
+package canoe.ast.expression;
 
-import canoe.ast.expression.Expression;
 import canoe.lexer.Token;
 
 /**
  * @author dawn
  */
-public class StatementExpression implements Statement {
+public class ExpressionOpLeft implements Expression {
+
+    private Token leftOp;
     private Expression expression;
 
-    public StatementExpression(Expression expression) {
+
+    public ExpressionOpLeft(Token leftOp, Expression expression) {
+        this.leftOp = leftOp;
         this.expression = expression;
     }
 
     @Override
     public Token first() {
-        return expression.first();
+        return leftOp;
     }
 
     @Override

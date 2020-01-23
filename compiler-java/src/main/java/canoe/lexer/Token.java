@@ -23,7 +23,7 @@ public class Token {
             panic("is can not be null.");
         }
         this.value = value;
-        if (null == value && null == kind.getSign()) {
+        if (null == value && null == kind.sign) {
             panic("both value and sign of is are null, can not be.");
         }
         this.line = line;
@@ -39,16 +39,16 @@ public class Token {
             panic("size of " + kind.name() + " can not less then 0.");
         }
         switch (kind) {
-            case SPACES: case CR: case EOF: return;
+            case BLANK: case SPACES: case CR: case EOF: return;
             default:
         }
-        if (null != kind.getSign() && size != kind.getSign().length()) {
-            panic("size of " + kind.name() + " should be " + kind.getSign().length() + ".");
+        if (null != kind.sign && size != kind.sign.length()) {
+            panic("size of " + kind.name() + " should be " + kind.sign.length() + ".");
         }
     }
 
     public String getValue() {
-        return null == value ? kind.getSign() : value;
+        return null == value ? kind.sign : value;
     }
 
     @Override
@@ -76,6 +76,46 @@ public class Token {
     public boolean isColon() { return this.kind == Kind.COLON; }
 
     public boolean is(Kind kind) { return this.kind == kind; }
+
+    public boolean is(Kind kind, Kind kind2) { return is(kind) || is(kind2); }
+
+    public boolean is(Kind[] kinds) {
+        for (Kind kind : kinds) {
+            if (is(kind)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean is(Iterable<Kind> kinds) {
+        for (Kind kind : kinds) {
+            if (is(kind)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean not(Kind kind) { return this.kind != kind; }
 
+    public boolean not(Kind kind, Kind kind2) { return not(kind) && not(kind2); }
+
+    public boolean not(Kind[] kinds) {
+        for (Kind kind : kinds) {
+            if (is(kind)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean not(Iterable<Kind> kinds) {
+        for (Kind kind : kinds) {
+            if (is(kind)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

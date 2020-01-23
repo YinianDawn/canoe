@@ -5,10 +5,8 @@ import canoe.ast.expression.ExpressionID;
 import canoe.ast.expression.ExpressionOpRight;
 import canoe.ast.merge.MergeAssign;
 import canoe.ast.merge.MergeOperatorRight;
-import canoe.ast.statement.Statement;
-import canoe.ast.statement.StatementAssign;
-import canoe.ast.statement.StatementEmpty;
-import canoe.ast.statement.StatementExpression;
+import canoe.ast.statement.*;
+import canoe.ast.statement.loop.StatementLoopMark;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
@@ -40,7 +38,7 @@ public class StatementChannel extends Channel<Statement> {
             default:
         }
         if (end(next)) {
-            data = new StatementEmpty();
+            data = new StatementEmpty(current(), glance());
         } else {
             mark();
             init();
@@ -56,7 +54,7 @@ public class StatementChannel extends Channel<Statement> {
             data = new StatementExpression(expression);
             return false;
         }
-        if (BINARY_OPERATOR.contains(next.kind)) {
+        if (MIDDLE_OPERATOR.contains(next.kind)) {
             // 语句解析里面有二元操作符
             recover();
             Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
@@ -77,6 +75,14 @@ public class StatementChannel extends Channel<Statement> {
                 case EACH: data = EachChannel.produce(this, extend(Kind.CR)); return false;
                 case FOR: data = ForChannel.produce(this, extend(Kind.CR)); return false;
 
+                case LB:
+                    // { 开始的是个表达式
+                    data = new StatementExpression(ExpressionChannel.produce(this, extend(Kind.COMMA)));
+                    return false;
+
+                case RETURN:
+                case BREAK:
+                case CONTINUE:
                 case ID:
                     break;
                 default: panic("???", next);
@@ -96,6 +102,8 @@ public class StatementChannel extends Channel<Statement> {
             case "ExpressionID":
             case "StatementAssign":
             case "ExpressionOpRight":
+            case "StatementLoopMark":
+            case "StatementReturn":
                 break;
 
             default: panic("wrong statement.");
@@ -151,8 +159,31 @@ public class StatementChannel extends Channel<Statement> {
             if (token.is(Kind.ID)) {
                 addLast(new ExpressionID((Token) o1));
                 ignoreSpace();
-                if (channelSize(1)) {
+                if (channelSize(1)) { over(this::full); }
+                return true;
+            }
+            if (token.is(Kind.RETURN)) {
+                removeSpace();
+                Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
+                removeSpace();
+                addLast(new StatementReturn(token, expression));
+                over(this::full);
+                return true;
+            }
+            if (token.is(Kind.BREAK) || token.is(Kind.CONTINUE)) {
+                removeSpace();
+                Token id = null;
+                Token next = glance();
+                if (next.is(Kind.ID)) {
+                    id = next();
+                    removeSpace();
+                    next = glance();
+                }
+                if (end(next)) {
+                    addLast(new StatementLoopMark(token, id));
                     over(this::full);
+                } else {
+                    panic("can not be here.", next);
                 }
                 return true;
             }

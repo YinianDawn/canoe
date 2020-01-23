@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static canoe.lexer.Kind.*;
-import static canoe.lexer.KindSet.COMMON_KEY_WORDS;
+import static canoe.lexer.KindSet.SINGLE_KEY_WORDS;
 
 /**
  * @author dawn
@@ -35,14 +35,17 @@ public class ImportChannel extends Channel<ImportStatement> {
         if (1 < channelSize()) {
             Token last = getLastToken();
             if (null != last) {
-                if (contains(last, COMMON_KEY_WORDS)) {
+                if (contains(last, SINGLE_KEY_WORDS)) {
                     if (last.is(AS)) { acceptSpaces(); } accept(DOT).refuseAll(); return;
                 }
                 if (last.is(DOT) || ends(status, "DOT CR", "DOT SPACES")) {
                     if (last.not(DOT)) { removeLast(); }
-                    accept(ID).acceptKeyWords().acceptSpaces().acceptCR().refuseAll(); return;
+                    accept(ID).acceptKeyWords().acceptSpaces().accept(MUL).acceptCR().refuseAll(); return;
                 }
-                if (status.endsWith("AS ID") || (status.endsWith("AS ID SPACES") && null != removeLast())) {
+                if (status.endsWith("AS ID")
+                        || (status.endsWith("AS ID SPACES") && null != removeLast())
+                        || status.endsWith("DOT MUL")
+                        || (status.endsWith("DOT MUL SPACES") && null != removeLast())) {
                     acceptSpaces().acceptCR().refuseAll();
                     if (!many) { match(CR, this::singleFull); }
                     return;
@@ -55,7 +58,7 @@ public class ImportChannel extends Channel<ImportStatement> {
                 }
                 if (status.endsWith("AS SPACES")) { removeLast(); accept(ID).refuseAll(); return; }
                 if (last.is(CR)) {
-                    if (ends(status,"ID CR")) { accept(RR); } else { removeLast(); acceptCR(); }
+                    if (ends(status,"ID CR", "DOT MUL CR")) { accept(RR); } else { removeLast(); acceptCR(); }
                     accept(Kind.ID).acceptKeyWords().acceptSpaces().refuseAll(); return;
                 }
                 if (last.is(RR)) { this.manyFull(); refuseAll(); return; }
@@ -82,7 +85,7 @@ public class ImportChannel extends Channel<ImportStatement> {
         Token id = null;
 
         Token rr = null;
-        while (channelFull()) {
+        while (isChannelFull()) {
             Token next = (Token) removeFirst();
             switch (next.kind) {
                 case RR: rr = next; break;
@@ -115,7 +118,7 @@ public class ImportChannel extends Channel<ImportStatement> {
         Token as = null;
         Token id = null;
 
-        while (channelFull()) {
+        while (isChannelFull()) {
             Token next = (Token) removeFirst();
             if (next.is(AS) && channelSize(1)) {
                 as = next;
@@ -130,8 +133,12 @@ public class ImportChannel extends Channel<ImportStatement> {
     }
 
     private void checkKeyWord(List<Token> names) {
-        if (COMMON_KEY_WORDS.contains(names.get(names.size() - 1).kind)) {
-            panic("can not be key word.", names.get(names.size() - 1));
+        Token last = names.get(names.size() - 1);
+        if (SINGLE_KEY_WORDS.contains(last.kind)) {
+            panic("can not be key word.", last);
+        }
+        if (last.not(ID) && last.not(MUL)) {
+            panic("can not be.", last);
         }
     }
 

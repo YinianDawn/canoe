@@ -1,6 +1,7 @@
 package canoe.parser;
 
 
+import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.lexer.Tokens;
 
@@ -110,5 +111,8 @@ public class TokenStream {
     public void removeSpace() { while (has() && glance().isSpaces()) { next(); } }
 
     public void removeSpaceOrCR() { while (has() && glance().isSpacesOrCR()) { next(); } }
+
+    public void remove(Kind kind) { while (has() && glance().is(kind)) { next(); } }
+
 
 }
