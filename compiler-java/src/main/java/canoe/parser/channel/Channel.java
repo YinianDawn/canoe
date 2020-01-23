@@ -2,8 +2,12 @@ package canoe.parser.channel;
 
 import canoe.ast.expression.Expression;
 import canoe.ast.expression.ExpressionComma;
+import canoe.ast.expression.ExpressionTrait;
 import canoe.ast.merge.Merge;
-import canoe.ast.statement.*;
+import canoe.ast.statement.Statement;
+import canoe.ast.statement.StatementComma;
+import canoe.ast.statement.StatementEmpty;
+import canoe.ast.statement.Statements;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.TokenStream;
@@ -222,6 +226,7 @@ public class Channel<T> {
         if (o instanceof Expression
                 || o instanceof Statement
                 || o instanceof Statements
+                || o instanceof ExpressionTrait
                 || o instanceof Merge) {
             return o.getClass().getSimpleName();
         } else if (o instanceof Token) {
@@ -282,6 +287,133 @@ public class Channel<T> {
             }
         }
         return false;
+    }
+
+    protected static HashMap<String, Integer> PRIORITY = new HashMap<>(97);
+
+    static {
+        int p = 1;
+
+        // ( ) [ ] -> 后缀运算符 从左到右
+        /** (   */ PRIORITY.put(Kind.LR.sign, p);
+        /** [   */ PRIORITY.put(Kind.LS.sign, p);
+        /** {   */ // PRIORITY.put(Kind.LB.sign, p);
+        /** )   */ // PRIORITY.put(Kind.LR.sign, p);
+        /** ]   */ // PRIORITY.put(Kind.LS.sign, p);
+        /** }   */ // PRIORITY.put(Kind.LB.sign, p);
+
+        p++;
+        /** .   */ PRIORITY.put(Kind.DOT.sign, p);
+        /** ..  */ PRIORITY.put(Kind.DOT_DOT.sign, p);
+        /** ... */ PRIORITY.put(Kind.DOT_DOT_DOT.sign, p);
+
+        p++;
+        // ! + - ++ -- 单目运算符 从右到左
+        /** !   */ PRIORITY.put(Kind.BIT_NOT.sign, p);
+        /** +l  */ PRIORITY.put(Kind.ADD.sign + "l", p);
+        /** -l  */ PRIORITY.put(Kind.SUB.sign + "l", p);
+        /** ++  */ PRIORITY.put(Kind.ADD_ADD.sign, p);
+        /** --  */ PRIORITY.put(Kind.SUB_SUB.sign, p);
+
+        p++;
+        // * / % 双目运算符 从左到右
+        /** *   */ PRIORITY.put(Kind.MUL.sign, p);
+        /** /   */ PRIORITY.put(Kind.DIV.sign, p);
+        /** %   */ PRIORITY.put(Kind.MOD.sign, p);
+
+        p++;
+        // + - 双目运算符 从左到右
+        /** +   */ PRIORITY.put(Kind.ADD.sign, p);
+        /** -   */ PRIORITY.put(Kind.SUB.sign, p);
+
+        p++;
+        // >> << 位移运算符 双目 从左到右
+        /** >>  */ PRIORITY.put(Kind.BIT_RIGHT.sign, p);
+        /** <<  */ PRIORITY.put(Kind.BIT_LEFT.sign, p);
+
+        p++;
+        // < <= > >= 关系运算符 双目 从左到右
+        /** >   */ PRIORITY.put(Kind.GT.sign, p);
+        /** >=  */ PRIORITY.put(Kind.GE.sign, p);
+        /** <   */ PRIORITY.put(Kind.LT.sign, p);
+        /** <=  */ PRIORITY.put(Kind.LE.sign, p);
+
+        /** ->  */ PRIORITY.put(Kind.IS.sign, p);
+
+        p++;
+        // == != 关系运算符 双目 从左到右
+        /** ==  */ PRIORITY.put(Kind.EQ.sign, p);
+        /** !=  */ PRIORITY.put(Kind.NE.sign, p);
+
+        p++;
+        // & 按位与 双目 从左到右
+        /** &   */ PRIORITY.put(Kind.BIT_AND.sign, p);
+
+        p++;
+        // ^ 按位异或 双目 从左到右
+        /** ^   */ PRIORITY.put(Kind.BIT_XOR.sign, p);
+
+        p++;
+        // | 按位或 双目 从左到右
+        /** |   */ PRIORITY.put(Kind.BIT_OR.sign, p);
+
+        p++;
+        // && 逻辑与 双目 从左到右
+        /** &&  */ PRIORITY.put(Kind.LOGICAL_AND.sign, p);
+
+        p++;
+        // || 逻辑或 双目 从左到右
+        /** ||  */ PRIORITY.put(Kind.LOGICAL_OR.sign, p);
+
+        p++;
+        /** :   */ PRIORITY.put(Kind.COLON.sign, p);
+
+        p++;
+        // , 运算 双目 从左到右
+        /** ,   */ PRIORITY.put(Kind.COMMA.sign, p);
+
+        p++;
+        // := = += -= /= %= >>= <<= &= |= 赋值运算 双目 从右到左
+        /** :=  */ PRIORITY.put(Kind.ASSIGN_FORCE.sign, p);
+        /** =   */ PRIORITY.put(Kind.ASSIGN.sign, p);
+        /** +=  */ PRIORITY.put(Kind.ADD_ASSIGN.sign, p);
+        /** -=  */ PRIORITY.put(Kind.SUB_ASSIGN.sign, p);
+        /** *=  */ PRIORITY.put(Kind.MUL_ASSIGN.sign, p);
+        /** /=  */ PRIORITY.put(Kind.DIV_ASSIGN.sign, p);
+        /** %=  */ PRIORITY.put(Kind.MOD_ASSIGN.sign, p);
+        /** <<= */ PRIORITY.put(Kind.BIT_LEFT_ASSIGN.sign, p);
+        /** >>= */ PRIORITY.put(Kind.BIT_RIGHT_ASSIGN.sign, p);
+        /** &=  */ PRIORITY.put(Kind.BIT_AND_ASSIGN.sign, p);
+        /** ^=  */ PRIORITY.put(Kind.BIT_XOR_ASSIGN.sign, p);
+        /** |=  */ PRIORITY.put(Kind.BIT_OR_ASSIGN.sign, p);
+
+        p++;
+        /** ->  */ PRIORITY.put(Kind.LAMBDA.sign, p);
+
+        p++;
+        /** ;   */ PRIORITY.put(Kind.SEMI.sign, p);
+
+    }
+
+    protected boolean priority(Token self, Token other, String leftOtherSign) {
+        Integer p1;
+        if (null == leftOtherSign) {
+            p1 = PRIORITY.get(self.kind.sign);
+        } else {
+            p1 = PRIORITY.get(self.kind.sign + leftOtherSign);
+        }
+        if (null == p1) {
+            panic("not a operator sign.", self);
+            return false;
+        }
+        if (null == other.kind.sign) { return true; }
+        Integer p2 = PRIORITY.get(other.kind.sign);
+        if (null == p2) { return true; }
+        return p1 <= p2;
+    }
+
+    protected boolean priority(Token self, Token other) {
+        return this.priority(self, other, null);
     }
 
     // ================ channel方法 ================

@@ -135,13 +135,17 @@ return x,y -> {
     return x + y
 }
 
+y = x.(int)
+x.a()..b()
+r = x ?: int
 
 
 
+newCompiler :canoe.compiler.newCompiler
 
-newCompiler,newCompiler,newCompiler,newCompiler :canoe.compiler.newCompiler
+main :{} :() 
 
-main :{} :() := () {
+main := () {
     newCompiler(OS.args()).compile()
 }
 
@@ -158,13 +162,13 @@ testGoto :{} :() := () {
 // testCanoe
 
 WeekDay :enum :{
-    Monday {"Monday"}
-    Tuesday {"Tuesday"}
-    Wednesday {"Wednesday"}
-    Thursday {"Thursday"}
-    Friday {"Friday"}
-    Saturday {"Saturday"}
-    Sunday {"Sunday"}
+    Monday = {"Monday"}
+    Tuesday :{"Tuesday"}
+    Wednesday ={"Wednesday"}
+    Thursday ={"Thursday"}
+    Friday ={"Friday"}
+    Saturday ={"Saturday"}
+    Sunday ={"Sunday"}
 
     name :string
 }
@@ -172,6 +176,17 @@ WeekDay :enum :{
 add :int :(:int, :int) := (x :int, y :int) {
     return x + y
 }  
+
+add :int :(:int, :int :string) := (x :int, y :int) {
+    return x + y
+}
+
+add :int :(:int,... :int) := (x :int, y :int) {
+    return x + y
+} 
+add :int :(... :int) := (x :int, y :int) {
+    return x + y
+} 
 
 testIf :{} :(:int) := (x :int) {
     if x == 5 {
@@ -256,7 +271,7 @@ testLoop :{} :() := () {
 
 testFor :{} :() := () {
     list = [1, 2, 3]
-    for item, i in list {
+    each item, i in list {
         print("item:" + item + " i:" + i)
     }
 }
@@ -291,7 +306,7 @@ A :{
 }
 
 testMethod :{} :() := () {
-    a := A{}
+    a := {}:A
     a.print1()
     a.print1()..print2()
 }
@@ -334,15 +349,15 @@ testReturn2 :{xxx:int, yyy:string} :() := () {
     return 
 }
 
-xxx, yy: yyy := testReturn2()  
+xxx :xxxx, yy :yyy := testReturn2()  
 
-+ :int :(x :int, y:int) {
++ :int :(:int, :int) := (x, y) {
     // 在本范围内把 + 操作符功能修改掉 
     // 这方法体内用的符号是上级操作符的使用方式
     return x + y
 }
 
-- :int :(x :int) {
+-(x :int) :int {
     return -x
 }
 

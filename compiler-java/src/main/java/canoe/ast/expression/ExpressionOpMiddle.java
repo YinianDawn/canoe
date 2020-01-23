@@ -18,6 +18,10 @@ public class ExpressionOpMiddle implements Expression {
         this.rightExpression = rightExpression;
     }
 
+    public Expression getLeftExpression() {
+        return leftExpression;
+    }
+
     @Override
     public Token first() {
         return leftExpression.first();

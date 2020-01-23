@@ -1,5 +1,8 @@
 package canoe.lexer;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static canoe.lexer.KindType.*;
 
 /**
@@ -103,7 +106,10 @@ public enum Kind {
     /** 是否小于等于 */
     LE("<=", MIDDLE, SIGN_RELATION),
     /** 前面对象是否是后面的类型 */
-    IS("<-", MIDDLE, SIGN_RELATION),
+    IS("?:", MIDDLE, SIGN_RELATION),
+
+    /** 通道？ */
+    CHANNEL("<-", MIDDLE, SIGN_RELATION),
 
     /** lambda表达式 */
     LAMBDA("->", MIDDLE, SIGN_LAMBDA),
@@ -137,10 +143,18 @@ public enum Kind {
 
     /** 语句之间分隔 换行符也是语句分隔作用 */
     SEMI(";", MIDDLE, SIGN_MARK),
-    /** 暂时无用 绑定对象用 */
+    /** 绑定对象用 */
     AT("@", FIRST, SIGN_MARK),
     /** 暂时无用 也许将来注解使用 */
     HASH("#", FIRST, SIGN_MARK),
+    /** 暂时无用 也许将来空指针判断 */
+    QUESTION("?"),
+    /** 暂时无用 */
+    QUESTION1("`"),
+    /** 暂时无用 */
+    QUESTION2("~"),
+    /** 暂时无用 */
+    QUESTION3("$"),
 
     // 数学运算符
     ADD("+", FIRST, MIDDLE, SIGN_MATH),
@@ -218,4 +232,8 @@ public enum Kind {
         this.types = types;
     }
 
+    @Override
+    public String toString() {
+        return this.name() + " " + sign + " " + Stream.of(types).map(Enum::name).collect(Collectors.joining(" "));
+    }
 }

@@ -1,8 +1,6 @@
 package canoe.parser.channel.statement;
 
-import canoe.ast.expression.Expression;
-import canoe.ast.expression.ExpressionID;
-import canoe.ast.expression.ExpressionOpRight;
+import canoe.ast.expression.*;
 import canoe.ast.merge.MergeAssign;
 import canoe.ast.merge.MergeOperatorRight;
 import canoe.ast.statement.*;
@@ -54,7 +52,7 @@ public class StatementChannel extends Channel<Statement> {
             data = new StatementExpression(expression);
             return false;
         }
-        if (MIDDLE_OPERATOR.contains(next.kind)) {
+        if (MIDDLE_OPERATOR.contains(next.kind) && next.not(Kind.COMMA)) {
             // 语句解析里面有二元操作符
             recover();
             Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
@@ -74,17 +72,45 @@ public class StatementChannel extends Channel<Statement> {
                 case LOOP: data = LoopChannel.produce(this, extend(Kind.CR)); return false;
                 case EACH: data = EachChannel.produce(this, extend(Kind.CR)); return false;
                 case FOR: data = ForChannel.produce(this, extend(Kind.CR)); return false;
-
-                case LB:
-                    // { 开始的是个表达式
-                    data = new StatementExpression(ExpressionChannel.produce(this, extend(Kind.COMMA)));
+                case GOTO:
+                    Token gotoToken = next();
+                    removeSpace();
+                    if (glance().not(Kind.ID)) {
+                        panic("must be id after goto.", glance());
+                    }
+                    Token id = next();
+                    removeSpaceOrCR();
+                    data = new StatementGoto(gotoToken, id);
                     return false;
 
+
+                case COLON:
+                    // 有 : 是个表达式
+                    recover();
+                    data = new StatementExpression(ExpressionChannel.produce(this, extend()));
+                    mark();
+                    return false;
+                case LR:
+                    // 有 ( 是个表达式
+                    recover();
+                    data = new StatementExpression(ExpressionChannel.produce(this, extend(Kind.COMMA)));
+                    mark();
+                    return false;
+
+                case COMMA:
                 case RETURN:
                 case BREAK:
                 case CONTINUE:
                 case ID:
                     break;
+
+                case LB:
+                    // { 开始的是个表达式
+                    if (isChannelEmpty()) {
+                        data = new StatementExpression(ExpressionChannel.produce(this, extend(Kind.COMMA)));
+                        return false;
+                    }
+
                 default: panic("???", next);
             }
         }
@@ -95,6 +121,7 @@ public class StatementChannel extends Channel<Statement> {
     protected void digest() {
         if (digest1()) { digest(); return; }
         if (digest2()) { digest(); return; }
+        if (digest3()) { digest(); return; }
 
         String status = status();
 
@@ -104,6 +131,9 @@ public class StatementChannel extends Channel<Statement> {
             case "ExpressionOpRight":
             case "StatementLoopLabel":
             case "StatementReturn":
+            case "ExpressionOpMiddle":
+                break;
+            case "ExpressionID COMMA":
                 break;
 
             default: panic("wrong statement.");
@@ -116,6 +146,7 @@ public class StatementChannel extends Channel<Statement> {
         Object o2 = removeLast();
         String status = parseName(o2) + " " + parseName(o1);
         switch (status) {
+            case "ExpressionOpMiddle MergeAssign":
             case "ExpressionID MergeAssign":
                 removeSpace();
                 Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
@@ -126,15 +157,35 @@ public class StatementChannel extends Channel<Statement> {
                 addLast(new ExpressionOpRight((Expression) o2, ((MergeOperatorRight) o1).getToken()));
                 ignoreSpace().refuseCR().over(this::full);
                 return true;
-////            case "BIT_NOT ExpressionBool": objects.addLast(new ExpressionLeftOp((Token) o2, (Expression) o1)); return true;
-////            case "ExpressionID ADD_ADD":
-////            case "ExpressionRightOp ADD_ADD": objects.addLast(new ExpressionRightOp((Expression) o2, (Token) o1)); return true;
-////            case "ExpressionID ExpressionRoundBracket": objects.addLast(new ExpressionFunction((Expression) o2, (ExpressionRoundBracket) o1)); return true;
-////            case "LR RR":
-////                objects.addLast(new ExpressionRoundBracket((Token) o2, new ExpressionEmpty(),(Token) o1)); return true;
-////
             default:
         }
+        addLast(o2);
+        addLast(o1);
+        return false;
+    }
+
+
+    private boolean digest3() {
+        if (channelSizeLess(3)) { return false; }
+        Object o1 = removeLast();
+        Object o2 = removeLast();
+        Object o3 = removeLast();
+        String status = parseName(o3) + " " + parseName(o2) + " " + parseName(o1);
+
+        Token op;
+        switch (status) {
+            case "ExpressionID COMMA ExpressionID":
+                // 检查运算符优先级
+                op = (Token) o2;
+                if (priority(op, glanceSkipSpace())) {
+                    addLast(new ExpressionOpMiddle((Expression) o3, op, (Expression) o1));
+                    return true;
+                }
+                break;
+
+            default:
+        }
+        addLast(o3);
         addLast(o2);
         addLast(o1);
         return false;
@@ -164,7 +215,12 @@ public class StatementChannel extends Channel<Statement> {
             }
             if (token.is(Kind.RETURN)) {
                 removeSpace();
-                Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
+                Expression expression;
+                if (glance().isCR()) {
+                    expression = new ExpressionEmpty(current(), glance());
+                } else {
+                    expression = ExpressionChannel.produce(this, extend(Kind.CR));
+                }
                 removeSpace();
                 addLast(new StatementReturn(token, expression));
                 over(this::full);
@@ -186,6 +242,9 @@ public class StatementChannel extends Channel<Statement> {
                     panic("can not be here.", next);
                 }
                 return true;
+            }
+            if (token.is(Kind.COMMA)) {
+                removeSpace();
             }
         }
 

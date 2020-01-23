@@ -5,7 +5,7 @@ import canoe.lexer.Token;
 /**
  * @author dawn
  */
-public class ExpressionTrait implements Expression {
+public class ExpressionTrait {
 
     private Token colon;
 
@@ -16,13 +16,12 @@ public class ExpressionTrait implements Expression {
         this.expression = expression;
     }
 
-    @Override
     public Token first() {
         return colon;
     }
 
-    @Override
     public Token last() {
         return expression.last();
     }
+
 }

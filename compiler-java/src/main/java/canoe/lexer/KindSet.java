@@ -61,4 +61,21 @@ public class KindSet {
 
     public static final Set<Kind> RELATION_OPERATOR = new HashSet<>(getKinds(SIGN_RELATION));
 
+    public static final Set<Kind> OVERLOAD_OPERATOR = new HashSet<>();
+
+    static {
+        OVERLOAD_OPERATOR.addAll(LEFT_OPERATOR);
+        OVERLOAD_OPERATOR.addAll(MIDDLE_OPERATOR);
+        OVERLOAD_OPERATOR.addAll(RIGHT_OPERATOR);
+        OVERLOAD_OPERATOR.addAll(RELATION_OPERATOR);
+
+        OVERLOAD_OPERATOR.remove(Kind.COMMA);
+        OVERLOAD_OPERATOR.remove(Kind.CHANNEL);
+        OVERLOAD_OPERATOR.remove(Kind.SEMI);
+        OVERLOAD_OPERATOR.remove(Kind.IS);
+        OVERLOAD_OPERATOR.remove(Kind.LAMBDA);
+        OVERLOAD_OPERATOR.remove(Kind.DOT_DOT);
+        OVERLOAD_OPERATOR.remove(Kind.DOT);
+    }
+
 }

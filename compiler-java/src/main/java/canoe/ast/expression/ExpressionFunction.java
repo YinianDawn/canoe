@@ -7,23 +7,22 @@ import canoe.lexer.Token;
  */
 public class ExpressionFunction implements Expression {
 
-    private Expression expressionId;
-
     private ExpressionRoundBracket roundBracket;
 
-    public ExpressionFunction(Expression expressionId, ExpressionRoundBracket roundBracket) {
-        this.expressionId = expressionId;
-        this.roundBracket = roundBracket;
-    }
+    private ExpressionStruct struct;
 
+    public ExpressionFunction(ExpressionRoundBracket roundBracket, ExpressionStruct struct) {
+        this.roundBracket = roundBracket;
+        this.struct = struct;
+    }
 
     @Override
     public Token first() {
-        return expressionId.first();
+        return roundBracket.first();
     }
 
     @Override
     public Token last() {
-        return roundBracket.last();
+        return struct.last();
     }
 }

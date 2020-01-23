@@ -14,6 +14,7 @@ import canoe.parser.channel.expression.ExpressionChannel;
 import canoe.parser.channel.statement.StatementChannel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -89,6 +90,7 @@ public class MatchChannel extends Channel<StatementMatch> {
                 parseClause();
             } else {
                 switch (next.kind) {
+                    case IN:
                     case ID:
                         parseClause(); break;
                     default: panic("wrong token.", next);
@@ -133,7 +135,7 @@ public class MatchChannel extends Channel<StatementMatch> {
 
     private Token parseMatchOp() {
         Token op = glance();
-        if (contains(op, RELATION_OPERATOR)) {
+        if (contains(op, RELATION_OPERATOR) || op.is(Kind.IN)) {
             op = next();
             removeSpace();
         } else { op = null; }
@@ -202,12 +204,21 @@ public class MatchChannel extends Channel<StatementMatch> {
                 removeSpaceOrCR();
                 break;
             case ID:
-                Expression expression = ExpressionChannel.produce(this, Kind.CR, Kind.RB);
+                Expression expression = ExpressionChannel.produce(this, Kind.CR, Kind.RB, Kind.WITH, Kind.WITHOUT);
                 next = glanceSkipSpace();
+                withToken = null;
+                if (next.is(Kind.WITH, Kind.WITHOUT)) {
+                    withToken = next();
+                    next = glanceSkipSpace();
+                }
                 if (!next.isCR() && next.not(Kind.RB)) {
                     panic("expression clause must be end by CR(\\ n) or }.", next);
                 }
-                clauseStatements = new Statements(Collections.singletonList(new StatementExpression(expression)));
+                if (null == withToken) {
+                    clauseStatements = new Statements(Collections.singletonList(new StatementExpression(expression)));
+                } else {
+                    clauseStatements = new Statements(Arrays.asList(new StatementExpression(expression), new StatementWith(withToken)));
+                }
                 removeSpaceOrCR();
                 break;
             default: panic("can not be this token.", next);

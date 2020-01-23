@@ -86,7 +86,9 @@ public class Lexer {
                     break;
                 case BIT_XOR: if (next2.is(Kind.ASSIGN) && merge(Kind.BIT_XOR_ASSIGN)) { i++; continue; } break;
                 case BIT_NOT: if (next2.is(Kind.ASSIGN) && merge(Kind.NE)) { i++; continue; } break;
-                case ASSIGN: if (next2.is(Kind.ASSIGN) && merge(Kind.EQ)) { i++; continue; } break;
+                case ASSIGN:
+                    if (next2.is(Kind.ASSIGN) && merge(Kind.EQ)) { i++; continue; }
+                    break;
                 case COLON:
                     if (next2.is(Kind.ASSIGN) && merge(Kind.ASSIGN_FORCE)) { i++; continue; }
                     if (next2.is(Kind.BLANK) && next2.size <= 2) {
@@ -150,6 +152,7 @@ public class Lexer {
                 case MUL: if (next2.is(Kind.ASSIGN) && merge(Kind.MUL_ASSIGN)) { i++; continue; } break;
                 case DIV: if (next2.is(Kind.ASSIGN) && merge(Kind.DIV_ASSIGN)) { i++; continue; } break;
                 case MOD: if (next2.is(Kind.ASSIGN) && merge(Kind.MOD_ASSIGN)) { i++; continue; } break;
+                case QUESTION: if (next2.is(Kind.COLON) && merge(Kind.IS)) { i++; continue; } break;
                 case BLANK:
                     if (next2.not(Kind.BLANK)) {
                         next = new Token(Kind.SPACES, null, next.line, next.position, next.size);
