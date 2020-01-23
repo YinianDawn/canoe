@@ -15,7 +15,7 @@ public class StatementLoop implements Statement {
     private Token loop;
 
     private Token colon;
-    private Token mark;
+    private Token label;
 
     private StatementAssign assign;
     private List<LoopAssign> loopAssigns;
@@ -24,10 +24,10 @@ public class StatementLoop implements Statement {
     private Statements statements;
     private Token rb;
 
-    public StatementLoop(Token loop, Token colon, Token mark, StatementAssign assign, List<LoopAssign> loopAssigns, Token lb, Statements statements, Token rb) {
+    public StatementLoop(Token loop, Token colon, Token label, StatementAssign assign, List<LoopAssign> loopAssigns, Token lb, Statements statements, Token rb) {
         this.loop = loop;
         this.colon = colon;
-        this.mark = mark;
+        this.label = label;
         this.assign = assign;
         this.loopAssigns = loopAssigns;
         this.lb = lb;

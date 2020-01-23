@@ -6,7 +6,7 @@ import canoe.ast.expression.ExpressionOpRight;
 import canoe.ast.merge.MergeAssign;
 import canoe.ast.merge.MergeOperatorRight;
 import canoe.ast.statement.*;
-import canoe.ast.statement.loop.StatementLoopMark;
+import canoe.ast.statement.loop.StatementLoopLabel;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
@@ -102,7 +102,7 @@ public class StatementChannel extends Channel<Statement> {
             case "ExpressionID":
             case "StatementAssign":
             case "ExpressionOpRight":
-            case "StatementLoopMark":
+            case "StatementLoopLabel":
             case "StatementReturn":
                 break;
 
@@ -180,7 +180,7 @@ public class StatementChannel extends Channel<Statement> {
                     next = glance();
                 }
                 if (end(next)) {
-                    addLast(new StatementLoopMark(token, id));
+                    addLast(new StatementLoopLabel(token, id));
                     over(this::full);
                 } else {
                     panic("can not be here.", next);

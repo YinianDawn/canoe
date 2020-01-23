@@ -23,7 +23,7 @@ public class ForChannel extends Channel<StatementFor> {
     private Token forToken;
 
     private Token colon;
-    private Token mark;
+    private Token label;
 
     private StatementAssign assign;
     private List<LoopAssign> forAssigns = new ArrayList<>();
@@ -51,12 +51,12 @@ public class ForChannel extends Channel<StatementFor> {
         colon = glance();
         if (colon.isColon()) {
             colon = next();
-            mark = next();
-            if (mark.not(Kind.ID)) {
-                panic("must be ID", mark);
+            label = next();
+            if (label.not(Kind.ID)) {
+                panic("must be ID", label);
             }
-            if (!colon.next(mark)) {
-                panic(mark.kind.sign + " must follow sign : , no space", mark);
+            if (!colon.next(label)) {
+                panic(label.kind.sign + " must follow sign : , no space", label);
             }
         } else {
             colon = null;
@@ -104,7 +104,7 @@ public class ForChannel extends Channel<StatementFor> {
         if (rb.not(Kind.RB)) {
             panic("must be } .", rb);
         }
-        data = new StatementFor(forToken, colon, mark,
+        data = new StatementFor(forToken, colon, label,
                 assign, forAssigns, semi1, expression, semi2, statement,
                 lb, statements, rb);
     }

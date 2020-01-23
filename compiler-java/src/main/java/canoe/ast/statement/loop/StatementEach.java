@@ -14,7 +14,7 @@ public class StatementEach implements Statement {
     private Token each;
 
     private Token colon;
-    private Token mark;
+    private Token label;
 
     private Expression item;
     private Token comma;
@@ -27,10 +27,10 @@ public class StatementEach implements Statement {
     private Statements statements;
     private Token rb;
 
-    public StatementEach(Token each, Token colon, Token mark, Expression item, Token comma, ExpressionID count, Token in, Expression iteratorExpression, Token lb, Statements statements, Token rb) {
+    public StatementEach(Token each, Token colon, Token label, Expression item, Token comma, ExpressionID count, Token in, Expression iteratorExpression, Token lb, Statements statements, Token rb) {
         this.each = each;
         this.colon = colon;
-        this.mark = mark;
+        this.label = label;
         this.item = item;
         this.comma = comma;
         this.count = count;

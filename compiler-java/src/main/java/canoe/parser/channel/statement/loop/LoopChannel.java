@@ -20,7 +20,7 @@ public class LoopChannel extends Channel<StatementLoop> {
 
     private Token loop;
     private Token colon;
-    private Token mark;
+    private Token label;
     private StatementAssign assign;
     private List<LoopAssign> loopAssigns = new ArrayList<>();
     private Token lb;
@@ -42,12 +42,12 @@ public class LoopChannel extends Channel<StatementLoop> {
         colon = glance();
         if (colon.isColon()) {
             colon = next();
-            mark = next();
-            if (mark.not(Kind.ID)) {
-                panic("must be ID", mark);
+            label = next();
+            if (label.not(Kind.ID)) {
+                panic("must be ID", label);
             }
-            if (!colon.next(mark)) {
-                panic(mark.kind.sign + " must follow sign : , no space", mark);
+            if (!colon.next(label)) {
+                panic(label.kind.sign + " must follow sign : , no space", label);
             }
         } else {
             colon = null;
@@ -82,7 +82,7 @@ public class LoopChannel extends Channel<StatementLoop> {
         if (rb.not(Kind.RB)) {
             panic("must be } .", rb);
         }
-        data = new StatementLoop(loop, colon, mark, assign, loopAssigns, lb, statements, rb);
+        data = new StatementLoop(loop, colon, label, assign, loopAssigns, lb, statements, rb);
     }
 
     private StatementAssign parseStatementAssign(Statement statement) {

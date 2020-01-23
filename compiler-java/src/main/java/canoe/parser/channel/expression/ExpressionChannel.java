@@ -280,8 +280,8 @@ public class ExpressionChannel extends Channel<Expression> {
                 break;
 
             // 表达式 约束
-            case "ExpressionStruct ExpressionRestrict":
-            case "ExpressionArray ExpressionRestrict":
+            case "ExpressionStruct ExpressionTrait":
+            case "ExpressionArray ExpressionTrait":
                 break;
 
             // 运算符 表达式
@@ -563,7 +563,7 @@ public class ExpressionChannel extends Channel<Expression> {
                     // 尝试解析一个对象
                     Expression expression = ExpressionChannel.produce(this, extend(Kind.COLON));
                     if (token.next(expression.first())) {
-                        addLast(new ExpressionRestrict(token, expression));
+                        addLast(new ExpressionTrait(token, expression));
                         tryRemoveSpace().acceptColon().refuseAll();
                         return true;
                     } else {
@@ -598,16 +598,16 @@ public class ExpressionChannel extends Channel<Expression> {
                     data = expression;
                     return;
                 }
-                List<ExpressionRestrict> restricts = new ArrayList<>(size - 1);
+                List<ExpressionTrait> restricts = new ArrayList<>(size - 1);
                 do {
                     Object n = removeFirst();
-                    if (n instanceof ExpressionRestrict) {
-                        restricts.add((ExpressionRestrict) n);
+                    if (n instanceof ExpressionTrait) {
+                        restricts.add((ExpressionTrait) n);
                     } else {
                         panic("expression can only be one expression and restricts");
                     }
                 } while (isChannelFull());
-                data = new ExpressionWithRestrict(expression, restricts);
+                data = new ExpressionWithTrait(expression, restricts);
                 return;
             }
         }

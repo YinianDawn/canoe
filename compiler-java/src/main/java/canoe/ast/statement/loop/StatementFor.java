@@ -16,7 +16,7 @@ public class StatementFor implements Statement {
     private Token forToken;
 
     private Token colon;
-    private Token mark;
+    private Token label;
 
     private StatementAssign assign;
     private List<LoopAssign> forAssigns;
@@ -29,10 +29,10 @@ public class StatementFor implements Statement {
     private Statements statements;
     private Token rb;
 
-    public StatementFor(Token forToken, Token colon, Token mark, StatementAssign assign, List<LoopAssign> forAssigns, Token semi1, Expression expression, Token semi2, Statement statement, Token lb, Statements statements, Token rb) {
+    public StatementFor(Token forToken, Token colon, Token label, StatementAssign assign, List<LoopAssign> forAssigns, Token semi1, Expression expression, Token semi2, Statement statement, Token lb, Statements statements, Token rb) {
         this.forToken = forToken;
         this.colon = colon;
-        this.mark = mark;
+        this.label = label;
         this.assign = assign;
         this.forAssigns = forAssigns;
         this.semi1 = semi1;

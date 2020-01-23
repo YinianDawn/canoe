@@ -5,13 +5,13 @@ import canoe.lexer.Token;
 /**
  * @author dawn
  */
-public class ExpressionRestrict implements Expression {
+public class ExpressionTrait implements Expression {
 
     private Token colon;
 
     private Expression expression;
 
-    public ExpressionRestrict(Token colon, Expression expression) {
+    public ExpressionTrait(Token colon, Expression expression) {
         this.colon = colon;
         this.expression = expression;
     }
