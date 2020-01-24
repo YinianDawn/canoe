@@ -10,11 +10,9 @@ import static canoe.util.PanicUtil.panic;
 /**
  * @author dawn
  */
-public class CharStream {
+class CharStream {
 
-    /**
-     * 一次读取固定长度字符
-     */
+    /**一次读取固定长度字符 */
     private static final int LENGTH = 4096;
 
     private FileReader reader;
@@ -23,7 +21,7 @@ public class CharStream {
     private int index = LENGTH - 1;
     private int max = LENGTH;
 
-    public CharStream(File file) {
+    CharStream(File file) {
         try {
             this.reader = new FileReader(file);
         } catch (FileNotFoundException e) {
@@ -67,19 +65,10 @@ public class CharStream {
         return true;
     }
 
-    char next() { return next(true); }
+    char next() { index++; return chars[index]; }
 
-    char next(boolean move) {
-        if (move) {
-            index++;
-            return chars[index];
-        } else {
-            return chars[index + 1];
-        }
-    }
+    char glance() { return chars[index + 1]; }
 
-    boolean next(char c) {
-        return has() && next(false) == c;
-    }
+    boolean guess(char c) { return has() && glance() == c; }
 
 }

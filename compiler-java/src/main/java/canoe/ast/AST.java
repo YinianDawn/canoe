@@ -22,4 +22,8 @@ public class AST {
         this.importStatements = importStatements;
         this.statements = statements;
     }
+
+    public Tokens getTokens() {
+        return tokens;
+    }
 }

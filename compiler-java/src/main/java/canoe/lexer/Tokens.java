@@ -13,7 +13,7 @@ public class Tokens {
 
     private final List<Token> tokens;
 
-    public Tokens(SourceFile sourceFile, List<Token> tokens) {
+    Tokens(SourceFile sourceFile, List<Token> tokens) {
         this.sourceFile = sourceFile;
         this.tokens = tokens;
     }

@@ -5,8 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import static canoe.lexer.KindType.*;
-
 /**
  * @author dawn
  */
@@ -26,56 +24,22 @@ public class KindSet {
     }
 
     public static final Set<Kind> SINGLE_KEY_WORDS = new HashSet<>(getKinds(KindType.KEY_WORD));
-
-    static {
-        // else if 有空格
-        SINGLE_KEY_WORDS.remove(Kind.ELSE_IF);
-    }
+    static { SINGLE_KEY_WORDS.remove(Kind.ELSE_IF); }
 
     public static final Set<Kind> CONSTANT = new HashSet<>(getKinds(KindType.CONSTANT));
 
+    public static final Set<Kind> OPERATOR_OVERLOAD = new HashSet<>(getKinds(KindType.OVERLOAD));
 
-    public static final Set<Kind> MIDDLE_OPERATOR = new HashSet<>(getKinds(KindType.MIDDLE));
+    public static final Set<Kind> OPERATOR_RELATION = new HashSet<>(getKinds(KindType.OPERATOR_RELATION));
+    public static final Set<Kind> OPERATOR_LOGICAL  = new HashSet<>(getKinds(KindType.OPERATOR_LOGICAL));
+    public static final Set<Kind> OPERATOR_MATH     = new HashSet<>(getKinds(KindType.OPERATOR_MATH));
+    public static final Set<Kind> OPERATOR_BIT      = new HashSet<>(getKinds(KindType.OPERATOR_BIT));
+    public static final Set<Kind> OPERATOR_SELF     = new HashSet<>(getKinds(KindType.OPERATOR_SELF));
 
-    static {
-        // 赋值运算符不算中间
-        MIDDLE_OPERATOR.removeAll(getKinds(SIGN_ASSIGN));
-    }
+    public static final Set<Kind> OPERATOR_ASSIGN   = new HashSet<>(getKinds(KindType.OPERATOR_ASSIGN));
 
-    public static final Set<Kind> LEFT_OPERATOR = new HashSet<>(getKinds(FIRST));
-
-    static {
-        // 有些符号虽然要放在前面，但不是操作符
-        LEFT_OPERATOR.removeAll(getKinds(SIGN_MARK));
-    }
-
-    public static final Set<Kind> RIGHT_OPERATOR = new HashSet<>(getKinds(FOLLOW));
-
-    static {
-        // 有些符号虽然要放在前面，但不是操作符
-        RIGHT_OPERATOR.removeAll(getKinds(SIGN_MARK));
-    }
-
-    public static final Set<Kind> ASSIGN_OPERATOR = new HashSet<>(getKinds(SIGN_ASSIGN));
-
-
-    public static final Set<Kind> RELATION_OPERATOR = new HashSet<>(getKinds(SIGN_RELATION));
-
-    public static final Set<Kind> OVERLOAD_OPERATOR = new HashSet<>();
-
-    static {
-        OVERLOAD_OPERATOR.addAll(LEFT_OPERATOR);
-        OVERLOAD_OPERATOR.addAll(MIDDLE_OPERATOR);
-        OVERLOAD_OPERATOR.addAll(RIGHT_OPERATOR);
-        OVERLOAD_OPERATOR.addAll(RELATION_OPERATOR);
-
-        OVERLOAD_OPERATOR.remove(Kind.COMMA);
-        OVERLOAD_OPERATOR.remove(Kind.CHANNEL);
-        OVERLOAD_OPERATOR.remove(Kind.SEMI);
-        OVERLOAD_OPERATOR.remove(Kind.IS);
-        OVERLOAD_OPERATOR.remove(Kind.LAMBDA);
-        OVERLOAD_OPERATOR.remove(Kind.DOT_DOT);
-        OVERLOAD_OPERATOR.remove(Kind.DOT);
-    }
+    public static final Set<Kind> OPERATOR_MIDDLE = new HashSet<>(getKinds(KindType.MIDDLE));
+    public static final Set<Kind> OPERATOR_LEFT   = new HashSet<>(getKinds(KindType.FIRST));
+    public static final Set<Kind> OPERATOR_RIGHT  = new HashSet<>(getKinds(KindType.FOLLOW));
 
 }
