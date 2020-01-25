@@ -17,6 +17,7 @@ public enum Kind {
     AS     ("as",      KEY_WORD),
 
     OPEN  ("open",     KEY_WORD),
+    LAZY  ("lazy",     KEY_WORD),
     NATIVE("native",   KEY_WORD),
     GOTO  ("goto",     KEY_WORD),
     ENUM  ("enum",     KEY_WORD),
@@ -38,7 +39,6 @@ public enum Kind {
     BREAK   ("break",    KEY_WORD),
     CONTINUE("continue", KEY_WORD),
     EACH    ("each",     KEY_WORD),
-    IN      ("in",       KEY_WORD),
     FOR     ("for",      KEY_WORD),
 
     // ================ 其他关键字 ================
@@ -64,7 +64,7 @@ public enum Kind {
     /** 是否小于 */ LT("<",   OPERATOR, OPERATOR_RELATION, MIDDLE, OVERLOAD, COUPLE_LEFT),
     /** 是否小等 */ LE("<=",  OPERATOR, OPERATOR_RELATION, MIDDLE, OVERLOAD),
 
-    /** 是否对象 */ ET("?",   OPERATOR, OPERATOR_RELATION, FIRST),
+    /** 是否对象 */ ET("?",   OPERATOR, OPERATOR_RELATION, RIGHT),
     /** 是否实例 */ IS("?:",  OPERATOR, OPERATOR_RELATION, MIDDLE),
     /** 是否属于 */ BL("?<",  OPERATOR, OPERATOR_RELATION, MIDDLE),
     /** 是否不属 */ NB("?!<", OPERATOR, OPERATOR_RELATION, MIDDLE),
@@ -72,11 +72,11 @@ public enum Kind {
     // 逻辑运算符
     /** 逻辑与 */ LOGICAL_AND("&&", OPERATOR, OPERATOR_LOGICAL, MIDDLE, OVERLOAD),
     /** 逻辑或 */ LOGICAL_OR ("||", OPERATOR, OPERATOR_LOGICAL, MIDDLE, OVERLOAD),
-    /** 逻辑非 与位取反相同 省略 */ // LOGICAL_NOT("!", FIRST, OPERATOR_LOGICAL),
+    /** 逻辑非 与位取反相同 省略 */ // LOGICAL_NOT("!", LEFT, OPERATOR_LOGICAL),
 
     // 数学运算符
-    ADD("+", OPERATOR, OPERATOR_MATH, MIDDLE, FIRST, OVERLOAD),
-    SUB("-", OPERATOR, OPERATOR_MATH, MIDDLE, FIRST, OVERLOAD),
+    ADD("+", OPERATOR, OPERATOR_MATH, MIDDLE, LEFT, OVERLOAD),
+    SUB("-", OPERATOR, OPERATOR_MATH, MIDDLE, LEFT, OVERLOAD),
     MUL("*", OPERATOR, OPERATOR_MATH, MIDDLE, OVERLOAD),
     DIV("/", OPERATOR, OPERATOR_MATH, MIDDLE, OVERLOAD),
     MOD("%", OPERATOR, OPERATOR_MATH, MIDDLE, OVERLOAD),
@@ -85,48 +85,51 @@ public enum Kind {
     BIT_AND       ("&",   OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_OR        ("|",   OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_XOR       ("^",   OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
-    BIT_NOT       ("!",   OPERATOR, OPERATOR_BIT, FIRST, OPERATOR_LOGICAL, OVERLOAD),
+    BIT_NOT       ("!",   OPERATOR, OPERATOR_BIT, LEFT, OPERATOR_LOGICAL),
     BIT_LEFT      ("<<",  OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_RIGHT     (">>",  OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_RIGHT_ZERO(">>>", OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
 
     // 自增自减运算
-    ADD_ADD("++", OPERATOR, OPERATOR_SELF, FOLLOW, OVERLOAD),
-    SUB_SUB("--", OPERATOR, OPERATOR_SELF, FOLLOW, OVERLOAD),
+    ADD_ADD("++", OPERATOR, OPERATOR_SELF, RIGHT),
+    SUB_SUB("--", OPERATOR, OPERATOR_SELF, RIGHT),
 
     // 赋值
     ASSIGN      ("=",  OPERATOR, OPERATOR_ASSIGN),
     ASSIGN_FORCE(":=", OPERATOR, OPERATOR_ASSIGN),
 
     // 运算并赋值
-    ASSIGN_ADD("+=", OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_SUB("-=", OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_MUL("*=", OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_DIV("/=", OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_MOD("%=", OPERATOR, OPERATOR_ASSIGN),
+    ASSIGN_ADD("+=", OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
+    ASSIGN_SUB("-=", OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
+    ASSIGN_MUL("*=", OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
+    ASSIGN_DIV("/=", OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
+    ASSIGN_MOD("%=", OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
 
-    ASSIGN_BIT_AND       ("&=",   OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_BIT_OR        ("|=",   OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_BIT_XOR       ("^=",   OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_BIT_LEFT      ("<<=",  OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_BIT_RIGHT     (">>=",  OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_BIT_RIGHT_ZERO(">>>=", OPERATOR, OPERATOR_ASSIGN),
+    ASSIGN_BIT_AND       ("&=",   OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
+    ASSIGN_BIT_OR        ("|=",   OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
+    ASSIGN_BIT_XOR       ("^=",   OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
+    ASSIGN_BIT_LEFT      ("<<=",  OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
+    ASSIGN_BIT_RIGHT     (">>=",  OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
+    ASSIGN_BIT_RIGHT_ZERO(">>>=", OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
 
     DOT    (".",  OPERATOR, MIDDLE),
     DOT_DOT("..", OPERATOR, MIDDLE),
 
     /** 函数输入可变长度 必须最后一个参数才允许 */
-    DOT_DOT_DOT("...", OPERATOR, FOLLOW),
+    DOT_DOT_DOT("...", OPERATOR, RIGHT),
 
     /** lambda表达式 */
     LAMBDA("->", OPERATOR, OPERATOR_LAMBDA, MIDDLE),
+
+    /** each循环里面用 */
+    IN("<-", OPERATOR, MIDDLE),
 
     /** 多个函数参数分隔 数组元素分隔 */
     COMMA(",", OPERATOR, MIDDLE),
     /** 语句之间分隔 换行符也是语句分隔作用 */
     SEMI (";", OPERATOR, MIDDLE),
     /** 描述约束 */
-    COLON      (":",  OPERATOR, FIRST),
+    COLON      (":",  OPERATOR, LEFT),
     /** match子句 */
     COLON_BLANK(": ", OPERATOR, MIDDLE),
 
@@ -137,19 +140,16 @@ public enum Kind {
     LR("(", COUPLE_LEFT), RR(")", COUPLE_RIGHT),
 
     /** 绑定对象用 */
-    AT("@", OPERATOR, FIRST),
+    AT("@", OPERATOR, LEFT),
 
     /** 暂时无用 也许将来注解使用 */
-    HASH("#", OPERATOR, FIRST),
+    HASH("#", OPERATOR, LEFT),
     /** 暂时无用 */
     ANTI("`"),
     /** 暂时无用 */
     WAVE("~"),
     /** 暂时无用 */
     DOLLAR("$"),
-
-    /** 通道？ */
-    CHANNEL("<-"),
 
     // ================ 无法枚举的符号 ================
 

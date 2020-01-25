@@ -25,9 +25,8 @@ public class TokenStream {
 
     private Stack<Integer> marks = new Stack<>();
 
-    public TokenStream(Tokens tokens) {
+    TokenStream(Tokens tokens) {
         this.originTokens = tokens;
-
         // 移除注释
         List<Token> ots = tokens.getTokens().stream().filter(t -> !t.isComment()).collect(Collectors.toList());
 
@@ -37,28 +36,25 @@ public class TokenStream {
             Token token = ots.get(i);
             if (token.isCR()) {
                 // 换行后面的空格或换行无用 只保留第一个换行
-                while (i < size - 1 && ots.get(i + 1).isSpacesOrCR()) { i++; }
+                while (i < size - 1 && ots.get(i + 1).isSpacesSemiCR()) { i++; }
             }
             if (token.isSpaces()) {
                 // 行首空格不需要
                 if (token.position == 1) { continue; }
                 // 行尾前空格不需要
-                if (i < size - 1 && ots.get(i + 1).isCR()) { continue; }
+                if (i < size - 1 && ots.get(i + 1).isSpacesSemiCR()) { continue; }
             }
             ts.add(token);
         }
 
-        // 如果第一个是换行移除
-        while (0 < ts.size() && ts.get(0).isCR()) { ts = ts.subList(1, ts.size()); }
+        // 如果第一个是空格换行分号无用 移除
+        while (0 < ts.size() && ts.get(0).isSpacesSemiCR()) { ts = ts.subList(1, ts.size()); }
         this.tokens = new ArrayList<>(ts);
         this.size = this.tokens.size();
     }
 
-    public boolean has(int number) { return position + number < size; }
 
-    public boolean has() { return has(1); }
-
-    public int getPosition() { return position; }
+    public int position() { return position; }
 
     public void move(int position) {
         this.position = position;
@@ -71,11 +67,16 @@ public class TokenStream {
     public void forget() { marks.pop(); }
 
 
+    public boolean has() { return position + 1 < size; }
+
     public Token next() { position++; return tokens.get(position); }
 
     public Token glance() { return tokens.get(position + 1); }
 
-    public Token glanceSkipSpaceOrCR() {
+    public boolean guess(Kind kind) { return has() && glance().is(kind); }
+
+
+    public Token glanceSkipSpacesCR() {
         int position = this.position + 1;
         Token token = tokens.get(position);
         while (token.isSpaces() || token.isCR()) {
@@ -88,7 +89,7 @@ public class TokenStream {
         return token;
     }
 
-    public Token glanceSkipSpace() {
+    public Token glanceSkipSpaces() {
         int position = this.position + 1;
         Token token = tokens.get(position);
         while (token.isSpaces()) {
@@ -108,11 +109,21 @@ public class TokenStream {
         return tokens.get(position);
     }
 
-    public void removeSpace() { while (has() && glance().isSpaces()) { next(); } }
 
-    public void removeSpaceOrCR() { while (has() && glance().isSpacesOrCR()) { next(); } }
+    public void dropSpaces() { while (has() && glance().isSpaces()) { next(); } }
+    public void dropCR() { while (has() && glance().isCR()) { next(); } }
+    public void dropSemi() { while (has() && glance().isSemi()) { next(); } }
+    public void dropSpacesSemiCR() { while (has() && glance().isSpacesSemiCR()) { next(); } }
 
-    public void remove(Kind kind) { while (has() && glance().is(kind)) { next(); } }
+    public void drop(Kind kind) { while (has() && glance().is(kind)) { next(); } }
+    public void drop(Kind kind, Kind kind2) { while (has() && glance().is(kind, kind2)) { next(); } }
 
 
+    public Tokens getOriginTokens() {
+        return originTokens;
+    }
+
+    public String name() {
+        return originTokens.getSourceFile().getName();
+    }
 }

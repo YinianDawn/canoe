@@ -131,39 +131,40 @@ public class Lexer {
             next4 = origin.get(i + 3);
             switch (next1.kind) {
                 case ELSE:
-                    if (next2.is(Kind.BLANK) && next3.is(Kind.IF)
-                            && next1.next(next2) && next2.next(next3)) {
+                    if (next2.is(Kind.BLANK) && next3.is(Kind.IF) && next(next1, next2, next3)) {
                         tokens.add(new Token(Kind.ELSE_IF, next1.line, next1.position, 7, null));
                         i++; i++; continue;
                     } break;
                 case COLON:
-                    if (next2.is(Kind.BLANK, Kind.TAB) && next1.next(next2)) {
+                    if (next2.is(Kind.BLANK, Kind.TAB) && next(next1, next2)) {
                         tokens.add(new Token(Kind.COLON_BLANK, next1.line, next1.position, 2, null));
                         i++; continue;
                     }
-                    if (next2.is(Kind.CR) && next1.next(next2)) {
+                    if (next2.is(Kind.CR) && next(next1, next2)) {
                         tokens.add(new Token(Kind.COLON_BLANK, next1.line, next1.position, 2, null));
                         continue;
                     }
                     break;
-                case DOT:
-                    if (next2.not(Kind.DOT)) {
-                        Token last = null;
-                        if (0 < tokens.size()) { last = tokens.get(tokens.size() - 1); }
-                        if (next2.is(Kind.NUMBER_DEC) && next1.next(next2)) {
-                            if (null != last && last.is(Kind.NUMBER_DEC) && last.next(next1)) {
-                                tokens.remove(tokens.size() - 1);
-                                tokens.add(new Token(Kind.DECIMAL, last.line, last.position, last.size + 1 + next2.size, last.value() + "." + next2.value()));
-                            } else {
-                                tokens.add(new Token(Kind.DECIMAL, next1.line, next1.position, 1 + next2.size, "." + next2.value()));
-                            }
-                            i++; continue;
-                        } else if (null != last && last.is(Kind.NUMBER_DEC) && last.next(next1)) {
-                            tokens.remove(tokens.size() - 1);
-                            tokens.add(new Token(Kind.DECIMAL, last.line, last.position, last.size + 1, last.value() + "."));
-                            continue;
+                case NUMBER_DEC:
+                    if (next2.is(Kind.DOT) && next(next1, next2)) {
+                        if (next3.is(Kind.NUMBER_DEC) && next(next2, next3)) {
+                            tokens.add(new Token(Kind.DECIMAL, next1.line, next1.position, next1.size + 1 + next3.size, next1.value() + "." + next3.value()));
+                            i++; i++; continue;
                         }
-                    } break;
+                        if (next3.not(Kind.ID, Kind.LR)) {
+                            // 1. 后面是id或( 那有可能是 方法调用或强制转换，不看成小数
+                            // 还有种可能 1.a() 但是.后换行了，合法，但是这里直接看做小数，不当成换行方法
+                            tokens.add(new Token(Kind.DECIMAL, next1.line, next1.position, next1.size + 1, next1.value() + "."));
+                            i++; continue;
+                        }
+                    }
+                    break;
+                case DOT:
+                    if (next2.is(Kind.NUMBER_DEC) && next(next1, next2)) {
+                        tokens.add(new Token(Kind.DECIMAL, next1.line, next1.position, 1 + next2.size, "." + next2.value()));
+                        i++; continue;
+                    }
+                    break;
                 case BLANK:
                 case TAB:
                     if (next2.not(Kind.BLANK, Kind.TAB)) {
@@ -181,7 +182,6 @@ public class Lexer {
                 default:
             }
 
-
             map4 = FOUR.get(next1.kind);
             if (null != map4) {
                 map3 = map4.get(next2.kind);
@@ -189,7 +189,7 @@ public class Lexer {
                     map2 = map3.get(next3.kind);
                     if (null != map2) {
                         Kind kind = map2.get(next4.kind);
-                        if (null != kind && next1.next(next2) && next2.next(next3) && next3.next(next4)) {
+                        if (null != kind && next(next1, next2, next3, next4)) {
                             tokens.add(new Token(kind, next1.line, next1.position, kind.value.length(), null));
                             i++; i++; i++; continue;
                         }
@@ -201,7 +201,7 @@ public class Lexer {
                 map2 = map3.get(next2.kind);
                 if (null != map2) {
                     Kind kind = map2.get(next3.kind);
-                    if (null != kind && next1.next(next2) && next2.next(next3)) {
+                    if (null != kind && next(next1, next2, next3)) {
                         tokens.add(new Token(kind, next1.line, next1.position, kind.value.length(), null));
                         i++; i++; continue;
                     }
@@ -210,7 +210,7 @@ public class Lexer {
             map2 = TWO.get(next1.kind);
             if (null != map2) {
                 Kind kind = map2.get(next2.kind);
-                if (null != kind && next1.next(next2)) {
+                if (null != kind && next(next1, next2)) {
                     tokens.add(new Token(kind, next1.line, next1.position, kind.value.length(), null));
                     i++; continue;
                 }
@@ -227,6 +227,15 @@ public class Lexer {
         tokens.add(new Token(Kind.EOF, last.line, last.position + last.size, 0, null));
     }
 
+    private static boolean next(Token... tokens) {
+        if (tokens.length <= 1) { return true; }
+        for (int i = 0; i < tokens.length - 1; i++) {
+            if (!tokens[i].next(tokens[i + 1])) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     private void eat(char c) {
         switch (c) {

@@ -1,10 +1,10 @@
 package canoe.parser.channel.packages;
 
-import canoe.ast.PackageInfo;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.TokenStream;
 import canoe.parser.channel.Channel;
+import canoe.parser.syntax.PackageInfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,11 +18,11 @@ import static canoe.lexer.KindSet.SINGLE_KEY_WORDS;
  */
 public class PackageChannel extends Channel<PackageInfo> {
 
-    private PackageChannel(String name, TokenStream stream) {
-        super(name, stream, CR);
-        removeSpaceOrCR();
+    private PackageChannel(TokenStream stream) {
+        super(stream, CR);
+        dropSpacesOrCR();
         if (glance().not(Kind.PACKAGE)) {
-            data = new PackageInfo(new Token(Kind.PACKAGE, null, 0, 0, 7), Collections.emptyList());
+            data = new PackageInfo(new Token(Kind.PACKAGE, 0, 0, 7, null), Collections.emptyList());
         }
         init();
     }
@@ -31,7 +31,7 @@ public class PackageChannel extends Channel<PackageInfo> {
     protected void digest() {
         int size = channelSize();
         if (1 < size) {
-            Token last = getLastToken();
+            Token last = getLastToken(false);
             if (null != last) {
                 if (last.isSpaces()) {
                     if (2 == size) { removeLast();
@@ -44,9 +44,9 @@ public class PackageChannel extends Channel<PackageInfo> {
                         }
                     }
                 }
+                if (last.is(DOT)) { accept(ID).acceptKeyWords().refuseAll(); return; }
                 if (contains(last, SINGLE_KEY_WORDS)) { accept(DOT).refuseAll(); return; }
                 if (last.is(ID)) { accept(DOT).acceptSpaces().refuseAll().over(this::full); return; }
-                if (last.is(DOT)) { accept(ID).acceptKeyWords().refuseAll(); return; }
             }
         } else {
             acceptSpaces().refuseAll(); return;
@@ -55,14 +55,14 @@ public class PackageChannel extends Channel<PackageInfo> {
     }
 
     private void full() {
-        Token packageToken = (Token) removeFirst();
-        List<Token> names = new ArrayList<>(channelSize());
-        while (isChannelFull()) { names.add((Token) removeFirst()); }
-        data = new PackageInfo(packageToken, names);
+        Token symbol = (Token) removeFirst();
+        List<Token> info = new ArrayList<>(channelSize());
+        while (channelFull()) { info.add((Token) removeFirst()); }
+        data = new PackageInfo(symbol, info);
     }
 
-    public static PackageInfo produce(String name, TokenStream stream) {
-        return new PackageChannel(name, stream).produce();
+    public static PackageInfo make(TokenStream stream) {
+        return new PackageChannel(stream).make().make(stream.name());
     }
 
 }

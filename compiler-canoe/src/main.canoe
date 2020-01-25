@@ -25,6 +25,23 @@ import (
 )
 import abc.canoe1 as  canoe1 
 
+each item, i <- 1:2:10 {
+
+}
+
+fac :int :(n :int) := if n <= 0 -> 1 else n * fac(n - 1)
+
+fac := (n :int) :int -> if n <= 0 -> 1 else n * fac(n - 1)
+
+new = each n <- 1:10 -> x * 2
+
+mul := (x :int) -> (y :int) -> x * y
+
+yy = mul(1)
+product = yy(2)
+
+each x <- 1:10; y <- 1:10; x != y -> print(x + " " + y)
+
 // match语句
 
 match :with x {

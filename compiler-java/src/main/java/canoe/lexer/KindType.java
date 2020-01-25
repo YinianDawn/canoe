@@ -21,8 +21,8 @@ public enum KindType {
     /** lambda表达式 */ OPERATOR_LAMBDA,
 
     /** 界限符 分隔两个同类 */ MIDDLE,
-    /** 必须前面某个对象 不能单独存在 */ FOLLOW,
-    /** 必须后面某个对象 不能单独存在 */ FIRST,
+    /** 必须前面某个对象 不能单独存在 */ RIGHT,
+    /** 必须后面某个对象 不能单独存在 */ LEFT,
     /** 配对左边 */ COUPLE_LEFT,
     /** 配对右边 */ COUPLE_RIGHT,
 

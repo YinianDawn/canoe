@@ -39,7 +39,7 @@ public class KindSet {
     public static final Set<Kind> OPERATOR_ASSIGN   = new HashSet<>(getKinds(KindType.OPERATOR_ASSIGN));
 
     public static final Set<Kind> OPERATOR_MIDDLE = new HashSet<>(getKinds(KindType.MIDDLE));
-    public static final Set<Kind> OPERATOR_LEFT   = new HashSet<>(getKinds(KindType.FIRST));
-    public static final Set<Kind> OPERATOR_RIGHT  = new HashSet<>(getKinds(KindType.FOLLOW));
+    public static final Set<Kind> OPERATOR_LEFT   = new HashSet<>(getKinds(KindType.LEFT));
+    public static final Set<Kind> OPERATOR_RIGHT  = new HashSet<>(getKinds(KindType.RIGHT));
 
 }
