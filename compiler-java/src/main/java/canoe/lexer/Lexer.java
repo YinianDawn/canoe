@@ -44,6 +44,8 @@ public class Lexer {
         for (Kind kind : Kind.values()) {
             if (0 == kind.types.length
                     || kind.types[0] == KindType.KEY_WORD
+                    || kind.types[0] == KindType.CONSTANT
+                    || kind.types[0] == KindType.VARIABLE
                     || kind.types[0] == KindType.COMMENT
                     || kind.types[0] == KindType.MARK) { continue; }
             if (null != kind.value && 1 < kind.value.length()) {

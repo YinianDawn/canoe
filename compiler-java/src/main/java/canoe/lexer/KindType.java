@@ -8,6 +8,7 @@ public enum KindType {
     /** 关键词 字母数字 */ KEY_WORD,
     /** 特殊标记 */ MARK,
     /** 常量 */ CONSTANT,
+    /** 变量 */ VARIABLE,
     /** 注释 */ COMMENT,
     /** 操作符 */ OPERATOR,
     /** 重载 */ OVERLOAD,

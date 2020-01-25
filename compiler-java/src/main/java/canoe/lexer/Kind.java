@@ -1,5 +1,7 @@
 package canoe.lexer;
 
+import canoe.util.PanicUtil;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,7 +25,29 @@ public enum Kind {
     ENUM  ("enum",     KEY_WORD),
     RETURN("return",   KEY_WORD),
 
-    /** 新线程？ */ CANOE ("canoe",  KEY_WORD),
+    /**
+     * // 这是一个函数
+     * // 调用需要传入int类型
+     * // 返回bool值
+     * // 如果作为新启动线程的话 可以传入string类型
+     * relay :(index :int) :canoe:int :cargo:string :bool {
+     *     // 获取接受者对象 问题是不知道接受者线程接受什么类型
+     *     canoes = canoe()
+     *     // 获取传入的值
+     *     cargo = canoed()
+     *     canoe
+     * }
+     * canoe<I,O> :(:() :canoe(:O) :cargo:I, canoes... :cargo:O) {
+     *
+     * }
+     *
+     * canoe1 := canoe<bool>(() -> relay(5))
+     *
+     * canoe3 = canoe(other, canoe1, canoe2) 以本线程为名 启动一个新线程
+     * canoe3.canoe("123")
+     */
+    CANOE ("canoe",  KEY_WORD),
+    CANOED("canoed",  KEY_WORD),
 
     // ================ 流程控制语句 ================
 
@@ -154,7 +178,7 @@ public enum Kind {
     // ================ 无法枚举的符号 ================
 
     /** 标识符 [A-Za-z_][A-Za-z0-9_]* */
-    ID(null),
+    ID(null, VARIABLE),
 
     // 数字
     /** 十六进制数 0(x|X)[0-9a-fA-F_]* */
@@ -187,15 +211,9 @@ public enum Kind {
     Kind(String value, KindType... types) {
         this.value = value;
         this.types = types;
-    }
-
-    public boolean is(KindType type) {
-        for (KindType kt : types) {
-            if (kt == type) {
-                return true;
-            }
+        if (0 == types.length) {
+            PanicUtil.panic("can not be empty.");
         }
-        return false;
     }
 
     @Override

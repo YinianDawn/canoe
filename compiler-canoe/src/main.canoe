@@ -42,6 +42,35 @@ product = yy(2)
 
 each x <- 1:10; y <- 1:10; x != y -> print(x + " " + y)
 
+// Canoe {
+//     load :(x) :bool
+// }
+
+// dog :() :cargo[]:int {
+//     // 对所有愿意接受本线程消息的线程发送消息
+//     // canoe()返回一个数组
+//     canoe().load("hi")
+
+//     canoe() // 谁听我的
+//     cargo() // 我收到的
+
+//     canoe()[0].load("hi") // 我发送的
+
+//     hover dog()
+// }
+
+// canoe dog()
+
+// 返回一个线程元象 该元象拥有 canoes(cs... :canoe)接受新的受众 
+// dog1 := canoe dog()
+
+// dog.load("123")
+
+
+// dog2 := canoe :{dog1} dog() 
+
+
+
 // match语句
 
 match :with x {
