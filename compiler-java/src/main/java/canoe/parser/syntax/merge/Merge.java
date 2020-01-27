@@ -1,4 +1,4 @@
-package canoe.ast.merge;
+package canoe.parser.syntax.merge;
 
 import canoe.lexer.Token;
 

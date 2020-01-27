@@ -1,4 +1,4 @@
-package canoe.ast.statement;
+package canoe.parser.syntax.statement;
 
 import canoe.lexer.Token;
 
@@ -7,18 +7,18 @@ import canoe.lexer.Token;
  */
 public class StatementGoto implements Statement {
 
-    private Token gotoToken;
+    private final Token GOTO;
 
-    private Token label;
+    private final Token label;
 
-    public StatementGoto(Token gotoToken, Token label) {
-        this.gotoToken = gotoToken;
+    public StatementGoto(Token symbol, Token label) {
+        this.GOTO = symbol;
         this.label = label;
     }
 
     @Override
     public Token first() {
-        return gotoToken;
+        return GOTO;
     }
 
     @Override

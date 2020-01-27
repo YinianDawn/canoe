@@ -1,13 +1,14 @@
-package canoe.ast.statement;
+package canoe.parser.syntax.statement;
 
-import canoe.ast.expression.Expression;
 import canoe.lexer.Token;
+import canoe.parser.syntax.expression.Expression;
 
 /**
  * @author dawn
  */
 public class StatementExpression implements Statement {
-    private Expression expression;
+
+    private final Expression expression;
 
     public StatementExpression(Expression expression) {
         this.expression = expression;

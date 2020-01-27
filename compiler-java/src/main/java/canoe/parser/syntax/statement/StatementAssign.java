@@ -1,28 +1,28 @@
-package canoe.ast.statement;
+package canoe.parser.syntax.statement;
 
-import canoe.ast.expression.Expression;
 import canoe.lexer.Token;
+import canoe.parser.syntax.expression.Expression;
 
 /**
  * @author dawn
  */
 public class StatementAssign implements Statement {
 
-    private Expression expressionId;
+    private final Expression id;
 
-    private Token assign;
+    private final Token assign;
 
-    private Expression expression;
+    private final Expression expression;
 
-    public StatementAssign(Expression expressionId, Token assign, Expression expression) {
-        this.expressionId = expressionId;
+    public StatementAssign(Expression id, Token assign, Expression expression) {
+        this.id = id;
         this.assign = assign;
         this.expression = expression;
     }
 
     @Override
     public Token first() {
-        return expressionId.first();
+        return id.first();
     }
 
     @Override

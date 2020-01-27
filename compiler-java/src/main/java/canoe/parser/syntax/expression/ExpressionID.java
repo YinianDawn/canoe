@@ -1,4 +1,4 @@
-package canoe.ast.expression;
+package canoe.parser.syntax.expression;
 
 
 import canoe.lexer.Token;
@@ -8,19 +8,19 @@ import canoe.lexer.Token;
  */
 public class ExpressionID implements Expression {
 
-    private Token id;
+    private final Token ID;
 
     public ExpressionID(Token id) {
-        this.id = id;
+        this.ID = id;
     }
 
     @Override
     public Token first() {
-        return id;
+        return ID;
     }
 
     @Override
     public Token last() {
-        return id;
+        return ID;
     }
 }

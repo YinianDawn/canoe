@@ -1,4 +1,4 @@
-package canoe.ast.statement;
+package canoe.parser.syntax.statement;
 
 import canoe.lexer.Token;
 

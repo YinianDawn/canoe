@@ -1,4 +1,4 @@
-package canoe.ast.expression;
+package canoe.parser.syntax.expression;
 
 
 import canoe.lexer.Token;
@@ -8,19 +8,19 @@ import canoe.lexer.Token;
  */
 public class ExpressionKeyWord implements Expression {
 
-    private Token key;
+    private final Token KEY_WORD;
 
     public ExpressionKeyWord(Token key) {
-        this.key = key;
+        this.KEY_WORD = key;
     }
 
     @Override
     public Token first() {
-        return key;
+        return KEY_WORD;
     }
 
     @Override
     public Token last() {
-        return key;
+        return KEY_WORD;
     }
 }

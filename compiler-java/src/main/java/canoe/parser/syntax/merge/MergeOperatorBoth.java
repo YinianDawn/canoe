@@ -1,4 +1,4 @@
-package canoe.ast.merge;
+package canoe.parser.syntax.merge;
 
 import canoe.lexer.Token;
 
@@ -6,7 +6,6 @@ import canoe.lexer.Token;
  * @author dawn
  */
 public class MergeOperatorBoth extends Merge {
-
 
     public MergeOperatorBoth(Token token) {
         super(token);

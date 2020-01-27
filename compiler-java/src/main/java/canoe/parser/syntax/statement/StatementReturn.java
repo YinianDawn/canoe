@@ -1,25 +1,25 @@
-package canoe.ast.statement;
+package canoe.parser.syntax.statement;
 
 
-import canoe.ast.expression.Expression;
 import canoe.lexer.Token;
+import canoe.parser.syntax.expression.Expression;
 
 /**
  * @author dawn
  */
 public class StatementReturn implements Statement {
 
-    private Token returnToken;
-    private Expression expression;
+    private final Token RETURN;
+    private final Expression expression;
 
-    public StatementReturn(Token returnToken, Expression expression) {
-        this.returnToken = returnToken;
+    public StatementReturn(Token symbol, Expression expression) {
+        this.RETURN = symbol;
         this.expression = expression;
     }
 
     @Override
     public Token first() {
-        return returnToken;
+        return RETURN;
     }
 
     @Override
