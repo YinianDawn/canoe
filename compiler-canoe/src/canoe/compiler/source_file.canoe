@@ -1,0 +1,21 @@
+package canoe.compiler
+
+SourceFile {
+    name :string 
+    getName :opened :string :() { name }
+
+    new(name :string) :SourceFile {
+        checkExt(name)
+        SourceFile { name }
+    }
+    EXT_SOURCE := ".canoe"
+    checkExt(name :string) {
+        index := name.lastIndexOf(".")
+        if (-1 == index) {
+            panic("wrong source file: " + name)
+        }
+        if (EXT_SOURCE != name.substring(index))) {
+            panic("wrong source file: " + name)
+        }
+    }
+}

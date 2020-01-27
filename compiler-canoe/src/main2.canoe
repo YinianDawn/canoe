@@ -7,36 +7,37 @@ package main
 
 // 不支持全包名调用 包外 即本文件夹外部文件必须通过import引入才可以使用
 
-import canoe.main // 引入包
-import canoe.main as person22 // 包起别名
-import canoe.main as . // 包内所有都引入
-import canoe.main as _ // 引入包 不可调用 作用只是这个包默认方法
+import "canoe/main" // 引入包
+import "canoe/main" as person22 // 包起别名
+import "canoe/main" as . // 包内所有都引入
+import "canoe/main" as _ // 引入包 不可调用 作用只是这个包默认方法
 
-import canoe.main include Person //这个包里面的Person可以直接用而不是 包名.Person 使用
-import canoe.main include (Person,Person.+) //+号操作符重载引入
-import canoe.main as . exclude (Person,Person.+) //仅全引入才会有exclude语法
+import "canoe/main" extra Person //这个包里面的Person可以直接用而不是 包名.Person 使用
+import "canoe/main" extra ( Person , Person as P , Person. , Person.+ ) //+号操作符重载引入
+import "canoe/main" as . except Person //仅全引入才会有except语法
+import "canoe/main" as . except (Person,Person.+) //仅全引入才会有except语法
 
-import canoe.main as person22 include Person as P
-import canoe.main as person22 include (Person as P,Person.+) 
+import "canoe/main" as person22 extra Person as P
+import "canoe/main" as person22 extra (Person as P,Person.+) 
 
-import canoe.main as _ include Person 
-import canoe.main as _ include (Person,Person.+) 
+import "canoe/main" as _ extra Person 
+import "canoe/main" as _ extra (Person,Person.+) 
 
 import (
-    canoe.main // 引入包
-    canoe.main as person22 // 包起别名
-    canoe.main as . // 包内所有都引入
-    canoe.main as _ // 引入包 不可调用 作用只是这个包默认方法
+    "canoe/main" // 引入包
+    "canoe/main" as person22 // 包起别名
+    "canoe/main" as . // 包内所有都引入
+    "canoe/main" as _ // 引入包 不可调用 作用只是这个包默认方法
 
-    canoe.main include Person as P //这个包里面的Person可以直接用而不是 包名.Person 使用
-    canoe.main include (Person as P,Person.+) //+号操作符重载引入
-    canoe.main as . exclude (Person,Person.+) //仅全引入才会有exclude语法
+    "canoe/main" extra Person as P //这个包里面的Person可以直接用而不是 包名.Person 使用
+    "canoe/main" extra (Person as P,Person.+) //+号操作符重载引入
+    "canoe/main" as . except (Person,Person.+) //仅全引入才会有except语法
 
-    canoe.main as person22 include Person 
-    canoe.main as person22 include (Person,Person.+) 
+    "canoe/main" as person22 extra Person 
+    "canoe/main" as person22 extra (Person,Person.+) 
 
-    canoe.main as _ include Person 
-    canoe.main as _ include (Person,Person.+) 
+    "canoe/main" as _ extra Person 
+    "canoe/main" as _ extra (Person,Person.+) 
 )
 
 

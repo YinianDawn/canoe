@@ -139,8 +139,7 @@ public enum Kind {
     ASSIGN_BIT_RIGHT     (">>=",  OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
     ASSIGN_BIT_RIGHT_ZERO(">>>=", OPERATOR, OPERATOR_ASSIGN, OVERLOAD),
 
-    DOT    (".",  OPERATOR, MIDDLE),
-    DOT_DOT("..", OPERATOR, MIDDLE),
+    DOT    (".",  OPERATOR, LEFT),
 
     /** 函数输入可变长度 必须最后一个参数才允许 */
     DOT_DOT_DOT("...", OPERATOR, RIGHT),

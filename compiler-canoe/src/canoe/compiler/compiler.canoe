@@ -9,7 +9,7 @@ Compiler :open {
     }
 }
 
-newCompiler :open :Compiler :(args :string[]) {
+newCompiler :opened :Compiler :(args :string[]) {
     return Compiler {
         options: 
     }

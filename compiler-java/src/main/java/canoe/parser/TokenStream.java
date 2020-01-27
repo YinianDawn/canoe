@@ -31,20 +31,26 @@ public class TokenStream {
         List<Token> ots = tokens.getTokens().stream().filter(t -> !t.isComment()).collect(Collectors.toList());
 
         List<Token> ts = new LinkedList<>();
+        Token last = null;
         int size = ots.size();
         for (int i = 0; i < size; i++) {
             Token token = ots.get(i);
             if (token.isCR()) {
                 // 换行后面的空格或换行无用 只保留第一个换行
                 while (i < size - 1 && ots.get(i + 1).isSpacesSemiCR()) { i++; }
-            }
-            if (token.isSpaces()) {
-                // 行首空格不需要
-                if (token.position == 1) { continue; }
-                // 行尾前空格不需要
-                if (i < size - 1 && ots.get(i + 1).isSpacesSemiCR()) { continue; }
+            } else if (token.isSpaces()) {
+                if (null != last && last.isSpaces()) {
+                    // 上一个是空格 本次空格不需要
+                    continue;
+                } else if (i < size - 1) {
+                    if (ots.get(i + 1).isCR() || ots.get(i + 1).isSemi()) {
+                        // 换行或分号前的空格 不需要
+                        continue;
+                    }
+                }
             }
             ts.add(token);
+            last = token;
         }
 
         // 如果第一个是空格换行分号无用 移除
@@ -113,6 +119,7 @@ public class TokenStream {
     public void dropSpaces() { while (has() && glance().isSpaces()) { next(); } }
     public void dropCR() { while (has() && glance().isCR()) { next(); } }
     public void dropSemi() { while (has() && glance().isSemi()) { next(); } }
+    public void dropSpacesCR() { while (has() && glance().isSpacesCR()) { next(); } }
     public void dropSpacesSemiCR() { while (has() && glance().isSpacesSemiCR()) { next(); } }
 
     public void drop(Kind kind) { while (has() && glance().is(kind)) { next(); } }

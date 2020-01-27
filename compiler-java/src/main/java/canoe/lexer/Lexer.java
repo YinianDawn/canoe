@@ -16,7 +16,7 @@ import static canoe.util.PanicUtil.panic;
  */
 public class Lexer {
 
-    static HashMap<String, Kind> WORDS = new HashMap<>(277);
+    private static HashMap<String, Kind> WORDS = new HashMap<>(277);
     static {
         for (Kind kind : SINGLE_KEY_WORDS) {
             if (null != kind.value) {
@@ -47,7 +47,8 @@ public class Lexer {
                     || kind.types[0] == KindType.CONSTANT
                     || kind.types[0] == KindType.VARIABLE
                     || kind.types[0] == KindType.COMMENT
-                    || kind.types[0] == KindType.MARK) { continue; }
+                    || kind.types[0] == KindType.MARK
+                    || kind == Kind.DOT_DOT_DOT) { continue; }
             if (null != kind.value && 1 < kind.value.length()) {
                 int size = kind.value.length();
                 switch (size) {
@@ -133,23 +134,23 @@ public class Lexer {
             next4 = origin.get(i + 3);
             switch (next1.kind) {
                 case ELSE:
-                    if (next2.is(Kind.BLANK) && next3.is(Kind.IF) && next(next1, next2, next3)) {
+                    if (next2.is(Kind.BLANK) && next3.is(Kind.IF)) {
                         tokens.add(new Token(Kind.ELSE_IF, next1.line, next1.position, 7, null));
                         i++; i++; continue;
                     } break;
                 case COLON:
-                    if (next2.is(Kind.BLANK, Kind.TAB) && next(next1, next2)) {
+                    if (next2.is(Kind.BLANK, Kind.TAB)) {
                         tokens.add(new Token(Kind.COLON_BLANK, next1.line, next1.position, 2, null));
                         i++; continue;
                     }
-                    if (next2.is(Kind.CR) && next(next1, next2)) {
+                    if (next2.is(Kind.CR)) {
                         tokens.add(new Token(Kind.COLON_BLANK, next1.line, next1.position, 2, null));
                         continue;
                     }
                     break;
                 case NUMBER_DEC:
-                    if (next2.is(Kind.DOT) && next(next1, next2)) {
-                        if (next3.is(Kind.NUMBER_DEC) && next(next2, next3)) {
+                    if (next2.is(Kind.DOT)) {
+                        if (next3.is(Kind.NUMBER_DEC)) {
                             tokens.add(new Token(Kind.DECIMAL, next1.line, next1.position, next1.size + 1 + next3.size, next1.value() + "." + next3.value()));
                             i++; i++; continue;
                         }
@@ -162,7 +163,7 @@ public class Lexer {
                     }
                     break;
                 case DOT:
-                    if (next2.is(Kind.NUMBER_DEC) && next(next1, next2)) {
+                    if (next2.is(Kind.NUMBER_DEC)) {
                         tokens.add(new Token(Kind.DECIMAL, next1.line, next1.position, 1 + next2.size, "." + next2.value()));
                         i++; continue;
                     }
@@ -186,6 +187,11 @@ public class Lexer {
                         tokens.add(new Token(Kind.UL, next1.line, next1.position, 1, null));
                         continue;
                     }
+                    if (next2.is(Kind.DOT) && next3.is(Kind.DOT) && next4.is(Kind.DOT)) {
+                        tokens.add(next1);
+                        tokens.add(new Token(Kind.DOT_DOT_DOT, next2.line, next2.position, 3, null));
+                        i += 3; continue;
+                    }
                 default:
             }
 
@@ -198,7 +204,7 @@ public class Lexer {
                         Kind kind = map2.get(next4.kind);
                         if (null != kind && next(next1, next2, next3, next4)) {
                             tokens.add(new Token(kind, next1.line, next1.position, kind.value.length(), null));
-                            i++; i++; i++; continue;
+                            i += 3; continue;
                         }
                     }
                 }
@@ -210,7 +216,7 @@ public class Lexer {
                     Kind kind = map2.get(next3.kind);
                     if (null != kind && next(next1, next2, next3)) {
                         tokens.add(new Token(kind, next1.line, next1.position, kind.value.length(), null));
-                        i++; i++; continue;
+                        i += 2; continue;
                     }
                 }
             }
@@ -219,7 +225,7 @@ public class Lexer {
                 Kind kind = map2.get(next2.kind);
                 if (null != kind && next(next1, next2)) {
                     tokens.add(new Token(kind, next1.line, next1.position, kind.value.length(), null));
-                    i++; continue;
+                    i += 1; continue;
                 }
             }
             tokens.add(next1);

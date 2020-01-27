@@ -51,6 +51,7 @@ public class Token {
     public boolean isSpaces() { return kind == Kind.SPACES; }
     public boolean isCR() { return kind == Kind.CR; }
     public boolean isSemi() { return kind == Kind.SEMI; }
+    public boolean isSpacesCR() { return kind == Kind.SPACES || kind == Kind.CR; }
     public boolean isSpacesSemiCR() { return kind == Kind.SPACES || kind == Kind.CR || kind == Kind.SEMI; }
 //    public boolean isDot() { return kind == Kind.DOT; }
 //    public boolean isColon() { return kind == Kind.COLON; }
@@ -62,7 +63,7 @@ public class Token {
 
     public boolean not(Kind other) { return kind != other; }
     public boolean not(Kind kind, Kind kind2) { return not(kind) && not(kind2); }
-//    public boolean not(Kind kind, Kind kind2, Kind kind3) { return not(kind) && not(kind2) && not(kind3); }
+    public boolean not(Kind kind, Kind kind2, Kind kind3) { return not(kind) && not(kind2) && not(kind3); }
 //    public boolean not(Kind[] kinds) { for (Kind kind : kinds) { if (is(kind)) { return false; } } return true; }
     public boolean not(Iterable<Kind> kinds) { for (Kind kind : kinds) { if (is(kind)) { return false; } } return true; }
 

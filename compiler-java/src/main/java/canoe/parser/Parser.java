@@ -1,9 +1,11 @@
 package canoe.parser;
 
 import canoe.lexer.Tokens;
+import canoe.parser.channel.imports.ImportChannel;
 import canoe.parser.channel.packages.PackageChannel;
 import canoe.parser.syntax.PackageInfo;
 import canoe.parser.syntax.Syntax;
+import canoe.parser.syntax.imports.ImportInfo;
 
 import static canoe.util.PanicUtil.panic;
 
@@ -29,10 +31,10 @@ public class Parser {
         }
 
         PackageInfo packageInfo = PackageChannel.make(stream);
-//        ImportStatements importStatements = ImportsChannel.produce(tokens.getSourceFile().getName(), stream);
+        ImportInfo importInfo = ImportChannel.make(stream);
 //        Statements statements = StatementsChannel.produce(tokens.getSourceFile().getName(), stream, Kind.CR);
 
-        return new Syntax(tokens, packageInfo);
+        return new Syntax(tokens, packageInfo, importInfo);
     }
 
 }

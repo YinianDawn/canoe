@@ -6,12 +6,6 @@ import canoe.parser.TokenStream;
 import canoe.parser.channel.Channel;
 import canoe.parser.syntax.PackageInfo;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static canoe.lexer.KindSet.SINGLE_KEY_WORDS;
-
 /**
  * @author dawn
  */
@@ -19,45 +13,36 @@ public class PackageChannel extends Channel<PackageInfo> {
 
     private PackageChannel(TokenStream stream) {
         super(stream, Kind.CR);
-        dropSpacesOrCR();
-        if (glance().not(Kind.PACKAGE)) {
-            data = new PackageInfo(new Token(Kind.PACKAGE, 0, 0, 7, null), Collections.emptyList());
-        }
+        dropSpacesSemiCR();
         init();
     }
 
     @Override
-    protected void digest() {
-        int size = channelSize();
-        if (1 < size) {
-            Token last = getLastToken(false);
-            if (null != last) {
-                if (last.isSpaces()) {
-                    if (2 == size) { removeLast();
-                        accept(Kind.ID).acceptKeyWords().refuseAll(); return;
-                    } else {
-                        if (glance().isCR()) { removeLast();
-                            refuseAll().over(this::full); return;
-                        } else {
-                            panic(last);
-                        }
-                    }
-                }
-                if (last.is(Kind.DOT)) { accept(Kind.ID).acceptKeyWords().refuseAll(); return; }
-                if (contains(last, SINGLE_KEY_WORDS)) { accept(Kind.DOT).refuseAll(); return; }
-                if (last.is(Kind.ID)) { accept(Kind.DOT).acceptSpaces().refuseAll().over(this::full); return; }
-            }
-        } else {
-            acceptSpaces().refuseAll(); return;
+    protected void init() {
+        if (glance().not(Kind.PACKAGE)) {
+            data = new PackageInfo(new Token(Kind.PACKAGE, 1, 1, 7, null),
+                    new Token(Kind.ID, 1, 1, 7, ""));
         }
-        panic("wrong " + Kind.PACKAGE.value + " statement.");
+        super.init();
     }
 
-    private void full() {
-        Token symbol = (Token) removeFirst();
-        List<Token> info = new ArrayList<>(channelSize());
-        while (channelFull()) { info.add((Token) removeFirst()); }
-        data = new PackageInfo(symbol, info);
+    @Override
+    protected void digest() {
+        String status = status();
+        switch (status) {
+            case "PACKAGE" : acceptSpaces().refuseAll(); break;
+            case "PACKAGE SPACES" :
+                if (1 < getLastToken().size) {
+                    panic("too many blank spaces", getLastToken());
+                }
+                accept(Kind.ID).refuseAll(); break;
+            case "PACKAGE SPACES ID":
+                Token symbol = (Token) removeFirst();
+                Token name = getLastToken();
+                data = new PackageInfo(symbol, name);
+                break;
+            default: panic("wrong " + Kind.PACKAGE.value + " statement.");
+        }
     }
 
     public static PackageInfo make(TokenStream stream) {

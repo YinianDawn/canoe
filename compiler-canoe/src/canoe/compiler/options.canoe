@@ -1,11 +1,31 @@
 package canoe.compiler
 
-Options {
+MINUS := "-"
+MINUS_MINUS := "--"
 
+Option {
+    sourceFiles :List<SourceFile>
+    getSourceFiles :List<SourceFile> :() { sourceFiles }
+    parseArgs(args :string[]) {
+        end = false;
+        names = LinkedList<string>
+        each (arg <- args) {
+            // 单独 -- 后面的参数都不是配置了
+            if (MINUS_MINUS == arg) { end = true; continue }
+            if (!end && parseArg(arg)) continue 
+            names += arg
+        }
+
+        sourceFiles = names.stream().distinct().each(newSourceFile)
+
+        if (sourceFiles.isEmpty()) {
+            panic("no input file");
+        }
+    }
 }
 
-parse :(args :string[]) ::Options {
-    opts Options{} 
-    opts.parseArgs(args)
-    opts
+newOption :Option :(args :string[])  {
+    option Option{} 
+    option.parseArgs(args)
+    option
 }

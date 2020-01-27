@@ -8,6 +8,8 @@ import canoe.util.PanicUtil;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static canoe.lexer.KindSet.SINGLE_KEY_WORDS;
 
@@ -111,7 +113,11 @@ public class Channel<T> {
     public Channel drink(Kind kind, Supplier<Boolean> end) { drinks.put(kind, end); return this; }
     public Channel over(Runnable full) { this.full = full; return this; }
 
+    public Channel accept(Kind kind) { if (!acceptAll) { accepts.add(kind); } return this; }
+    public Channel accept(Kind kind, Kind kind2) { if (!acceptAll) { accepts.add(kind); accepts.add(kind2); } return this; }
+    public Channel accept(Kind kind, Kind kind2, Kind kind3) { if (!acceptAll) { accepts.add(kind); accepts.add(kind2); accepts.add(kind3); } return this; }
     public Channel accept(Kind... kinds) { if (!acceptAll) { Collections.addAll(accepts, kinds); } return this; }
+    public Channel accept(Collection<Kind> kinds) { if (!acceptAll) { accepts.addAll(kinds); } return this; }
     public Channel acceptKeyWords() { if (!acceptAll) { accepts.addAll(SINGLE_KEY_WORDS); } return this; }
     public Channel acceptAll() { acceptAll = true; return this; }
     public Channel acceptSpaces() { if (!acceptAll) { accepts.add(Kind.SPACES); } return this; }
@@ -122,6 +128,25 @@ public class Channel<T> {
     public Channel refuseAll() { refuseAll = true; return this; }
     public Channel refuseSpaces() { if (!refuseAll) { refuses.add(Kind.SPACES); } return this; }
     public Channel refuseCR() { if (!refuseAll) { refuses.add(Kind.CR); } return this; }
+
+    protected Kind[] extend(Kind... kinds) {
+        if (0 == kinds.length) { return Stream.of(kinds).distinct().collect(Collectors.toList()).toArray(new Kind[]{}); }
+        return Stream.concat(ends.stream(), Stream.of(kinds)).distinct().collect(Collectors.toList()).toArray(new Kind[]{});
+    }
+
+    protected String status() {
+        if (channel.isEmpty()) { return ""; }
+        StringBuilder sb = new StringBuilder();
+        for (Object o : channel) {
+            if (o instanceof Token) {
+                sb.append(((Token) o).kind.name()).append(" ");
+            } else {
+                sb.append(o.getClass().getSimpleName()).append(" ");
+            }
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
+    }
 
 
 //    // ==================== 结束后是否移除末尾符号 ====================
@@ -152,27 +177,11 @@ public class Channel<T> {
 //
 //
 //    // ================ 拓展终结符号 ================
-//
-//    protected Kind[] extend(Kind... kinds) {
-//        if (0 == kinds.length) { return new ArrayList<>(end).toArray(new Kind[]{}); }
-//        return Stream.concat(end.stream(), Stream.of(kinds)).distinct().collect(Collectors.toList()).toArray(new Kind[]{});
-//    }
+
+
 
 //    // ================ 当前通道状态 ================
 //
-//    protected String status() {
-//        if (channel.isEmpty()) { return ""; }
-//        StringBuilder sb = new StringBuilder();
-//        for (Object o : channel) {
-//            if (o instanceof Token) {
-//                sb.append(((Token) o).kind.name()).append(" ");
-//            } else {
-//                sb.append(o.getClass().getSimpleName()).append(" ");
-//            }
-//        }
-//        sb.deleteCharAt(sb.length() - 1);
-//        return sb.toString();
-//    }
 //
 //    // ================ 解析一个对象的识别Id ================
 //
@@ -474,14 +483,15 @@ public class Channel<T> {
     public Token glance() { return stream.glance(); }
     public boolean guess(Kind kind) { return stream.guess(kind); }
 
-    public Token glanceSkipSpaceCR() { return stream.glanceSkipSpacesCR(); }
+    public Token glanceSkipSpacesCR() { return stream.glanceSkipSpacesCR(); }
     public Token glanceSkipSpaces() { return stream.glanceSkipSpaces(); }
     public Token current() { return stream.current(); }
 
     public Channel dropSpaces() { stream.dropSpaces(); return this; }
     public Channel dropCR() { stream.dropCR(); return this; }
     public Channel dropSemi() { stream.dropSemi(); return this; }
-    public Channel dropSpacesOrCR() { stream.dropSpacesSemiCR(); return this; }
+    public Channel dropSpacesCR() { stream.dropSpacesCR(); return this; }
+    public Channel dropSpacesSemiCR() { stream.dropSpacesSemiCR(); return this; }
     public Channel drop(Kind kind) { stream.drop(kind); return this; }
     public Channel drop(Kind kind, Kind kind2) { stream.drop(kind, kind2); return this; }
 

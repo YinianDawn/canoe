@@ -1,33 +1,38 @@
 package canoe.parser.syntax.imports;
 
+import canoe.lexer.Kind;
 import canoe.lexer.Token;
-import canoe.parser.syntax.Produce;
 
 import java.util.List;
+
+import static canoe.util.PanicUtil.panic;
 
 /**
  * @author dawn
  */
-public class ImportMany implements ImportStatement, Produce<ImportMany> {
+public class ImportMany implements ImportStatement<ImportMany> {
 
-    private final Token importToken;
+    private final Token IMPORT;
     private final Token LR;
-    private final List<ImportSingle> importStatementSingles;
+    private final List<ImportUnit> units;
     private final Token RR;
 
-    public ImportMany(Token importToken, Token lr, List<ImportSingle> importStatementSingles, Token rr) {
-        this.importToken = importToken;
+    public ImportMany(Token symbol, Token lr, List<ImportUnit> units, Token rr) {
+        this.IMPORT = symbol;
         this.LR = lr;
-        this.importStatementSingles = importStatementSingles;
+        this.units = units;
         this.RR = rr;
-    }
-
-    public List<ImportSingle> getImportStatementSingles() {
-        return importStatementSingles;
     }
 
     @Override
     public ImportMany make(String file) {
+        if (null == IMPORT || IMPORT.not(Kind.IMPORT)) {
+            panic("must be " + Kind.IMPORT.value, IMPORT, file);
+        }
+        if (null == LR || null == RR) {
+            panic("wrong " + Kind.IMPORT.value + " statement about ( or )", IMPORT, file);
+        }
+        units.forEach(u -> u.make(IMPORT, file));
         return this;
     }
 }
