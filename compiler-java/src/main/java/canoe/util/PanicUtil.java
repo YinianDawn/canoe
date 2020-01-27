@@ -18,13 +18,13 @@ public class PanicUtil {
         throw new PanicException(panic);
     }
 
-    public static void panic(String panic, String name, Token token) throws PanicException {
-        show(panic, name, token);
+    public static void panic(String panic, Token token, String name) throws PanicException {
+        show(panic, token, name);
 //        System.exit(0);
         throw new PanicException(panic + (null != token ? " token: " + token.toString() : ""));
     }
 
-    private static void show(String panic, String name, Token token) {
+    private static void show(String panic, Token token, String name) {
         if (null == name || null == token) { return; }
 
         int range = 3;

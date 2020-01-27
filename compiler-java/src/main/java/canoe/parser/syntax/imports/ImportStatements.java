@@ -1,4 +1,4 @@
-package canoe.ast.imports;
+package canoe.parser.syntax.imports;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -13,16 +13,16 @@ public class ImportStatements {
 
     private List<ImportStatement> importStatements;
 
-    private List<ImportStatementSingle> importStatementSingles;
+    private List<ImportSingle> importStatementSingles;
 
     public ImportStatements(List<ImportStatement> importStatements) {
         this.importStatements = importStatements;
-        List<ImportStatementSingle> temp = new LinkedList<>();
+        List<ImportSingle> temp = new LinkedList<>();
         for (ImportStatement statement : importStatements) {
-            if (statement instanceof ImportStatementMany) {
-                temp.addAll(((ImportStatementMany) statement).getImportStatementSingles());
-            } else if (statement instanceof ImportStatementSingle){
-                temp.add((ImportStatementSingle) statement);
+            if (statement instanceof ImportMany) {
+                temp.addAll(((ImportMany) statement).getImportStatementSingles());
+            } else if (statement instanceof ImportSingle){
+                temp.add((ImportSingle) statement);
             } else {
                 panic("wrong import statement: " + statement);
             }

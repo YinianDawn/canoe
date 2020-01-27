@@ -181,6 +181,11 @@ public class Lexer {
                         }
                     }
                     tokens.add(next1); continue;
+                case ID:
+                    if ("_".equals(next1.value())) {
+                        tokens.add(new Token(Kind.UL, next1.line, next1.position, 1, null));
+                        continue;
+                    }
                 default:
             }
 
@@ -251,14 +256,14 @@ public class Lexer {
                 while (stream.has()) {
                     char next = stream.glance();
                     if (next == '\"') { stream.next(); break; }
-                    if (next == '\r' || next == '\n') { panic("string must on single line.", sourceFile.getName(), new Token(Kind.STRING, line, position, chars.length(), chars.toString())); }
+                    if (next == '\r' || next == '\n') { panic("string must on single line.", new Token(Kind.STRING, line, position, chars.length(), chars.toString()), sourceFile.getName()); }
                     chars.append(stream.next());
                 }
                 addToken(Kind.STRING, chars.toString());
                 position += tokens.get(tokens.size() - 1).size + 1;
                 break;
 
-            case '/' :
+            case '/' : addToken();
                 if (stream.has()) {
                     char next = stream.glance();
                     if (next == '*') {
@@ -295,7 +300,7 @@ public class Lexer {
                             blockPosition++;
                         }
                         if (0 < chars.length()) {
-                            panic("chars can not remain: " + chars.toString(), sourceFile.getName(), tokens.get(tokens.size() - 1));
+                            panic("chars can not remain: " + chars.toString(), tokens.get(tokens.size() - 1), sourceFile.getName());
                         }
                         break;
                     } else if (next == '/') {
@@ -313,9 +318,7 @@ public class Lexer {
                     }
                 }
                 // 除法符号
-                addToken(Kind.DIV);
-                position++;
-                break;
+                addToken(Kind.DIV); position++; break;
 
             case '=': addToken(); addToken(Kind.ASSIGN); position++; break;
             case '>': addToken(); addToken(Kind.GT); position++; break;
@@ -374,7 +377,7 @@ public class Lexer {
         if (match(value, Kind.NUMBER_BIN, "0(b|B)[0-1_]*")) { return; }
         if (match(value, Kind.NUMBER_OCT, "0[1-7][0-7_]*")) { return; }
 
-        panic("can not identify word: " + value, sourceFile.getName(), new Token(Kind.STRING, line, position, value.length(), value));
+        panic("can not identify word: " + value, new Token(Kind.STRING, line, position, value.length(), value), sourceFile.getName());
     }
 
     private boolean match(String value, Kind kind, String regex) {

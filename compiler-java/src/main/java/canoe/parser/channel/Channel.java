@@ -450,11 +450,11 @@ public class Channel<T> {
     }
 
     protected void panic(String tip) {
-        PanicUtil.panic(tip, stream.getOriginTokens().getSourceFile().getName(), stream.current());
+        PanicUtil.panic(tip, stream.current(), stream.getOriginTokens().getSourceFile().getName());
     }
 
     protected void panic(String tip, Token token) {
-        PanicUtil.panic(tip, stream.getOriginTokens().getSourceFile().getName(), token);
+        PanicUtil.panic(tip, token, stream.getOriginTokens().getSourceFile().getName());
     }
 
     protected void panic(Token token) {

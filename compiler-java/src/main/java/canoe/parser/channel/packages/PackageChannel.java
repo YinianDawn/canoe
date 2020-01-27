@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static canoe.lexer.Kind.*;
 import static canoe.lexer.KindSet.SINGLE_KEY_WORDS;
 
 /**
@@ -19,7 +18,7 @@ import static canoe.lexer.KindSet.SINGLE_KEY_WORDS;
 public class PackageChannel extends Channel<PackageInfo> {
 
     private PackageChannel(TokenStream stream) {
-        super(stream, CR);
+        super(stream, Kind.CR);
         dropSpacesOrCR();
         if (glance().not(Kind.PACKAGE)) {
             data = new PackageInfo(new Token(Kind.PACKAGE, 0, 0, 7, null), Collections.emptyList());
@@ -35,7 +34,7 @@ public class PackageChannel extends Channel<PackageInfo> {
             if (null != last) {
                 if (last.isSpaces()) {
                     if (2 == size) { removeLast();
-                        accept(ID).acceptKeyWords().refuseAll(); return;
+                        accept(Kind.ID).acceptKeyWords().refuseAll(); return;
                     } else {
                         if (glance().isCR()) { removeLast();
                             refuseAll().over(this::full); return;
@@ -44,14 +43,14 @@ public class PackageChannel extends Channel<PackageInfo> {
                         }
                     }
                 }
-                if (last.is(DOT)) { accept(ID).acceptKeyWords().refuseAll(); return; }
-                if (contains(last, SINGLE_KEY_WORDS)) { accept(DOT).refuseAll(); return; }
-                if (last.is(ID)) { accept(DOT).acceptSpaces().refuseAll().over(this::full); return; }
+                if (last.is(Kind.DOT)) { accept(Kind.ID).acceptKeyWords().refuseAll(); return; }
+                if (contains(last, SINGLE_KEY_WORDS)) { accept(Kind.DOT).refuseAll(); return; }
+                if (last.is(Kind.ID)) { accept(Kind.DOT).acceptSpaces().refuseAll().over(this::full); return; }
             }
         } else {
             acceptSpaces().refuseAll(); return;
         }
-        panic("wrong package statement.");
+        panic("wrong " + Kind.PACKAGE.value + " statement.");
     }
 
     private void full() {

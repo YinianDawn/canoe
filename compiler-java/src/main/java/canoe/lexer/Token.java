@@ -45,6 +45,7 @@ public class Token {
     }
 
     public boolean next(Token next) { return line == next.line && position + size == next.position; }
+    public boolean line(Token next) { return line == next.line; }
 
     public boolean isComment() { return kind == Kind.COMMENT_LINE || kind == Kind.COMMENT_BLOCK; }
     public boolean isSpaces() { return kind == Kind.SPACES; }

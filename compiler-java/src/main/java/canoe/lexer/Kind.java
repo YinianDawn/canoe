@@ -17,8 +17,11 @@ public enum Kind {
     PACKAGE("package", KEY_WORD),
     IMPORT ("import",  KEY_WORD),
     AS     ("as",      KEY_WORD),
+    EXTRA  ("extra",   KEY_WORD),
+    EXCEPT ("except",  KEY_WORD),
 
-    OPEN  ("open",     KEY_WORD),
+    OPENED("opened",   KEY_WORD),
+    CLOSED("closed",   KEY_WORD),
     LAZY  ("lazy",     KEY_WORD),
     NATIVE("native",   KEY_WORD),
     GOTO  ("goto",     KEY_WORD),
@@ -157,23 +160,26 @@ public enum Kind {
     /** match子句 */
     COLON_BLANK(": ", OPERATOR, MIDDLE),
 
-
     // 范围界限符号 成对出现 <> 是泛型界限，已经大于小于符号了
     LB("{", COUPLE_LEFT), RB("}", COUPLE_RIGHT),
     LS("[", COUPLE_LEFT), RS("]", COUPLE_RIGHT),
     LR("(", COUPLE_LEFT), RR(")", COUPLE_RIGHT),
 
-    /** 绑定对象用 */
-    AT("@", OPERATOR, LEFT),
+    /** 单个id是这个就是UL */
+    UL("_", OPERATOR),
 
+    /** 暂时无用 */
+    AT("@", OPERATOR, LEFT),
     /** 暂时无用 也许将来注解使用 */
     HASH("#", OPERATOR, LEFT),
     /** 暂时无用 */
-    ANTI("`"),
+    ANTI("`", OPERATOR),
     /** 暂时无用 */
-    WAVE("~"),
+    WAVE("~", OPERATOR),
     /** 暂时无用 */
-    DOLLAR("$"),
+    DOLLAR("$", OPERATOR),
+    /** 暂时无用 */
+    BACK("\\", OPERATOR),
 
     // ================ 无法枚举的符号 ================
 

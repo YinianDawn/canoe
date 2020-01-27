@@ -14,8 +14,6 @@ public class Parser {
 
     private Tokens tokens;
 
-    private TokenStream stream;
-
     public static Syntax parseSyntax(Tokens tokens) {
         return new Parser(tokens).parse();
     }
@@ -25,7 +23,7 @@ public class Parser {
     }
 
     private Syntax parse() {
-        this.stream = new TokenStream(tokens);
+        TokenStream stream = new TokenStream(tokens);
         if (!stream.has()) {
             panic("tokens can not be empty.");
         }
