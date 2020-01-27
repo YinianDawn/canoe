@@ -5,7 +5,7 @@ import canoe.parser.channel.imports.ImportChannel;
 import canoe.parser.channel.packages.PackageChannel;
 import canoe.parser.syntax.PackageInfo;
 import canoe.parser.syntax.Syntax;
-import canoe.parser.syntax.imports.ImportInfo;
+import canoe.parser.syntax.ImportInfo;
 
 import static canoe.util.PanicUtil.panic;
 

@@ -4,6 +4,7 @@ import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.TokenStream;
 import canoe.parser.channel.Channel;
+import canoe.parser.syntax.ImportInfo;
 import canoe.parser.syntax.imports.*;
 
 import java.util.ArrayList;

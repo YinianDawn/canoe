@@ -1,4 +1,6 @@
-package canoe.ast.statement;
+package canoe.parser.syntax;
+
+import canoe.parser.syntax.statement.Statement;
 
 import java.util.List;
 
