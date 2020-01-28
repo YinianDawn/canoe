@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @author dawn
  */
-public class ImportInfo implements Produce<ImportInfo> {
+public class ImportInfo {
 
     private List<ImportStatement> info;
 
@@ -15,10 +15,5 @@ public class ImportInfo implements Produce<ImportInfo> {
         this.info = info;
     }
 
-    @Override
-    public ImportInfo make(String file) {
-        info.forEach(i -> i.make(file));
-        return this;
-    }
 
 }

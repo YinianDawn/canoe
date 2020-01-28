@@ -63,7 +63,7 @@ public class ImportChannel extends Channel<ImportInfo> {
     }
 
     public static ImportInfo make(TokenStream stream) {
-        return new ImportChannel(stream).make().make(stream.name());
+        return new ImportChannel(stream).make();
     }
 
 }

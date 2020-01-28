@@ -1,14 +1,11 @@
 package canoe.parser.syntax.imports;
 
-import canoe.lexer.Kind;
 import canoe.lexer.Token;
-
-import static canoe.util.PanicUtil.panic;
 
 /**
  * @author dawn
  */
-public class ImportSingle implements ImportStatement<ImportSingle> {
+public class ImportSingle implements ImportStatement {
 
     private final Token IMPORT;
 
@@ -19,12 +16,4 @@ public class ImportSingle implements ImportStatement<ImportSingle> {
         this.unit = unit;
     }
 
-    @Override
-    public ImportSingle make(String file) {
-        if (null == IMPORT || IMPORT.not(Kind.IMPORT)) {
-            panic("must be " + Kind.IMPORT.value, IMPORT, file);
-        }
-        unit.make(IMPORT, file);
-        return this;
-    }
 }

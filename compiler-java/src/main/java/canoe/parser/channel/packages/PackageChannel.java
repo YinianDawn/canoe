@@ -46,7 +46,7 @@ public class PackageChannel extends Channel<PackageInfo> {
     }
 
     public static PackageInfo make(TokenStream stream) {
-        return new PackageChannel(stream).make().make(stream.name());
+        return new PackageChannel(stream).make();
     }
 
 }
