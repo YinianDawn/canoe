@@ -3,12 +3,9 @@ package canoe.lexer;
 import canoe.compiler.SourceFile;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
-import static canoe.lexer.KindSet.SINGLE_KEY_WORDS;
+import static canoe.lexer.KindSet.getKinds;
 import static canoe.util.PanicUtil.panic;
 
 /**
@@ -18,8 +15,8 @@ public class Lexer {
 
     private static HashMap<String, Kind> WORDS = new HashMap<>(277);
     static {
-        for (Kind kind : SINGLE_KEY_WORDS) {
-            if (null != kind.value) {
+        for (Kind kind : getKinds(KindType.KEY_WORD)) {
+            if (null != kind.value || kind != Kind.ELSE_IF) {
                 if (WORDS.containsKey(kind.value)) {
                     panic("Kind should not repeat. " + kind);
                 }

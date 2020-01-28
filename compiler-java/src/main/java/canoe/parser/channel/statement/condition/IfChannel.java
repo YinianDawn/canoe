@@ -1,13 +1,13 @@
 package canoe.parser.channel.statement.condition;
 
-import canoe.ast.expression.Expression;
-import canoe.ast.statement.Statements;
-import canoe.ast.statement.condition.StatementIf;
-import canoe.ast.statement.condition.elseif.ElseIf;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
 import canoe.parser.channel.expression.ExpressionChannel;
+import canoe.parser.syntax.Statements;
+import canoe.parser.syntax.expression.Expression;
+import canoe.parser.syntax.statement.condition.StatementIf;
+import canoe.parser.syntax.statement.condition.elseif.ElseIf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,95 +17,94 @@ import java.util.List;
  */
 public class IfChannel extends Channel<StatementIf> {
 
-    private Token ifToken;
-    private Expression expression;
-    private Token lb;
+    private Token IF;
+    private Expression condition;
+    private Token LB;
     private Statements thenStatements;
-    private Token rb;
+    private Token RB;
     private List<ElseIf> elseIfs = new ArrayList<>();
-    private Token elseToken;
-    private Token elseLB;
+    private Token ELSE;
+    private Token ELSE_LB;
     private Statements elseStatements;
-    private Token elseRB;
+    private Token ELSE_RB;
 
     private IfChannel(Channel channel, Kind... end) {
         super(channel, end);
         if (glance().not(Kind.IF)) {
-            panic("must be if.", glance());
+            panic("must be if", glance());
         }
         init();
     }
 
     @Override
     protected void init() {
-        ifToken = next();
+        IF = next();
         Block b = parseBlock(true);
-        expression = b.expression;
-        lb = b.lb;
+        condition = b.condition;
+        LB = b.LB;
         thenStatements = b.statements;
-        rb = b.rb;
-        removeSpace();
+        RB = b.RB;
+        dropSpaces();
         Token elseIFToken = glance();
         while (elseIFToken.is(Kind.ELSE_IF)) {
             elseIFToken = next();
             b = parseBlock(true);
-            elseIfs.add(new ElseIf(elseIFToken, b.expression, b.lb, b.statements, b.rb));
-            removeSpace();
+            elseIfs.add(new ElseIf(elseIFToken, b.condition, b.LB, b.statements, b.RB));
+            dropSpaces();
             elseIFToken = glance();
         }
         if (elseIFToken.is(Kind.ELSE)) {
-            elseToken = next();
+            ELSE = next();
             b = parseBlock(false);
-
-            elseLB = b.lb;
+            ELSE_LB = b.LB;
             elseStatements = b.statements;
-            elseRB = b.rb;
+            ELSE_RB = b.RB;
         }
-        data = new StatementIf(ifToken, expression, lb, thenStatements, rb,
-                elseIfs, elseToken, elseLB, elseStatements, elseRB);
+        data = new StatementIf(IF, condition, LB, thenStatements, RB,
+                elseIfs, ELSE, ELSE_LB, elseStatements, ELSE_RB);
     }
 
 
-    private Block parseBlock(boolean expression) {
+    private Block parseBlock(boolean condition) {
         Expression boolExpression = null;
         Token lb;
         Statements statements;
         Token rb;
 
-        if (expression) {
-            removeSpace();
+        if (condition) {
+            dropSpaces();
             boolExpression = ExpressionChannel.produce(this, Kind.LB);
         }
-        removeSpace();
+        dropSpaces();
         lb = next();
         if (lb.not(Kind.LB)) {
-            panic("statement must start with { .", lb);
+            panic("statement must start with {", lb);
         }
-        removeSpaceOrCR();
-        statements = parseStatements(Kind.RB, Kind.CR);
-        removeSpaceOrCR();
+        dropSpacesCR();
+        statements = parseStatements(Kind.RB, Kind.CR, Kind.SEMI);
+        dropSpacesCR();
         rb = next();
         if (rb.not(Kind.RB)) {
-            panic("statement must end with } .", rb);
+            panic("statement must end with }", rb);
         }
         return new Block(boolExpression, lb, statements, rb);
     }
 
     private static class Block {
-        private Expression expression;
-        private Token lb;
+        private Expression condition;
+        private Token LB;
         private Statements statements;
-        private Token rb;
-        public Block(Expression expression, Token lb, Statements statements, Token rb) {
-            this.expression = expression;
-            this.lb = lb;
+        private Token RB;
+        Block(Expression condition, Token lb, Statements statements, Token rb) {
+            this.condition = condition;
+            this.LB = lb;
             this.statements = statements;
-            this.rb = rb;
+            this.RB = rb;
         }
     }
 
-    public static StatementIf produce(Channel channel, Kind... end) {
-        return new IfChannel(channel, end).produce();
+    public static StatementIf make(Channel channel, Kind... end) {
+        return new IfChannel(channel, end).make();
     }
 
 }

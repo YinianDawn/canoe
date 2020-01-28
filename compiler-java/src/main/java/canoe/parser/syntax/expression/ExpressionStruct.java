@@ -1,33 +1,31 @@
-package canoe.ast.expression;
+package canoe.parser.syntax.expression;
 
 
-import canoe.ast.statement.Statements;
 import canoe.lexer.Token;
+import canoe.parser.syntax.Statements;
 
 /**
  * @author dawn
  */
 public class ExpressionStruct implements Expression {
 
-    private Token lb;
-
+    private Token LB;
     private Statements statements;
-
-    private Token rb;
+    private Token RB;
 
     public ExpressionStruct(Token lb, Statements statements, Token rb) {
-        this.lb = lb;
+        this.LB = lb;
         this.statements = statements;
-        this.rb = rb;
+        this.RB = rb;
     }
 
     @Override
     public Token first() {
-        return lb;
+        return LB;
     }
 
     @Override
     public Token last() {
-        return rb;
+        return RB;
     }
 }

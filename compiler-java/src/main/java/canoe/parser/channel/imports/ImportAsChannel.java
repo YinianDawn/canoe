@@ -4,11 +4,10 @@ import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
 import canoe.parser.syntax.imports.ImportAs;
+import canoe.parser.syntax.merge.MergeOperatorOverload;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static canoe.lexer.KindSet.OPERATOR_OVERLOAD;
 
 /**
  * @author dawn
@@ -37,7 +36,7 @@ public class ImportAsChannel extends Channel<ImportAs> {
             case "ID AS ID": over(this::full).acceptSpaces().refuseAll(); break;
             case "ID AS ID SPACES": removeLast(); over(this::full).refuseAll(); break;
 
-            case "ID DOT": over(this::full).acceptSpaces().accept(OPERATOR_OVERLOAD).refuseAll(); break;
+            case "ID DOT": over(this::full).acceptSpaces().accept(MergeOperatorOverload.OPERATOR_OVERLOAD).refuseAll(); break;
             case "ID DOT SPACES": removeLast(); over(this::full).refuseAll(); break;
             case "ID DOT ADD": over(this::full).acceptSpaces().refuseAll(); break;
             case "ID DOT ADD SPACES": removeLast(); over(this::full).refuseAll(); break;

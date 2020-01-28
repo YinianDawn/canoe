@@ -1,7 +1,8 @@
-package canoe.parser.syntax.expression;
+package canoe.parser.syntax.expression.single;
 
 
 import canoe.lexer.Token;
+import canoe.parser.syntax.expression.Expression;
 
 /**
  * @author dawn

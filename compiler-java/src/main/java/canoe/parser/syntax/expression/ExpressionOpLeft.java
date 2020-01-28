@@ -1,4 +1,4 @@
-package canoe.ast.expression;
+package canoe.parser.syntax.expression;
 
 import canoe.lexer.Token;
 
@@ -7,18 +7,18 @@ import canoe.lexer.Token;
  */
 public class ExpressionOpLeft implements Expression {
 
-    private Token leftOp;
-    private Expression expression;
+    private final Token op;
+    private final Expression expression;
 
 
-    public ExpressionOpLeft(Token leftOp, Expression expression) {
-        this.leftOp = leftOp;
+    public ExpressionOpLeft(Token op, Expression expression) {
+        this.op = op;
         this.expression = expression;
     }
 
     @Override
     public Token first() {
-        return leftOp;
+        return op;
     }
 
     @Override

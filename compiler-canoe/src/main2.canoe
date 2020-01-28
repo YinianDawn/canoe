@@ -42,14 +42,19 @@ import (
 
 
 answer := 8 * 5 + 2
+answer := 8 + 5 + 2
+answer := 8 + 5 * 2
 
 xmax, ymax := 100,100
 
 xmax, ymax := 100
 
-1.string()
+1 . string ( )
 
-1.to(10)
+1 . 
+to (
+    10
+    )
 
 "Hello".intsesect("world")
 
@@ -65,10 +70,11 @@ x * x * x
 
 "Hello"[4]
 
-// 判断语句要加()
+// 判断语句要加{}
+
+if x > 0 {1} else {-1}
 
 if (x > 0) {1} else {-1}
-if x > 0 {1} else {-1}
 
 s = if (x > 0) {1} else {-1}
 
@@ -85,7 +91,7 @@ if n > 0 {
 
 distance = { dx = x - x0; dy = y - y0; sqrt(dx * dx + dy * dy) }
 
-// 循环语句还是要加() 把
+// 循环语句还是要加{}
 
 loop {
     if (n <= 0) break
