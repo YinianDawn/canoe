@@ -1,4 +1,4 @@
-package canoe.ast.statement.condition.match;
+package canoe.parser.syntax.statement.condition.match;
 
 
 import canoe.ast.statement.Statements;

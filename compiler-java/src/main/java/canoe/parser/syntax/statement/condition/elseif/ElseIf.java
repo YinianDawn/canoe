@@ -1,33 +1,29 @@
-package canoe.ast.statement.condition.elseif;
+package canoe.parser.syntax.statement.condition.elseif;
 
-import canoe.ast.expression.Expression;
-import canoe.ast.statement.Statements;
 import canoe.lexer.Token;
+import canoe.parser.syntax.Statements;
+import canoe.parser.syntax.expression.Expression;
 
 /**
  * @author dawn
  */
 public class ElseIf {
 
-    private Token elseIf;
+    private Token ELSE_IF;
+    private Expression condition;
+    private Token LB;
+    private Statements statements;
+    private Token RB;
 
-    private Expression expression;
-
-    private Token lb;
-
-    private Statements elseIfStatements;
-
-    private Token rb;
-
-    public ElseIf(Token elseIf, Expression expression, Token lb, Statements elseIfStatements, Token rb) {
-        this.elseIf = elseIf;
-        this.expression = expression;
-        this.lb = lb;
-        this.elseIfStatements = elseIfStatements;
-        this.rb = rb;
+    public ElseIf(Token symbol, Expression condition, Token lb, Statements statements, Token rb) {
+        this.ELSE_IF = symbol;
+        this.condition = condition;
+        this.LB = lb;
+        this.statements = statements;
+        this.RB = rb;
     }
 
     public Token last() {
-        return rb;
+        return RB;
     }
 }

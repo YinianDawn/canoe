@@ -1,11 +1,10 @@
-package canoe.ast.statement.condition;
+package canoe.parser.syntax.statement.condition;
 
-
-import canoe.ast.expression.Expression;
-import canoe.ast.statement.Statement;
-import canoe.ast.statement.Statements;
-import canoe.ast.statement.condition.elseif.ElseIf;
 import canoe.lexer.Token;
+import canoe.parser.syntax.Statements;
+import canoe.parser.syntax.expression.Expression;
+import canoe.parser.syntax.statement.Statement;
+import canoe.parser.syntax.statement.condition.elseif.ElseIf;
 
 import java.util.List;
 
@@ -14,46 +13,40 @@ import java.util.List;
  */
 public class StatementIf implements Statement {
 
-    private Token ifToken;
-
-    private Expression expression;
-
-    private Token lb;
-
+    private Token IF;
+    private Expression condition;
+    private Token LB;
     private Statements thenStatements;
-
-    private Token rb;
-
+    private Token RB;
     private List<ElseIf> elseIfs;
-
-    private Token elseToken;
-
-    private Token elseLB;
-
+    private Token ELSE;
+    private Token ELSE_LB;
     private Statements elseStatements;
+    private Token ELSE_RB;
 
-    private Token elseRB;
-
-    public StatementIf(Token ifToken, Expression expression, Token lb, Statements thenStatements, Token rb, List<ElseIf> elseIfs, Token elseToken, Token elseLB, Statements elseStatements, Token elseRB) {
-        this.ifToken = ifToken;
-        this.expression = expression;
-        this.lb = lb;
+    public StatementIf(Token symbol, Expression condition,
+                       Token lb, Statements thenStatements, Token rb,
+                       List<ElseIf> elseIfs,
+                       Token elseToken, Token elseLb, Statements elseStatements, Token elseRb) {
+        this.IF = symbol;
+        this.condition = condition;
+        this.LB = lb;
         this.thenStatements = thenStatements;
-        this.rb = rb;
+        this.RB = rb;
         this.elseIfs = elseIfs;
-        this.elseToken = elseToken;
-        this.elseLB = elseLB;
+        this.ELSE = elseToken;
+        this.ELSE_LB = elseLb;
         this.elseStatements = elseStatements;
-        this.elseRB = elseRB;
+        this.ELSE_RB = elseRb;
     }
 
     @Override
     public Token first() {
-        return ifToken;
+        return IF;
     }
 
     @Override
     public Token last() {
-        return null != elseToken ? elseRB : ( elseIfs.isEmpty() ? rb : elseIfs.get(elseIfs.size() - 1).last());
+        return null != ELSE ? ELSE_RB : (elseIfs.isEmpty() ? RB : elseIfs.get(elseIfs.size() - 1).last());
     }
 }
