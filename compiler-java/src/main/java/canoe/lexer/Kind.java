@@ -22,10 +22,12 @@ public enum Kind {
 
     OPENED("opened",   KEY_WORD),
     CLOSED("closed",   KEY_WORD),
-    LAZY  ("lazy",     KEY_WORD),
+    STATIC("static",   KEY_WORD),
     NATIVE("native",   KEY_WORD),
-    GOTO  ("goto",     KEY_WORD),
     ENUM  ("enum",     KEY_WORD),
+    LAZY  ("lazy",     KEY_WORD),
+
+    GOTO  ("goto",     KEY_WORD),
     RETURN("return",   KEY_WORD),
 
     /**
@@ -92,14 +94,16 @@ public enum Kind {
     /** 是否小等 */ LE("<=",  OPERATOR, OPERATOR_RELATION, MIDDLE, OVERLOAD),
 
     /** 是否对象 */ ET("?",   OPERATOR, OPERATOR_RELATION, RIGHT),
+    /** 是非对象 */ NT("?!",  OPERATOR, OPERATOR_RELATION, RIGHT),
     /** 是否实例 */ IS("?:",  OPERATOR, OPERATOR_RELATION, MIDDLE),
+    /** 是非实例 */ NO("?!:", OPERATOR, OPERATOR_RELATION, MIDDLE),
     /** 是否属于 */ BL("?<",  OPERATOR, OPERATOR_RELATION, MIDDLE),
     /** 是否不属 */ NB("?!<", OPERATOR, OPERATOR_RELATION, MIDDLE),
 
     // 逻辑运算符
-    /** 逻辑与 */ LOGICAL_AND("&&", OPERATOR, OPERATOR_LOGICAL, MIDDLE, OVERLOAD),
-    /** 逻辑或 */ LOGICAL_OR ("||", OPERATOR, OPERATOR_LOGICAL, MIDDLE, OVERLOAD),
-    /** 逻辑非 与位取反相同 省略 */ // LOGICAL_NOT("!", LEFT, OPERATOR_LOGICAL),
+    /** 逻辑与 */ LOGIC_AND("&&", OPERATOR, OPERATOR_LOGIC, MIDDLE, OVERLOAD),
+    /** 逻辑或 */ LOGIC_OR ("||", OPERATOR, OPERATOR_LOGIC, MIDDLE, OVERLOAD),
+    /** 逻辑非 与位取反相同 省略 */ // LOGIC_NOT("!", OPERATOR, OPERATOR_LOGIC, LEFT),
 
     // 数学运算符
     ADD("+", OPERATOR, OPERATOR_MATH, MIDDLE, LEFT, OVERLOAD),
@@ -112,14 +116,14 @@ public enum Kind {
     BIT_AND       ("&",   OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_OR        ("|",   OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_XOR       ("^",   OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
-    BIT_NOT       ("!",   OPERATOR, OPERATOR_BIT, LEFT, OPERATOR_LOGICAL),
+    BIT_NOT       ("!",   OPERATOR, OPERATOR_BIT, LEFT, OPERATOR_LOGIC),
     BIT_LEFT      ("<<",  OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_RIGHT     (">>",  OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_RIGHT_ZERO(">>>", OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
 
     // 自增自减运算
-    ADD_ADD("++", OPERATOR, OPERATOR_SELF, RIGHT),
-    SUB_SUB("--", OPERATOR, OPERATOR_SELF, RIGHT),
+    SELF_ADD("++", OPERATOR, OPERATOR_SELF, RIGHT),
+    SELF_SUB("--", OPERATOR, OPERATOR_SELF, RIGHT),
 
     // 赋值
     ASSIGN      ("=",  OPERATOR, OPERATOR_ASSIGN),
@@ -142,10 +146,10 @@ public enum Kind {
     DOT(".", OPERATOR, LEFT),
 
     /** 函数输入可变长度 必须最后一个参数才允许 */
-    DOT_DOT_DOT("...", OPERATOR, RIGHT),
+    DOT3("...", OPERATOR, RIGHT),
 
-    /** lambda表达式 */
-    LAMBDA("->", OPERATOR, OPERATOR_LAMBDA, MIDDLE),
+    /** 方法返回值和lambda表达式 */
+    POINT("->", OPERATOR, MIDDLE),
 
     /** each循环里面用 */
     IN("<-", OPERATOR, MIDDLE),
@@ -154,10 +158,11 @@ public enum Kind {
     COMMA(",", OPERATOR, MIDDLE),
     /** 语句之间分隔 换行符也是语句分隔作用 */
     SEMI (";", OPERATOR, MIDDLE),
-    /** 描述约束 */
-    COLON      (":",  OPERATOR, LEFT),
+    /** 描述约束等 */
+    COLON(":",  OPERATOR, MIDDLE, LEFT),
     /** match子句 */
     COLON_BLANK(": ", OPERATOR, MIDDLE),
+    BLANK_COLON_BLANK(" : ", OPERATOR, MIDDLE),
 
     // 范围界限符号 成对出现 <> 是泛型界限，已经大于小于符号了
     LB("{", COUPLE_LEFT), RB("}", COUPLE_RIGHT),
@@ -165,7 +170,7 @@ public enum Kind {
     LR("(", COUPLE_LEFT), RR(")", COUPLE_RIGHT),
 
     /** 单个id是这个就是UL */
-    UL("_", CONSTANT),
+    UL("_", VARIANT),
 
     /** 暂时无用 */
     AT("@", OPERATOR, LEFT),
@@ -183,7 +188,7 @@ public enum Kind {
     // ================ 无法枚举的符号 ================
 
     /** 标识符 [A-Za-z_][A-Za-z0-9_]* */
-    ID(null, VARIABLE),
+    ID(null, VARIANT),
 
     // 数字
     /** 十六进制数 0(x|X)[0-9a-fA-F_]* */
@@ -200,6 +205,9 @@ public enum Kind {
 
     /** 字符串 \"[.\n]*\" */
     STRING(null, CONSTANT),
+
+    /** 字符 \"[.\n]*\" */
+    CHAR(null, CONSTANT),
 
     /** 行注释 // */ COMMENT_LINE (null, COMMENT),
     /** 块注释 /* */ COMMENT_BLOCK(null, COMMENT),

@@ -71,4 +71,22 @@ class CharStream {
 
     boolean guess(char c) { return has() && glance() == c; }
 
+    boolean guess(char c, char c2) {
+        if (has()) {
+            char n = glance();
+            return n == c || n == c2;
+        }
+        return false;
+    }
+
+    String next4() {
+        int number = 4;
+        StringBuilder sb = new StringBuilder();
+        while (0 < number && has()) {
+            sb.append(next());
+            number--;
+        }
+        return sb.toString();
+    }
+
 }

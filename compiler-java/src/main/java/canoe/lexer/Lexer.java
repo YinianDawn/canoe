@@ -42,10 +42,10 @@ public class Lexer {
             if (0 == kind.types.length
                     || kind.types[0] == KindType.KEY_WORD
                     || kind.types[0] == KindType.CONSTANT
-                    || kind.types[0] == KindType.VARIABLE
+                    || kind.types[0] == KindType.VARIANT
                     || kind.types[0] == KindType.COMMENT
                     || kind.types[0] == KindType.MARK
-                    || kind == Kind.DOT_DOT_DOT) { continue; }
+                    || kind == Kind.DOT3) { continue; }
             if (null != kind.value && 1 < kind.value.length()) {
                 int size = kind.value.length();
                 switch (size) {
@@ -114,9 +114,7 @@ public class Lexer {
 
     private void merge() {
         List<Token> origin = new ArrayList<>(tokens);
-        origin.add(EOF);
-        origin.add(EOF);
-        origin.add(EOF);
+        origin.add(EOF); origin.add(EOF); origin.add(EOF);
         tokens.clear();
 
         int size = origin.size() - 3;
@@ -125,10 +123,8 @@ public class Lexer {
         HashMap<Kind, HashMap<Kind, Kind>> map3;
         HashMap<Kind, Kind> map2;
         for (int i = 0; i < size; i++) {
-            next1 = origin.get(i);
-            next2 = origin.get(i + 1);
-            next3 = origin.get(i + 2);
-            next4 = origin.get(i + 3);
+            next1 = origin.get(i); next2 = origin.get(i + 1);
+            next3 = origin.get(i + 2); next4 = origin.get(i + 3);
             switch (next1.kind) {
                 case ELSE:
                     if (next2.is(Kind.BLANK) && next3.is(Kind.IF)) {
@@ -157,15 +153,17 @@ public class Lexer {
                             tokens.add(new Token(Kind.DECIMAL, next1.line, next1.position, next1.size + 1, next1.value() + "."));
                             i++; continue;
                         }
-                    }
-                    break;
+                    } break;
                 case DOT:
                     if (next2.is(Kind.NUMBER_DEC)) {
                         tokens.add(new Token(Kind.DECIMAL, next1.line, next1.position, 1 + next2.size, "." + next2.value()));
                         i++; continue;
-                    }
-                    break;
+                    } break;
                 case BLANK:
+                    if (next2.is(Kind.COLON) && next3.is(Kind.BLANK)) {
+                        tokens.add(new Token(Kind.BLANK_COLON_BLANK, next1.line, next1.position, 3, null));
+                        i += 2; continue;
+                    }
                 case TAB:
                     if (next2.not(Kind.BLANK, Kind.TAB)) {
                         next1 = new Token(Kind.SPACES, next1.line, next1.position, next1.size, null);
@@ -186,7 +184,7 @@ public class Lexer {
                     }
                     if (next2.is(Kind.DOT) && next3.is(Kind.DOT) && next4.is(Kind.DOT)) {
                         tokens.add(next1);
-                        tokens.add(new Token(Kind.DOT_DOT_DOT, next2.line, next2.position, 3, null));
+                        tokens.add(new Token(Kind.DOT3, next2.line, next2.position, 3, null));
                         i += 3; continue;
                     }
                 default:
@@ -255,72 +253,12 @@ public class Lexer {
             case '\t': addToken(); addSpaceToken(Kind.TAB);    position++; break;
             case ' ':  addToken(); addSpaceToken(Kind.BLANK);  position++; break;
 
-            case '\"': addToken(); position++;
-                while (stream.has()) {
-                    char next = stream.glance();
-                    if (next == '\"') { stream.next(); break; }
-                    if (next == '\r' || next == '\n') { panic("string must on single line.", new Token(Kind.STRING, line, position, chars.length(), chars.toString()), sourceFile.getName()); }
-                    chars.append(stream.next());
-                }
-                addToken(Kind.STRING, chars.toString());
-                position += tokens.get(tokens.size() - 1).size + 1;
-                break;
+            case '\"': addToken(); addStringToken(); break;
+            case '\'': addToken(); addCharToken(); break;
 
             case '/' : addToken();
-                if (stream.has()) {
-                    char next = stream.glance();
-                    if (next == '*') {
-                        // 是块注释
-                        chars.append(c);
-                        chars.append(stream.next());
-                        int blockLine = line;
-                        int blockPosition = position;
-                        loop:
-                        while (stream.has()) {
-                            next = stream.glance();
-                            switch (next) {
-                                case '*':
-                                    chars.append(stream.next());
-                                    if (stream.guess('/')) {
-                                        // 结束块注释
-                                        chars.append(stream.next());
-                                        addToken(Kind.COMMENT_BLOCK);
-                                        position = blockLine == line ? position: blockPosition + 2;
-                                        line = blockLine;
-                                        break loop;
-                                    }
-                                    continue;
-                                case '\r':
-                                    chars.append(stream.next());
-                                    if (stream.guess('\n')) { chars.append(stream.next()); }
-                                    blockLine++; blockPosition = 1; continue;
-                                case '\n':
-                                    chars.append(stream.next());
-                                    blockLine++; blockPosition = 1; continue;
-                                default:
-                            }
-                            chars.append(stream.next());
-                            blockPosition++;
-                        }
-                        if (0 < chars.length()) {
-                            panic("chars can not remain: " + chars.toString(), tokens.get(tokens.size() - 1), sourceFile.getName());
-                        }
-                        break;
-                    } else if (next == '/') {
-                        chars.append(c);
-                        while (stream.has()) {
-                            char n = stream.glance();
-                            if (n == '\r' || n == '\n') {
-                                break;
-                            } else {
-                                chars.append(stream.next());
-                            }
-                        }
-                        addToken(Kind.COMMENT_LINE);
-                        break;
-                    }
-                }
-                // 除法符号
+                if (stream.guess('*')) { addBlockCommentToken(); break; }
+                if (stream.guess('/')) { addLineCommentToken(); break; }
                 addToken(Kind.DIV); position++; break;
 
             case '=': addToken(); addToken(Kind.ASSIGN); position++; break;
@@ -405,6 +343,145 @@ public class Lexer {
     private void addSpaceToken(Kind kind) {
         tokens.add(new Token(kind, line, position, 1, null));
         clear();
+    }
+
+    private void addStringToken() {
+        position++;
+        while (stream.has()) {
+            char next = stream.glance();
+            if (next == '\\') {
+                chars.append(stream.next());
+                if (stream.has()) {
+                    switch (stream.glance()) {
+                        case 'a': case 'b': case 'f': case 'n': case 'r': case 't': case 'v':
+                        case '\\': case '"': case '\'':
+                            chars.append(stream.next());
+                            continue;
+                        case 'u':
+                            chars.append(stream.next());
+                            // 后面4个应该是数字
+                            String n = stream.next4();
+                            if (n.matches("[0-9A-Fa-f]{4}")) {
+                                chars.append(n);
+                                continue;
+                            }
+                            chars.deleteCharAt(chars.length() - 1);
+                        default:
+                    }
+                }
+                panic("wrong \\ usage", new Token(Kind.STRING, line, position + chars.length() - 1, 1, "\\"), sourceFile.getName());                continue;
+            }
+            if (next == '\"') { stream.next(); break; }
+            if (next == '\r' || next == '\n') { panic("string must on single line.", new Token(Kind.STRING, line, position, chars.length(), chars.toString()), sourceFile.getName()); }
+            chars.append(stream.next());
+        }
+        addToken(Kind.STRING, chars.toString());
+        position += tokens.get(tokens.size() - 1).size + 1;
+    }
+
+    private void addCharToken() {
+        position++;
+        while (stream.has()) {
+            char next = stream.glance();
+            if (next == '\\') { chars.append(stream.next()); if (stream.has()) {chars.append(stream.next());} continue; }
+            if (next == '\'') { stream.next(); break; }
+            chars.append(stream.next());
+        }
+        String value = chars.toString();
+        switch (value.length()) {
+            case 0: panic("char must has something", new Token(Kind.CHAR, line, position, value.length(), value), sourceFile.getName()); break;
+            case 1:
+                switch (value.charAt(0)) {
+                    case '\\':
+                    case '\'':
+                        panic(value + " can not be alone", new Token(Kind.CHAR, line, position, value.length(), value), sourceFile.getName());
+                    default:
+                }
+                break;
+            default:
+                if (value.charAt(0) != '\\') {
+                    panic("\\ must be first", new Token(Kind.CHAR, line, position, value.length(), value), sourceFile.getName());
+                }
+                switch (value.charAt(1)) {
+                    case 'a': case 'b': case 'f': case 'n': case 'r': case 't': case 'v':
+                    case '\\': case '"': case '\'':
+                        if (2 != value.length()) {
+                            panic("wrong char", new Token(Kind.CHAR, line, position, value.length(), value), sourceFile.getName());
+                        }
+                        break;
+                    case 'u':
+                        if (6 != value.length()) {
+                            panic("wrong char", new Token(Kind.CHAR, line, position, value.length(), value), sourceFile.getName());
+                        }
+                        if (!value.substring(2).matches("[0-9A-Fa-f]{4}")) {
+                            panic("wrong char", new Token(Kind.CHAR, line, position, value.length(), value), sourceFile.getName());
+                        }
+                        break;
+                    default:
+                        panic("wrong char", new Token(Kind.CHAR, line, position, value.length(), value), sourceFile.getName());
+                }
+        }
+        addToken(Kind.CHAR, value);
+        position += tokens.get(tokens.size() - 1).size + 1;
+    }
+
+    private void addBlockCommentToken() {
+        chars.append('/');
+        chars.append(stream.next());
+        char next;
+        int count = 1;
+        int blockLine = line;
+        int blockPosition = position;
+        loop:
+        while (stream.has()) {
+            next = stream.glance();
+            switch (next) {
+                case '/':
+                    chars.append(stream.next());
+                    if (stream.guess('*')) {
+                        chars.append(stream.next());
+                        count++;
+                    }
+                    continue;
+                case '*':
+                    chars.append(stream.next());
+                    if (stream.guess('/')) {
+                        // 结束块注释
+                        chars.append(stream.next());
+                        count--;
+                        if (count <= 0) {
+                            addToken(Kind.COMMENT_BLOCK);
+                            position = blockLine == line ? position: blockPosition + 2;
+                            line = blockLine;
+                            break loop;
+                        }
+                    }
+                    continue;
+                case '\r':
+                    chars.append(stream.next());
+                    if (stream.guess('\n')) { chars.append(stream.next()); }
+                    blockLine++; blockPosition = 1; continue;
+                case '\n':
+                    chars.append(stream.next());
+                    blockLine++; blockPosition = 1; continue;
+                default:
+            }
+            chars.append(stream.next());
+            blockPosition++;
+        }
+        if (0 < chars.length()) {
+            panic("chars can not remain: " + chars.toString(), tokens.get(tokens.size() - 1), sourceFile.getName());
+        }
+    }
+
+    private void addLineCommentToken() {
+        chars.append('/');
+        chars.append(stream.next());
+        while (stream.has()) {
+            if (stream.guess('\r', '\n')) { break; }
+            chars.append(stream.next());
+        }
+        addToken(Kind.COMMENT_LINE);
     }
 
     private void clear() { if (0 < chars.length()) { chars.delete(0, chars.length()); } }

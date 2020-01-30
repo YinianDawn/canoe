@@ -1,0 +1,61 @@
+
+
+
+
+
+// 声明
+
+// 类型声明
+Person :{ name string, age int }
+Person :{
+    name string
+    age int
+}
+
+Person1 :Person
+
+Worker :Person :{ salary double }
+Worker :Person :{
+    salary double
+}
+// 某类型的数组不可以被继承
+
+// 函数声明
+work() {}
+add(x int, y int) -> int { x + y }
+add(x int, y int) -> int { 
+    return x + y
+}
+
+add(a(int) -> int, y int) -> (int) -> int { 
+    return a
+}
+
+// 变量声明
+// 类型变量
+name string
+address string[]
+points int[][]
+// 函数变量
+work()
+add(int,int) -> int
+
+
+// 表达式
+Person{}
+Person{name = "name", age = 1}
+Person{name, age}
+Person{name = "name"
+     age = 1}
+Person[]{Person{},Person{}}     
+1 + 2
+
+
+
+
+
+
+
+
+
+

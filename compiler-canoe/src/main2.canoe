@@ -4,7 +4,9 @@ package main
 /** this is another comment again 
 
 */
-
+/** this is another comment again 
+    /* */
+*/
 // 不支持全包名调用 包外 即本文件夹外部文件必须通过import引入才可以使用
 
 import "canoe/main" // 引入包
@@ -39,7 +41,9 @@ import (
     "canoe/main" as _ extra Person 
     "canoe/main" as _ extra (Person,Person.+) 
 )
+c = "\u123F"
 
+c = '\''
 
 answer := 8 * 5 + 2
 answer := 8 + 5 + 2
