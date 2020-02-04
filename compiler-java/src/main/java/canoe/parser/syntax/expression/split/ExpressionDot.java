@@ -28,4 +28,9 @@ public class ExpressionDot implements Expression {
     public Token last() {
         return right.last();
     }
+
+    @Override
+    public String toString() {
+        return left.toString() + DOT.kind.value + right.toString();
+    }
 }

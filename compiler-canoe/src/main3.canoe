@@ -31,6 +31,10 @@ add(a(int) -> int, y int) -> (int) -> int {
     return a
 }
 
+compose<A, B, C>(f(B) -> C, g(A) -> B) -> (A) -> C {
+    return a -> f(g(a))
+}
+
 // 变量声明
 // 类型变量
 name string

@@ -1,14 +1,15 @@
 package canoe.util;
 
 import canoe.lexer.Tokens;
+import canoe.parser.syntax.Syntax;
 
 /**
  * @author dawn
  */
 public class PrintUtil {
 
-//    public static void print(Syntax syntax) {
-//        print("==============> Syntax: " + syntax.getTokens().getSourceFile().getName());
+    public static void print(Syntax syntax) {
+        print("==============> Syntax: " + syntax.getTokens().getSourceFile().getName());
 //        tokens.getTokens().forEach(t -> {
 //            if (t.isCR()) {
 //                print(String.format("[%d:%d:%d] CR <\\n>", t.line, t.position, t.size), true);
@@ -16,7 +17,7 @@ public class PrintUtil {
 //                print(String.format("[%d:%d:%d] %s %s", t.line, t.position, t.size, t.kind.name(), t.getValue()));
 //            }
 //        });
-//    }
+    }
 
     public static void print(Tokens tokens) {
         print("==============> Tokens: " + tokens.getSourceFile().getName());

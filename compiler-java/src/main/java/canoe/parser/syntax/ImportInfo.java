@@ -1,5 +1,6 @@
 package canoe.parser.syntax;
 
+
 import canoe.parser.syntax.imports.ImportStatement;
 
 import java.util.List;

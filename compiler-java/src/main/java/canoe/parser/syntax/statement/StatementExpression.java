@@ -23,4 +23,9 @@ public class StatementExpression implements Statement {
     public Token last() {
         return expression.last();
     }
+
+    @Override
+    public String toString() {
+        return expression.toString();
+    }
 }

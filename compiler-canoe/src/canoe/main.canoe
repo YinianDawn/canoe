@@ -1,6 +1,0 @@
-package canoe
-
-import canoe.compiler extra newCompiler
-
-newCompiler(os.args()).compile()
-

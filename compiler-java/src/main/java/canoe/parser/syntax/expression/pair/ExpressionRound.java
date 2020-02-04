@@ -27,4 +27,9 @@ public class ExpressionRound implements Expression {
     public Token last() {
         return RR;
     }
+
+    @Override
+    public String toString() {
+        return LR.kind.value + expression.toString() + RR.kind.value;
+    }
 }

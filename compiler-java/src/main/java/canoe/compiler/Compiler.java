@@ -2,6 +2,8 @@ package canoe.compiler;
 
 import canoe.lexer.Lexer;
 import canoe.lexer.Tokens;
+import canoe.parser.Parser;
+import canoe.parser.syntax.Syntax;
 
 import java.util.List;
 
@@ -41,9 +43,9 @@ public class Compiler {
 
     private static void compile(SourceFile sourceFile) {
         Tokens tokens = Lexer.parseTokens(sourceFile);
-        canoe.util.PrintUtil.print(tokens);
-//        Syntax syntax = Parser.parseSyntax(tokens);
-//        canoe.util.PrintUtil.print(syntax);
+//        canoe.util.PrintUtil.print(tokens);
+        Syntax syntax = Parser.parseSyntax(tokens);
+        canoe.util.PrintUtil.print(syntax);
 
     }
 

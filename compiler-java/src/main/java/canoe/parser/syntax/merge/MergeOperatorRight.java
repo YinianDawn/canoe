@@ -15,7 +15,7 @@ import static canoe.lexer.KindSet.getKinds;
 public class MergeOperatorRight extends Merge {
     public static final Set<Kind> OPERATOR_RIGHT  = new HashSet<>(getKinds(KindType.RIGHT));
     static {
-        OPERATOR_RIGHT.remove(Kind.DOT_DOT_DOT);
+        OPERATOR_RIGHT.remove(Kind.DOT3);
     }
     public MergeOperatorRight(Token token) {
         super(token);

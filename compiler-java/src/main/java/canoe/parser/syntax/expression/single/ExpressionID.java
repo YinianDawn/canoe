@@ -24,4 +24,9 @@ public class ExpressionID implements Expression {
     public Token last() {
         return ID;
     }
+
+    @Override
+    public String toString() {
+        return ID.value();
+    }
 }

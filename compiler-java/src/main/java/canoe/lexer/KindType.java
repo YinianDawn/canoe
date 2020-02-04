@@ -6,6 +6,7 @@ package canoe.lexer;
 public enum KindType {
 
     /** 关键词 字母数字 */ KEY_WORD,
+    /** 关键词 基本类型 */ BASIC_TYPE,
     /** 特殊标记 */ MARK,
     /** 常量 */ CONSTANT,
     /** 变量 */ VARIANT,

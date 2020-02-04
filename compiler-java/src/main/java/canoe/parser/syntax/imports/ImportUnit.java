@@ -13,9 +13,9 @@ public class ImportUnit {
     private final ImportExtra extra;
     private final ImportExcept except;
 
-    public ImportUnit(Token path, Token AS, Token id, ImportExtra extra, ImportExcept except) {
+    public ImportUnit(Token path, Token as, Token id, ImportExtra extra, ImportExcept except) {
         this.path = path;
-        this.AS = AS;
+        this.AS = as;
         this.id = id;
         this.extra = extra;
         this.except = except;

@@ -27,4 +27,9 @@ public class ExpressionFunctionCall implements Expression {
     public Token last() {
         return round.last();
     }
+
+    @Override
+    public String toString() {
+        return id.toString() + round.toString();
+    }
 }

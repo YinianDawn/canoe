@@ -4,20 +4,12 @@ import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
 import canoe.parser.syntax.imports.ImportAs;
-import canoe.parser.syntax.imports.ImportCommaAs;
 import canoe.parser.syntax.imports.ImportExcept;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author dawn
  */
-public class ImportExceptChannel extends Channel<ImportExcept> {
-
-    private Token LR = null;
-    private List<ImportCommaAs> others = new ArrayList<>();
-    private Token RR = null;
+public class ImportExceptChannel extends ImportUtilChannel<ImportExcept> {
 
     private ImportExceptChannel(Channel channel, Kind... end) {
         super(channel, end);
@@ -52,13 +44,7 @@ public class ImportExceptChannel extends Channel<ImportExcept> {
             case "EXCEPT LR ID": removeLast(); recover();
                 LR = (Token) removeLast();
                 addLast(ImportAsChannel.make(this, Kind.COMMA, Kind.RR));
-                while (glanceSkipSpaces().is(Kind.COMMA)) {
-                    dropSpaces();
-                    Token comma = next();
-                    dropSpacesCR();
-                    ImportAs importAs = ImportAsChannel.make(this, Kind.COMMA, Kind.RR);
-                    others.add(new ImportCommaAs(comma, importAs));
-                }
+                addOthers();
                 dropSpacesCR();
                 if (glance().not(Kind.RR)) {
                     panic("must be )", glance());

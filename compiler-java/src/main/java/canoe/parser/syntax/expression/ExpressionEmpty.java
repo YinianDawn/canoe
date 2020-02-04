@@ -24,4 +24,9 @@ public class ExpressionEmpty implements Expression {
     public Token last() {
         return left;
     }
+
+    @Override
+    public String toString() {
+        return "";
+    }
 }

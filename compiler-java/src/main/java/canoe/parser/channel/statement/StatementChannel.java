@@ -5,16 +5,14 @@ import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
 import canoe.parser.channel.expression.ExpressionChannel;
-import canoe.parser.channel.statement.condition.IfChannel;
 import canoe.parser.syntax.expression.Expression;
-import canoe.parser.syntax.expression.ExpressionOpMiddle;
 import canoe.parser.syntax.expression.single.ExpressionConstant;
 import canoe.parser.syntax.expression.single.ExpressionID;
+import canoe.parser.syntax.expression.split.ExpressionDot;
 import canoe.parser.syntax.merge.MergeAssign;
 import canoe.parser.syntax.merge.MergeOperatorMiddle;
 import canoe.parser.syntax.merge.MergeOperatorRight;
 import canoe.parser.syntax.statement.Statement;
-import canoe.parser.syntax.statement.StatementAssign;
 import canoe.parser.syntax.statement.StatementEmpty;
 import canoe.parser.syntax.statement.StatementExpression;
 
@@ -67,7 +65,7 @@ public class StatementChannel extends Channel<Statement> {
         if (!contains(next, MergeAssign.OPERATOR_ASSIGN, MergeOperatorRight.OPERATOR_RIGHT)) {
             switch (next.kind) {
                 // 直接能确定语句类型的就不一个一个吃了
-                case IF: data = IfChannel.make(this, extend(Kind.CR)); dropSpaces(); return false;
+//                case IF: data = IfChannel.make(this, extend(Kind.CR)); dropSpaces(); return false;
 
 //                case MATCH: data = MatchChannel.produce(this, extend(Kind.CR));return false;
 //                case LOOP: data = LoopChannel.produce(this, extend(Kind.CR)); return false;
@@ -127,12 +125,13 @@ public class StatementChannel extends Channel<Statement> {
 
         switch (status) {
             case "ExpressionID":
-            case "StatementAssign":
-            case "ExpressionOpMiddle":
-                break;
-
+//            case "StatementAssign":
+//            case "ExpressionOpMiddle":
+//
             case "ExpressionID DOT":
-            case "ExpressionID COMMA":
+//            case "ExpressionID COMMA":
+
+            case "ExpressionID DOT ExpressionID":
                 break;
 
             default: panic("wrong statement.");
@@ -148,11 +147,19 @@ public class StatementChannel extends Channel<Statement> {
 
         Token op;
         switch (status) {
-            case "ExpressionID COMMA ExpressionID":
-                // 检查运算符优先级
+//            case "ExpressionID COMMA ExpressionID":
+//                // 检查运算符优先级
+//                op = (Token) o2;
+//                if (priority(op, glanceSkipSpaces())) {
+//                    addLast(new ExpressionOpMiddle((Expression) o3, op, (Expression) o1));
+//                    return true;
+//                }
+//                break;
+            case "ExpressionID DOT ExpressionID":
                 op = (Token) o2;
                 if (priority(op, glanceSkipSpaces())) {
-                    addLast(new ExpressionOpMiddle((Expression) o3, op, (Expression) o1));
+                    addLast(new ExpressionDot((Expression) o3, op, (Expression) o1));
+                    dropSpaces().refuseAll();
                     return true;
                 }
                 break;
@@ -171,13 +178,13 @@ public class StatementChannel extends Channel<Statement> {
         Object o2 = removeLast();
         String status = parseName(o2) + " " + parseName(o1);
         switch (status) {
-            case "ExpressionOpMiddle MergeAssign":
-            case "ExpressionID MergeAssign":
-                dropSpaces();
-                Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
-                addLast(new StatementAssign((Expression) o2, ((MergeAssign) o1).getToken(), expression));
-                dropSpaces().over(this::full).refuseAll();
-                return true;
+//            case "ExpressionOpMiddle MergeAssign":
+//            case "ExpressionID MergeAssign":
+//                dropSpaces();
+//                Expression expression = ExpressionChannel.produce(this, extend(Kind.CR));
+//                addLast(new StatementAssign((Expression) o2, ((MergeAssign) o1).getToken(), expression));
+//                dropSpaces().over(this::full).refuseAll();
+//                return true;
 //            case "ExpressionID MergeOperatorRight":
 //                addLast(new ExpressionOpRight((Expression) o2, ((MergeOperatorRight) o1).getToken()));
 //                ignoreSpace().refuseCR().over(this::full);
@@ -195,11 +202,11 @@ public class StatementChannel extends Channel<Statement> {
 
         if (o1 instanceof Token) {
             Token token = (Token) o1;
-            if (MergeAssign.OPERATOR_ASSIGN.contains(token.kind)) {
-                addLast(new MergeAssign(token));
-                ignoreSpaces();
-                return true;
-            }
+//            if (MergeAssign.OPERATOR_ASSIGN.contains(token.kind)) {
+//                addLast(new MergeAssign(token));
+//                ignoreSpaces();
+//                return true;
+//            }
 //            if (RIGHT_OPERATOR.contains(token.kind)) {
 //                addLast(new MergeOperatorRight(token));
 //                ignoreSpace();
@@ -210,9 +217,9 @@ public class StatementChannel extends Channel<Statement> {
                     ignoreSpaces();
                     if (channelSize(1)) { over(this::full); }
                     return true;
-                case COMMA:
-                    dropSpaces();
-                    break;
+//                case COMMA:
+//                    dropSpaces();
+//                    break;
                 default:
             }
 //            if (token.is(Kind.RETURN)) {

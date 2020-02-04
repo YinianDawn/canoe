@@ -20,15 +20,16 @@ public enum Kind {
     EXTRA  ("extra",   KEY_WORD),
     EXCEPT ("except",  KEY_WORD),
 
-    OPENED("opened",   KEY_WORD),
-    CLOSED("closed",   KEY_WORD),
-    STATIC("static",   KEY_WORD),
-    NATIVE("native",   KEY_WORD),
-    ENUM  ("enum",     KEY_WORD),
-    LAZY  ("lazy",     KEY_WORD),
+    /** 包外可见 */ OPENED("opened", KEY_WORD),
+    /** 文件可见 */ CLOSED("closed", KEY_WORD),
+    /** 本地方法 */ NATIVE("native", KEY_WORD),
+    /** 静态对象 */ STATIC("static", KEY_WORD),
+    /** 单例类型 */ UNIQUE("unique", KEY_WORD),
+    /** 枚举类型 */ ENUM  ("enum",   KEY_WORD),
+    /** 懒惰加载 */ LAZY  ("lazy",   KEY_WORD),
 
-    GOTO  ("goto",     KEY_WORD),
-    RETURN("return",   KEY_WORD),
+    GOTO  ("goto",   KEY_WORD),
+    RETURN("return", KEY_WORD),
 
     /**
      * // 这是一个函数
@@ -74,14 +75,20 @@ public enum Kind {
 
     TRUE ("true",  KEY_WORD, CONSTANT),
     FALSE("false", KEY_WORD, CONSTANT),
+    NIL  ("nil",   KEY_WORD, CONSTANT),
 
     /** 基本类型 */
-    INT8   ("int8",    KEY_WORD),
-    INT16  ("int16",   KEY_WORD),
-    INT32  ("int32",   KEY_WORD),
-    INT64  ("int64",   KEY_WORD),
-    FLOAT32("float32", KEY_WORD),
-    FLOAT64("float64", KEY_WORD),
+    BOOL   ("bool",    KEY_WORD, BASIC_TYPE),
+    UINT8  ("uint8",   KEY_WORD, BASIC_TYPE),
+    UINT16 ("uint16",  KEY_WORD, BASIC_TYPE),
+    UINT32 ("uint32",  KEY_WORD, BASIC_TYPE),
+    UINT64 ("uint64",  KEY_WORD, BASIC_TYPE),
+    INT8   ("int8",    KEY_WORD, BASIC_TYPE),
+    INT16  ("int16",   KEY_WORD, BASIC_TYPE),
+    INT32  ("int32",   KEY_WORD, BASIC_TYPE),
+    INT64  ("int64",   KEY_WORD, BASIC_TYPE),
+    FLOAT32("float32", KEY_WORD, BASIC_TYPE),
+    FLOAT64("float64", KEY_WORD, BASIC_TYPE),
 
     // ================ 符号 ================
 

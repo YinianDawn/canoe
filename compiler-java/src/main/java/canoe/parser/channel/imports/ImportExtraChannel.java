@@ -3,19 +3,13 @@ package canoe.parser.channel.imports;
 import canoe.lexer.Kind;
 import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
-import canoe.parser.syntax.imports.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import canoe.parser.syntax.imports.ImportAs;
+import canoe.parser.syntax.imports.ImportExtra;
 
 /**
  * @author dawn
  */
-public class ImportExtraChannel extends Channel<ImportExtra> {
-
-    private Token LR = null;
-    private List<ImportCommaAs> others = new ArrayList<>();
-    private Token RR = null;
+public class ImportExtraChannel extends ImportUtilChannel<ImportExtra> {
 
     private ImportExtraChannel(Channel channel, Kind... end) {
         super(channel, end);
@@ -50,13 +44,7 @@ public class ImportExtraChannel extends Channel<ImportExtra> {
             case "EXTRA LR ID": removeLast(); recover();
                 LR = (Token) removeLast();
                 addLast(ImportAsChannel.make(this, Kind.COMMA, Kind.RR));
-                while (glanceSkipSpaces().is(Kind.COMMA)) {
-                    dropSpaces();
-                    Token comma = next();
-                    dropSpacesCR();
-                    ImportAs importAs = ImportAsChannel.make(this, Kind.COMMA, Kind.RR);
-                    others.add(new ImportCommaAs(comma, importAs));
-                }
+                addOthers();
                 dropSpacesCR();
                 if (glance().not(Kind.RR)) {
                     panic("must be )", glance());
