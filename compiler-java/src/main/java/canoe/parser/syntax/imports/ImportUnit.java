@@ -21,4 +21,11 @@ public class ImportUnit {
         this.except = except;
     }
 
+    @Override
+    public String toString() {
+        return String.format("\"%s\"%s%s%s", path.value(),
+                null == AS ? "" : (" " + AS.kind.value + " " + id.value()),
+                null == extra ? "" : extra.toString(),
+                null == except ? "" : except.toString());
+    }
 }

@@ -3,6 +3,7 @@ package canoe.parser.syntax.imports;
 import canoe.lexer.Token;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author dawn
@@ -23,4 +24,11 @@ public class ImportExtra {
         this.RR = rr;
     }
 
+    @Override
+    public String toString() {
+        if (null == LR) {
+            return EXTRA.value() + " " + first.toString();
+        }
+        return EXTRA.value() + LR.value() + first.toString() + others.stream().map(Object::toString).collect(Collectors.joining())+ RR.value();
+    }
 }

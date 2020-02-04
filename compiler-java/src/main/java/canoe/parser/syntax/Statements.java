@@ -1,13 +1,15 @@
 package canoe.parser.syntax;
 
 import canoe.parser.syntax.statement.Statement;
+import canoe.util.Dump;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author dawn
  */
-public class Statements {
+public class Statements implements Dump {
 
     private List<Statement> statements;
 
@@ -15,4 +17,8 @@ public class Statements {
         this.statements = statements;
     }
 
+    @Override
+    public void dump(Consumer<String> print) {
+        statements.forEach(s -> print.accept(s.toString()));
+    }
 }

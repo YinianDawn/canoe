@@ -22,4 +22,16 @@ public class Syntax {
     public Tokens getTokens() {
         return tokens;
     }
+
+    public PackageInfo getPackageInfo() {
+        return packageInfo;
+    }
+
+    public ImportInfo getImportInfo() {
+        return importInfo;
+    }
+
+    public Statements getStatements() {
+        return statements;
+    }
 }

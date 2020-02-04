@@ -3,6 +3,8 @@ package canoe.parser.syntax.imports;
 import canoe.lexer.Token;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * @author dawn
@@ -21,4 +23,8 @@ public class ImportMany implements ImportStatement {
         this.RR = rr;
     }
 
+    @Override
+    public void dump(Consumer<String> print) {
+        print.accept(IMPORT.value() + LR.value() + units.stream().map(ImportUnit::toString).collect(Collectors.joining(";")) + RR.value());
+    }
 }

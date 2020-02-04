@@ -14,5 +14,8 @@ public class ImportCommaAs {
         this.COMMA = comma;
         this.as = as;
     }
-
+    @Override
+    public String toString() {
+        return COMMA.value() + as.toString();
+    }
 }

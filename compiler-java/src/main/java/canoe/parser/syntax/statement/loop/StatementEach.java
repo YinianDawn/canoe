@@ -1,4 +1,4 @@
-package canoe.ast.statement.loop;
+package canoe.parser.syntax.statement.loop;
 
 import canoe.ast.expression.Expression;
 import canoe.ast.expression.ExpressionID;

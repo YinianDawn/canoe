@@ -1,11 +1,14 @@
 package canoe.parser.syntax;
 
 import canoe.lexer.Token;
+import canoe.util.Dump;
+
+import java.util.function.Consumer;
 
 /**
  * @author dawn
  */
-public class PackageInfo {
+public class PackageInfo implements Dump {
 
     private final Token PACKAGE;
     private final Token name;
@@ -15,8 +18,8 @@ public class PackageInfo {
         this.name = name;
     }
 
-    public String getName() {
-        return name.value();
+    @Override
+    public void dump(Consumer<String> print) {
+        print.accept(PACKAGE.kind.value + " " + name.value());
     }
-
 }

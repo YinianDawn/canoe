@@ -1,5 +1,6 @@
 package canoe.compiler;
 
+import canoe.ast.AST;
 import canoe.lexer.Lexer;
 import canoe.lexer.Tokens;
 import canoe.parser.Parser;
@@ -43,9 +44,11 @@ public class Compiler {
 
     private static void compile(SourceFile sourceFile) {
         Tokens tokens = Lexer.parseTokens(sourceFile);
-//        canoe.util.PrintUtil.print(tokens);
+        canoe.util.PrintUtil.print(tokens);
         Syntax syntax = Parser.parseSyntax(tokens);
         canoe.util.PrintUtil.print(syntax);
+        AST ast = AST.parseAST(syntax);
+        canoe.util.PrintUtil.print(ast);
 
     }
 
