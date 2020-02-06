@@ -7,24 +7,23 @@ import canoe.lexer.Token;
  */
 public class ImportUnit {
 
-    private final Token path;
-    private final Token AS;
     private final Token id;
-    private final ImportExtra extra;
-    private final ImportExcept except;
+    private final Token path;
+    private final ImportInclude extra;
+    private final ImportExclude except;
 
-    public ImportUnit(Token path, Token as, Token id, ImportExtra extra, ImportExcept except) {
-        this.path = path;
-        this.AS = as;
+    public ImportUnit(Token id, Token path, ImportInclude extra, ImportExclude except) {
         this.id = id;
+        this.path = path;
         this.extra = extra;
         this.except = except;
     }
 
     @Override
     public String toString() {
-        return String.format("\"%s\"%s%s%s", path.value(),
-                null == AS ? "" : (" " + AS.kind.value + " " + id.value()),
+        return String.format("%s\"%s\"%s%s",
+                null == id ? "" : id.value() + " ",
+                path.value(),
                 null == extra ? "" : extra.toString(),
                 null == except ? "" : except.toString());
     }

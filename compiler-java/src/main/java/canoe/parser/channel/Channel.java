@@ -249,7 +249,7 @@ public class Channel<T> {
         PRIORITY_OPERATOR.add(Kind.RB);
 
         PRIORITY_OPERATOR.add(Kind.DOT);
-        PRIORITY_OPERATOR.add(Kind.DOT3);
+        PRIORITY_OPERATOR.add(Kind.DOT_DOT_DOT);
 
         PRIORITY_OPERATOR.add(Kind.BIT_NOT);
         PRIORITY_OPERATOR.add(Kind.ADD);

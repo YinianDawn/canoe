@@ -5,14 +5,14 @@ import canoe.lexer.Tokens;
 /**
  * @author dawn
  */
-public class Syntax {
+public class ConcreteSyntax {
 
     private Tokens tokens;
     private PackageInfo packageInfo;
     private ImportInfo importInfo;
     private Statements statements;
 
-    public Syntax(Tokens tokens, PackageInfo packageInfo, ImportInfo importInfo, Statements statements) {
+    public ConcreteSyntax(Tokens tokens, PackageInfo packageInfo, ImportInfo importInfo, Statements statements) {
         this.tokens = tokens;
         this.packageInfo = packageInfo;
         this.importInfo = importInfo;

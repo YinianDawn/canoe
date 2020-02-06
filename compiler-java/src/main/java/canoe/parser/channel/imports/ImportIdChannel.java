@@ -1,20 +1,16 @@
 package canoe.parser.channel.imports;
 
 import canoe.lexer.Kind;
-import canoe.lexer.Token;
 import canoe.parser.channel.Channel;
-import canoe.parser.syntax.imports.ImportAs;
+import canoe.parser.syntax.imports.ImportId;
 import canoe.parser.syntax.merge.MergeOperatorOverload;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author dawn
  */
-public class ImportAsChannel extends Channel<ImportAs> {
+public class ImportIdChannel extends Channel<ImportId> {
 
-    private ImportAsChannel(Channel channel, Kind... end) {
+    private ImportIdChannel(Channel channel, Kind... end) {
         super(channel, end);
         if (glance().not(Kind.ID)) {
             panic("must be id string", glance());
@@ -29,7 +25,7 @@ public class ImportAsChannel extends Channel<ImportAs> {
         switch (status) {
             case "ID": over(this::full).acceptSpaces().accept(Kind.DOT).refuseAll(); break;
 
-            case "ID SPACES": removeLast(); over(this::full).accept(Kind.AS).refuseAll(); break;
+            case "ID SPACES": removeLast(); over(this::full).refuseAll(); break;
 
             case "ID AS": acceptSpaces().refuseAll(); break;
             case "ID AS SPACES": removeLast(); accept(Kind.ID).refuseAll(); break;
@@ -45,25 +41,25 @@ public class ImportAsChannel extends Channel<ImportAs> {
     }
 
     private void full() {
-        List<Token> info = new ArrayList<>();
-        Token as = null;
-        Token id = null;
-        if (3 <= channelSize()) {
-            id = getLastToken(); removeLast();
-            as = getLastToken(); removeLast();
-            if (as.not(Kind.AS)) {
-                addLast(as);
-                addLast(id);
-                as = null;
-                id = null;
-            }
-        }
-        while (channelFull()) { info.add((Token) removeFirst()); }
-        data = new ImportAs(info, as, id);
+//        List<Token> info = new ArrayList<>();
+//        Token as = null;
+//        Token id = null;
+//        if (3 <= channelSize()) {
+//            id = getLastToken(); removeLast();
+//            as = getLastToken(); removeLast();
+//            if (as.not(Kind.AS)) {
+//                addLast(as);
+//                addLast(id);
+//                as = null;
+//                id = null;
+//            }
+//        }
+//        while (channelFull()) { info.add((Token) removeFirst()); }
+        data = new ImportId(null, null);
     }
 
-    static ImportAs make(Channel channel, Kind... end) {
-        return new ImportAsChannel(channel, end).make();
+    static ImportId make(Channel channel, Kind... end) {
+        return new ImportIdChannel(channel, end).make();
     }
 
 }

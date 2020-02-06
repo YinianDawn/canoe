@@ -18,6 +18,10 @@ public class PackageInfo implements Dump {
         this.name = name;
     }
 
+    public Token getName() {
+        return 0 < name.value().length() ? name : null;
+    }
+
     @Override
     public void dump(Consumer<String> print) {
         print.accept(PACKAGE.kind.value + " " + name.value());

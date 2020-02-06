@@ -5,6 +5,7 @@ import canoe.compiler.SourceFile;
 import java.io.File;
 import java.util.*;
 
+import static canoe.lexer.KindSet.BASIC_TYPES;
 import static canoe.lexer.KindSet.getKinds;
 import static canoe.util.PanicUtil.panic;
 
@@ -29,14 +30,14 @@ public class Lexer {
     private static HashMap<Kind, HashMap<Kind, HashMap<Kind, Kind>>> THREE = new HashMap<>();
     private static HashMap<Kind, HashMap<Kind, HashMap<Kind, HashMap<Kind, Kind>>>> FOUR = new HashMap<>();
     static {
-        HashMap<Character, Kind> kinds = new HashMap<>(256);
+        HashMap<Character, Kind> single = new HashMap<>(256);
         for (Kind kind : Kind.values()) {
             if (0 == kind.types.length || kind.types[0] == KindType.KEY_WORD) { continue; }
             if (null != kind.value && 1 == kind.value.length()) {
-                kinds.put(kind.value.charAt(0), kind);
+                single.put(kind.value.charAt(0), kind);
             }
         }
-        kinds.put(' ', Kind.BLANK);
+        single.put(' ', Kind.BLANK);
         Kind kind1, kind2, kind3, kind4;
         for (Kind kind : Kind.values()) {
             if (0 == kind.types.length
@@ -45,13 +46,13 @@ public class Lexer {
                     || kind.types[0] == KindType.VARIANT
                     || kind.types[0] == KindType.COMMENT
                     || kind.types[0] == KindType.MARK
-                    || kind == Kind.DOT3) { continue; }
+                    || kind == Kind.DOT_DOT_DOT) { continue; }
             if (null != kind.value && 1 < kind.value.length()) {
                 int size = kind.value.length();
+                kind1 = single.get(kind.value.charAt(0));
+                kind2 = single.get(kind.value.charAt(1));
                 switch (size) {
                     case 2:
-                        kind1 = kinds.get(kind.value.charAt(0));
-                        kind2 = kinds.get(kind.value.charAt(1));
                         if (null != kind1 && null != kind2) {
                             HashMap<Kind, Kind> map2 = TWO.computeIfAbsent(kind1, k ->new HashMap<>());
                             map2.put(kind2, kind);
@@ -59,9 +60,7 @@ public class Lexer {
                         }
                         break;
                     case 3:
-                        kind1 = kinds.get(kind.value.charAt(0));
-                        kind2 = kinds.get(kind.value.charAt(1));
-                        kind3 = kinds.get(kind.value.charAt(2));
+                        kind3 = single.get(kind.value.charAt(2));
                         if (null != kind1 && null != kind2 && null != kind3) {
                             HashMap<Kind, HashMap<Kind, Kind>> map3 = THREE.computeIfAbsent(kind1, k ->new HashMap<>());
                             HashMap<Kind, Kind> map2 = map3.computeIfAbsent(kind2, k -> new HashMap<>());
@@ -70,10 +69,8 @@ public class Lexer {
                         }
                         break;
                     case 4:
-                        kind1 = kinds.get(kind.value.charAt(0));
-                        kind2 = kinds.get(kind.value.charAt(1));
-                        kind3 = kinds.get(kind.value.charAt(2));
-                        kind4 = kinds.get(kind.value.charAt(3));
+                        kind3 = single.get(kind.value.charAt(2));
+                        kind4 = single.get(kind.value.charAt(3));
                         if (null != kind1 && null != kind2 && null != kind3 && null != kind4) {
                             HashMap<Kind, HashMap<Kind, HashMap<Kind, Kind>>> map4 = FOUR.computeIfAbsent(kind1, k ->new HashMap<>());
                             HashMap<Kind, HashMap<Kind, Kind>> map3 = map4.computeIfAbsent(kind2, k -> new HashMap<>());
@@ -182,12 +179,14 @@ public class Lexer {
                         tokens.add(new Token(Kind.UL, next1.line, next1.position, 1, null));
                         continue;
                     }
-                    if (next2.is(Kind.DOT) && next3.is(Kind.DOT) && next4.is(Kind.DOT)) {
-                        tokens.add(next1);
-                        tokens.add(new Token(Kind.DOT3, next2.line, next2.position, 3, null));
-                        i += 3; continue;
-                    }
                 default:
+            }
+            if (next2.is(Kind.DOT) && next3.is(Kind.DOT) && next4.is(Kind.DOT)) {
+                if (next1.is(Kind.ID) || BASIC_TYPES.contains(next1.kind)) {
+                    tokens.add(next1);
+                    tokens.add(new Token(Kind.DOT_DOT_DOT, next2.line, next2.position, 3, null));
+                    i += 3; continue;
+                }
             }
 
             map4 = FOUR.get(next1.kind);
@@ -268,16 +267,17 @@ public class Lexer {
             case '?': addToken(); addToken(Kind.ET); position++; break;
             case ':': addToken(); addToken(Kind.COLON); position++; break;
 
+            case '!': addToken(); addToken(Kind.LOGIC_NOT); position++; break;
+
             case '&': addToken(); addToken(Kind.BIT_AND); position++; break;
             case '|': addToken(); addToken(Kind.BIT_OR);  position++; break;
-            case '!': addToken(); addToken(Kind.BIT_NOT); position++; break;
+            case '~': addToken(); addToken(Kind.BIT_NOT);  position++; break;
 
             case '+': addToken(); addToken(Kind.ADD); position++; break;
             case '-': addToken(); addToken(Kind.SUB); position++; break;
             case '*': addToken(); addToken(Kind.MUL); position++; break;
             case '%': addToken(); addToken(Kind.MOD); position++; break;
-
-            case '^': addToken(); addToken(Kind.BIT_XOR); position++; break;
+            case '^': addToken(); addToken(Kind.EXP); position++; break;
 
             case '.': addToken(); addToken(Kind.DOT); position++; break;
 
@@ -292,11 +292,10 @@ public class Lexer {
             case ')': addToken(); addToken(Kind.RR); position++; break;
 
             case '@': addToken(); addToken(Kind.AT);    position++; break;
-
             case '#': addToken(); addToken(Kind.HASH);  position++; break;
             case '`': addToken(); addToken(Kind.ANTI);  position++; break;
-            case '~': addToken(); addToken(Kind.WAVE);  position++; break;
             case '$': addToken(); addToken(Kind.DOLLAR);  position++; break;
+            case '\\': addToken(); addToken(Kind.BACK);  position++; break;
 
             default: chars.append(c);
         }

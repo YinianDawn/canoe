@@ -15,15 +15,15 @@ public enum Kind {
     // ================ 关键字 ================
 
     PACKAGE("package", KEY_WORD),
+
     IMPORT ("import",  KEY_WORD),
-    AS     ("as",      KEY_WORD),
-    EXTRA  ("extra",   KEY_WORD),
-    EXCEPT ("except",  KEY_WORD),
+    INCLUDE("include", KEY_WORD),
+    EXCLUDE("exclude", KEY_WORD),
 
     /** 包外可见 */ OPENED("opened", KEY_WORD),
     /** 文件可见 */ CLOSED("closed", KEY_WORD),
     /** 本地方法 */ NATIVE("native", KEY_WORD),
-    /** 静态对象 */ STATIC("static", KEY_WORD),
+    /** 静态函数 */ STATIC("static", KEY_WORD),
     /** 单例类型 */ UNIQUE("unique", KEY_WORD),
     /** 枚举类型 */ ENUM  ("enum",   KEY_WORD),
     /** 懒惰加载 */ LAZY  ("lazy",   KEY_WORD),
@@ -110,7 +110,7 @@ public enum Kind {
     // 逻辑运算符
     /** 逻辑与 */ LOGIC_AND("&&", OPERATOR, OPERATOR_LOGIC, MIDDLE, OVERLOAD),
     /** 逻辑或 */ LOGIC_OR ("||", OPERATOR, OPERATOR_LOGIC, MIDDLE, OVERLOAD),
-    /** 逻辑非 与位取反相同 省略 */ // LOGIC_NOT("!", OPERATOR, OPERATOR_LOGIC, LEFT),
+    /** 逻辑非 */ LOGIC_NOT("!",  OPERATOR, OPERATOR_LOGIC, LEFT),
 
     // 数学运算符
     ADD("+", OPERATOR, OPERATOR_MATH, MIDDLE, LEFT, OVERLOAD),
@@ -118,12 +118,14 @@ public enum Kind {
     MUL("*", OPERATOR, OPERATOR_MATH, MIDDLE, OVERLOAD),
     DIV("/", OPERATOR, OPERATOR_MATH, MIDDLE, OVERLOAD),
     MOD("%", OPERATOR, OPERATOR_MATH, MIDDLE, OVERLOAD),
+    EXP("^", OPERATOR, OPERATOR_MATH, MIDDLE, OVERLOAD),
 
     // 位运算符
     BIT_AND       ("&",   OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_OR        ("|",   OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
-    BIT_XOR       ("^",   OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
-    BIT_NOT       ("!",   OPERATOR, OPERATOR_BIT, LEFT, OPERATOR_LOGIC),
+    BIT_XOR       ("&|",  OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
+    BIT_XOR2      ("|&",  OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
+    BIT_NOT       ("~",   OPERATOR, OPERATOR_BIT, LEFT),
     BIT_LEFT      ("<<",  OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_RIGHT     (">>",  OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
     BIT_RIGHT_ZERO(">>>", OPERATOR, OPERATOR_BIT, MIDDLE, OVERLOAD),
@@ -142,18 +144,20 @@ public enum Kind {
     ASSIGN_MUL("*=", OPERATOR, OPERATOR_ASSIGN),
     ASSIGN_DIV("/=", OPERATOR, OPERATOR_ASSIGN),
     ASSIGN_MOD("%=", OPERATOR, OPERATOR_ASSIGN),
+    ASSIGN_EXP("^=", OPERATOR, OPERATOR_ASSIGN),
 
     ASSIGN_BIT_AND       ("&=",   OPERATOR, OPERATOR_ASSIGN),
     ASSIGN_BIT_OR        ("|=",   OPERATOR, OPERATOR_ASSIGN),
-    ASSIGN_BIT_XOR       ("^=",   OPERATOR, OPERATOR_ASSIGN),
+    ASSIGN_BIT_XOR       ("&|=",  OPERATOR, OPERATOR_ASSIGN),
+    ASSIGN_BIT_XOR2      ("|&=",  OPERATOR, OPERATOR_ASSIGN),
     ASSIGN_BIT_LEFT      ("<<=",  OPERATOR, OPERATOR_ASSIGN),
     ASSIGN_BIT_RIGHT     (">>=",  OPERATOR, OPERATOR_ASSIGN),
     ASSIGN_BIT_RIGHT_ZERO(">>>=", OPERATOR, OPERATOR_ASSIGN),
 
-    DOT(".", OPERATOR, LEFT),
+    DOT(".", OPERATOR, MIDDLE, LEFT),
 
     /** 函数输入可变长度 必须最后一个参数才允许 */
-    DOT3("...", OPERATOR, RIGHT),
+    DOT_DOT_DOT("...", OPERATOR, RIGHT),
 
     /** 方法返回值和lambda表达式 */
     POINT("->", OPERATOR, MIDDLE),
@@ -185,8 +189,6 @@ public enum Kind {
     HASH("#", OPERATOR, LEFT),
     /** 暂时无用 */
     ANTI("`", OPERATOR),
-    /** 暂时无用 */
-    WAVE("~", OPERATOR),
     /** 暂时无用 */
     DOLLAR("$", OPERATOR),
     /** 暂时无用 */

@@ -13,12 +13,15 @@ import static canoe.lexer.KindSet.getKinds;
  * @author dawn
  */
 public class MergeOperatorLeft extends Merge {
-    public static final Set<Kind> OPERATOR_LEFT   = new HashSet<>(getKinds(KindType.LEFT));
+    public static final Set<Kind> OPERATOR_LEFT = new HashSet<>(getKinds(KindType.LEFT));
     static {
         OPERATOR_LEFT.remove(Kind.DOT);
         OPERATOR_LEFT.remove(Kind.COLON);
         OPERATOR_LEFT.remove(Kind.AT);
         OPERATOR_LEFT.remove(Kind.HASH);
+        OPERATOR_LEFT.remove(Kind.ANTI);
+        OPERATOR_LEFT.remove(Kind.DOLLAR);
+        OPERATOR_LEFT.remove(Kind.BACK);
     }
     public MergeOperatorLeft(Token token) {
         super(token);

@@ -21,7 +21,7 @@ public class PackageChannel extends Channel<PackageInfo> {
     protected void init() {
         if (glance().not(Kind.PACKAGE)) {
             data = new PackageInfo(new Token(Kind.PACKAGE, 1, 1, 7, null),
-                    new Token(Kind.ID, 1, 1, 7, ""));
+                    new Token(Kind.UL, 1, 1, 1, "_"));
         }
         super.init();
     }

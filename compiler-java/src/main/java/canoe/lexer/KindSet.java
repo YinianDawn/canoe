@@ -24,6 +24,7 @@ public class KindSet {
     }
 
     public static final Set<Kind> KEY_WORDS = new HashSet<>(getKinds(KindType.KEY_WORD));
+    public static final Set<Kind> BASIC_TYPES = new HashSet<>(getKinds(KindType.BASIC_TYPE));
 
 //    public static final Set<Kind> OPERATOR_RELATION = new HashSet<>(getKinds(KindType.OPERATOR_RELATION));
 //    public static final Set<Kind> OPERATOR_LOGIC  = new HashSet<>(getKinds(KindType.OPERATOR_LOGIC));

@@ -1,4 +1,4 @@
 
-import "canoe/compiler" as .
+import . "canoe/compiler"
 
 Compiler.new(os.args()).compile()

@@ -1,16 +1,15 @@
 package canoe.util;
 
-import canoe.ast.AST;
 import canoe.lexer.Tokens;
-import canoe.parser.syntax.Syntax;
+import canoe.parser.syntax.ConcreteSyntax;
 
 /**
  * @author dawn
  */
 public class PrintUtil {
 
-    public static void print(AST ast) {
-        print("==============> AST: " + ast);
+//    public static void print(Ast ast) {
+//        print("==============> Ast: " + ast);
 //        tokens.getTokens().forEach(t -> {
 //            if (t.isCR()) {
 //                print(String.format("[%d:%d:%d] CR <\\n>", t.line, t.position, t.size), true);
@@ -18,13 +17,14 @@ public class PrintUtil {
 //                print(String.format("[%d:%d:%d] %s %s", t.line, t.position, t.size, t.kind.name(), t.getValue()));
 //            }
 //        });
-    }
+//    }
 
-    public static void print(Syntax syntax) {
+    public static void print(ConcreteSyntax syntax) {
         print("==============> Syntax: " + syntax.getTokens().getSourceFile().getName());
         syntax.getPackageInfo().dump(PrintUtil::print);
-        syntax.getImportInfo().dump(PrintUtil::print);
+        syntax.getImportInfo().dump(s -> print(s, true));
         syntax.getStatements().dump(PrintUtil::print);
+        System.out.println();
     }
 
     public static void print(Tokens tokens) {
@@ -36,6 +36,7 @@ public class PrintUtil {
                 print(String.format("[%d:%d:%d] %s %s", t.line, t.position, t.size, t.kind.name(), t.value()));
             }
         });
+        System.out.println();
     }
 
     static void print(String info) {
