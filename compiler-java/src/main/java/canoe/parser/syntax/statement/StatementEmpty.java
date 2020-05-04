@@ -24,4 +24,9 @@ public class StatementEmpty implements Statement {
     public Token last() {
         return left;
     }
+
+    @Override
+    public String getId() {
+        return null;
+    }
 }

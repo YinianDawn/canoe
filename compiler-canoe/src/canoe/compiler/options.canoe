@@ -1,7 +1,7 @@
 package canoe.compiler
 
-MINUS := "-"
-MINUS_MINUS := "--"
+MINUS :closed := "-"
+MINUS_MINUS :closed := "--"
 
 Option {
     sourceFiles :List<SourceFile>

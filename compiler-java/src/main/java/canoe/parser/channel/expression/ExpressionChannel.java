@@ -293,7 +293,7 @@ public class ExpressionChannel extends Channel<Expression> {
 //                tryRemoveSpace();
 //                return true;
             case "ExpressionID ExpressionRound":
-                addLast(new ExpressionFunctionCall((ExpressionID) o2, (ExpressionRound) o1));
+                addLast(new ExpressionFunctionCall(((ExpressionID) o2).getID(), (ExpressionRound) o1));
                 tryRemoveSpacesOrCR().tryAcceptPair()
                         .accept(Kind.DOT)
                         .refuseAll();

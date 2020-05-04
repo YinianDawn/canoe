@@ -18,6 +18,10 @@ public class ImportSingle implements ImportStatement {
         this.unit = unit;
     }
 
+    public ImportUnit getUnit() {
+        return unit;
+    }
+
     @Override
     public void dump(Consumer<String> print) {
         print.accept(IMPORT.kind.value + " " + unit.toString());

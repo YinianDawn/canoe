@@ -25,6 +25,10 @@ public class ExpressionID implements Expression {
         return ID;
     }
 
+    public Token getID() {
+        return ID;
+    }
+
     @Override
     public String toString() {
         return ID.value();

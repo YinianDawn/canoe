@@ -12,19 +12,19 @@ import canoe.parser.syntax.imports.ImportUnit;
  */
 public class ImportUnitChannel extends Channel<ImportUnit> {
 
-    private ImportInclude extra = null;
-    private ImportExclude except = null;
+    private ImportInclude include = null;
+    private ImportExclude exclude = null;
 
     private ImportUnitChannel(Channel channel, Kind... end) {
         super(channel, end);
         switch (glance().kind) {
             case UL:
-            case DOT:
+            case MUL:
             case ID:
             case STRING: break;
             default: panic("wrong " + Kind.IMPORT.value + " statement", glance());
         }
-        accept(Kind.UL, Kind.DOT, Kind.ID, Kind.STRING).refuseAll();
+        accept(Kind.UL, Kind.MUL, Kind.ID, Kind.STRING).refuseAll();
         init();
     }
 
@@ -44,10 +44,10 @@ public class ImportUnitChannel extends Channel<ImportUnit> {
     protected void digest() {
         String status = status();
         switch (status) {
-            case "DOT": acceptSpaces().refuseAll(); break;
-            case "DOT SPACES": removeLast();
+            case "MUL": acceptSpaces().refuseAll(); break;
+            case "MUL SPACES": removeLast();
                 accept(Kind.STRING).refuseAll(); break;
-            case "DOT STRING":
+            case "MUL STRING":
             case "STRING": over(this::full).acceptSpaces().refuseAll(); break;
             case "STRING SPACES": removeLast();
                 over(this::full).accept(Kind.INCLUDE).refuseAll(); break;
@@ -63,7 +63,7 @@ public class ImportUnitChannel extends Channel<ImportUnit> {
     private void full() {
         String status = status();
         switch (status) {
-            case "DOT STRING":
+            case "MUL STRING":
                 data = new ImportUnit((Token) removeFirst(), (Token) removeFirst(), null, null);
                 return;
             default:

@@ -37,7 +37,7 @@ public class ImportChannel extends Channel<ImportInfo> {
             next = glance();
             switch (next.kind) {
                 case UL:
-                case DOT:
+                case MUL:
                 case ID:
                 case STRING:
                     ImportUnit unit = ImportUnitChannel.make(this, Kind.CR);

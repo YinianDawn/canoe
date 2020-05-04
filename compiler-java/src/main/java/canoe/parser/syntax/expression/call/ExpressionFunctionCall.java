@@ -9,18 +9,18 @@ import canoe.parser.syntax.expression.pair.ExpressionRound;
  */
 public class ExpressionFunctionCall implements Expression {
 
-    private final Expression id;
+    private final Token id;
 
     private final ExpressionRound round;
 
-    public ExpressionFunctionCall(Expression id, ExpressionRound round) {
+    public ExpressionFunctionCall(Token id, ExpressionRound round) {
         this.id = id;
         this.round = round;
     }
 
     @Override
     public Token first() {
-        return id.first();
+        return id;
     }
 
     @Override
@@ -28,8 +28,16 @@ public class ExpressionFunctionCall implements Expression {
         return round.last();
     }
 
+    public Token getId() {
+        return id;
+    }
+
+    public ExpressionRound getRound() {
+        return round;
+    }
+
     @Override
     public String toString() {
-        return id.toString() + round.toString();
+        return id.value() + round.toString();
     }
 }

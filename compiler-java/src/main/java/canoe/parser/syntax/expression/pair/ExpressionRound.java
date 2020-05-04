@@ -28,6 +28,10 @@ public class ExpressionRound implements Expression {
         return RR;
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+
     @Override
     public String toString() {
         return LR.kind.value + expression.toString() + RR.kind.value;

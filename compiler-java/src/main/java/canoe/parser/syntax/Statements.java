@@ -17,6 +17,10 @@ public class Statements implements Dump {
         this.statements = statements;
     }
 
+    public List<Statement> getStatements() {
+        return statements;
+    }
+
     @Override
     public void dump(Consumer<String> print) {
         statements.forEach(s -> print.accept(s.toString()));

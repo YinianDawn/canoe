@@ -20,4 +20,9 @@ public interface Statement {
      */
     Token last();
 
+    /**
+     * 获取定义的名称
+     * @return
+     */
+    String getId();
 }

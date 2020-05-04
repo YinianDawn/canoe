@@ -25,6 +25,15 @@ public class StatementExpression implements Statement {
     }
 
     @Override
+    public String getId() {
+        return null;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    @Override
     public String toString() {
         return expression.toString();
     }

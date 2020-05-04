@@ -29,6 +29,14 @@ public class ExpressionDot implements Expression {
         return right.last();
     }
 
+    public Expression getLeft() {
+        return left;
+    }
+
+    public Expression getRight() {
+        return right;
+    }
+
     @Override
     public String toString() {
         return left.toString() + DOT.kind.value + right.toString();

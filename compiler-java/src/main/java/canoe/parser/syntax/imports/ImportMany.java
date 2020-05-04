@@ -23,6 +23,10 @@ public class ImportMany implements ImportStatement {
         this.RR = rr;
     }
 
+    public List<ImportUnit> get() {
+        return units;
+    }
+
     @Override
     public void dump(Consumer<String> print) {
         print.accept(IMPORT.value() + LR.value() + units.stream().map(ImportUnit::toString).collect(Collectors.joining(";")) + RR.value());

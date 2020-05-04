@@ -1,16 +1,13 @@
-package canoe.caompiler
+package compiler
 
-import canoe.
-
-Compiler :open {
+Compiler :opened {
     options :Options
     compile {
         
     }
-}
-
-newCompiler :opened :Compiler :(args :string[]) {
-    return Compiler {
-        options: 
+    new(args string[]) -> Compiler {
+        return Compiler {
+            options: 
+        }
     }
 }
